@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight: #0A0E27;
+      --deep-blue: #1A1F3A;
+      --electric: #00F5FF;
+      --neon-pink: #FF006E;
+      --white: #FFFFFF;
+      --gray: #8B92B0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: linear-gradient(165deg, var(--midnight) 0%, var(--deep-blue) 100%);
+      font-family: 'Montserrat', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Glowing grid background */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Radial glow effect */
+    body::after {
+      content: '';
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(0,245,255,0.08) 0%, transparent 60%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .slide-counter {
+      position: absolute;
+      top: 50px;
+      right: 80px;
+      font-size: 22px;
+      color: var(--electric);
+      font-weight: 600;
+      letter-spacing: 4px;
+      z-index: 10;
+      text-shadow: 0 0 20px rgba(0,245,255,0.5);
+    }
+
+    .headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 110px;
+      font-weight: 400;
+      line-height: 1.05;
+      color: var(--white);
+      margin-bottom: 50px;
+      position: relative;
+      z-index: 2;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 30px rgba(0,245,255,0.3);
+    }
+
+    /* Electric underline accent */
+    .headline::after {
+      content: '';
+      position: absolute;
+      bottom: -18px;
+      left: 0;
+      width: 180px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--electric) 0%, transparent 100%);
+      box-shadow: 0 0 15px var(--electric);
+    }
+
+    .content {
+      font-size: 26px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--white);
+      position: relative;
+      z-index: 2;
+      max-width: 850px;
+      opacity: 0.85;
+      letter-spacing: 0.5px;
+    }
+
+    /* Neon accent highlight */
+    .accent {
+      background: linear-gradient(135deg, var(--neon-pink) 0%, var(--electric) 100%);
+      color: var(--white);
+      padding: 4px 14px;
+      font-weight: 600;
+      display: inline-block;
+      margin: 0 4px;
+      border-radius: 3px;
+      box-shadow: 0 0 20px rgba(255,0,110,0.4);
+      text-transform: uppercase;
+      font-size: 0.95em;
+      letter-spacing: 1px;
+    }
+
+    /* Geometric accent shapes */
+    .shape-corner {
+      position: absolute;
+      z-index: 1;
+    }
+
+    .corner-tl {
+      top: 60px;
+      left: 60px;
+      width: 80px;
+      height: 80px;
+      border-top: 3px solid var(--electric);
+      border-left: 3px solid var(--electric);
+      opacity: 0.4;
+      box-shadow: 0 0 15px rgba(0,245,255,0.3);
+    }
+
+    .corner-br {
+      bottom: 60px;
+      right: 60px;
+      width: 80px;
+      height: 80px;
+      border-bottom: 3px solid var(--neon-pink);
+      border-right: 3px solid var(--neon-pink);
+      opacity: 0.4;
+      box-shadow: 0 0 15px rgba(255,0,110,0.3);
+    }
+
+    /* Floating particle effect */
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--electric);
+      border-radius: 50%;
+      opacity: 0.6;
+      box-shadow: 0 0 10px var(--electric);
+    }
+
+    .particle-1 {
+      top: 200px;
+      left: 120px;
+    }
+
+    .particle-2 {
+      top: 450px;
+      right: 200px;
+      background: var(--neon-pink);
+      box-shadow: 0 0 10px var(--neon-pink);
+    }
+
+    .particle-3 {
+      bottom: 300px;
+      left: 180px;
+    }
+
+    /* Scanline effect */
+    .scanline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,0.15) 0px,
+        transparent 1px,
+        transparent 2px,
+        rgba(0,0,0,0.15) 3px
+      );
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+
+  <h1 class="headline">{{TITLE}}</h1>
+  <p class="content">{{CONTENT}}</p>
+
+  <div class="shape-corner corner-tl"></div>
+  <div class="shape-corner corner-br"></div>
+
+  <div class="particle particle-1"></div>
+  <div class="particle particle-2"></div>
+  <div class="particle particle-3"></div>
+</body>
+</html>

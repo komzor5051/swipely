@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #FFF8E7;
+      --ink: #2B2B2B;
+      --red-ink: #D64545;
+      --blue-ink: #4A6FA5;
+      --pencil-gray: #8B8B8B;
+      --line-gray: #E8DCC8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--paper);
+      font-family: 'Lora', serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 90px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Paper texture overlay */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 39px,
+          var(--line-gray) 39px,
+          var(--line-gray) 41px
+        );
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Subtle noise texture */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .slide-counter {
+      position: absolute;
+      top: 45px;
+      right: 90px;
+      font-family: 'Caveat', cursive;
+      font-size: 32px;
+      color: var(--pencil-gray);
+      font-weight: 600;
+      z-index: 10;
+      transform: rotate(-2deg);
+    }
+
+    .headline {
+      font-family: 'Caveat', cursive;
+      font-size: 86px;
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 45px;
+      position: relative;
+      z-index: 2;
+      text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+    }
+
+    /* Hand-drawn underline */
+    .headline::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 0;
+      width: 280px;
+      height: 4px;
+      background: var(--red-ink);
+      border-radius: 2px;
+      opacity: 0.6;
+      transform: skewY(-1deg);
+    }
+
+    .content {
+      font-size: 27px;
+      font-weight: 400;
+      line-height: 1.75;
+      color: var(--ink);
+      position: relative;
+      z-index: 2;
+      max-width: 850px;
+      letter-spacing: 0.2px;
+    }
+
+    /* Formatted list items */
+    .list-item {
+      display: flex;
+      margin-bottom: 22px;
+      align-items: flex-start;
+    }
+
+    .list-number {
+      font-family: 'Caveat', cursive;
+      font-size: 52px;
+      font-weight: 700;
+      color: var(--red-ink);
+      min-width: 70px;
+      line-height: 1;
+      margin-top: -8px;
+      flex-shrink: 0;
+    }
+
+    .list-text {
+      flex: 1;
+      padding-top: 2px;
+    }
+
+    /* Bold text */
+    .bold {
+      font-weight: 700;
+      color: var(--red-ink);
+    }
+
+    /* Underline accent */
+    .underline {
+      background: linear-gradient(120deg, rgba(214,69,69,0.15) 0%, rgba(214,69,69,0.25) 100%);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* Sketch doodles */
+    .doodle {
+      position: absolute;
+      z-index: 1;
+      opacity: 0.2;
+      stroke: var(--blue-ink);
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .doodle-star {
+      bottom: 120px;
+      right: 140px;
+    }
+
+    .doodle-arrow {
+      top: 160px;
+      left: 90px;
+    }
+
+    /* Coffee stain effect */
+    .coffee-stain {
+      position: absolute;
+      bottom: 80px;
+      left: 100px;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(160,120,80,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* Margin mark */
+    .margin-line {
+      position: absolute;
+      left: 60px;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: var(--red-ink);
+      opacity: 0.25;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="margin-line"></div>
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+
+  <h1 class="headline">{{TITLE}}</h1>
+  <div class="content" id="content">{{CONTENT}}</div>
+
+  <!-- Sketch doodles -->
+  <svg class="doodle doodle-star" width="80" height="80" viewBox="0 0 80 80">
+    <path d="M40,10 L45,30 L65,35 L45,40 L40,60 L35,40 L15,35 L35,30 Z" stroke-linecap="round"/>
+  </svg>
+
+  <svg class="doodle doodle-arrow" width="100" height="60" viewBox="0 0 100 60">
+    <path d="M10,30 Q50,10 90,30 M90,30 L80,25 M90,30 L85,40" stroke-linecap="round"/>
+  </svg>
+
+  <div class="coffee-stain"></div>
+
+  <script>
+    // Auto-format content with lists, bold, underlines
+    function formatContent() {
+      const contentEl = document.getElementById('content');
+      let text = contentEl.textContent.trim();
+
+      // Detect if content is a numbered list (starts with "1." or "1)")
+      const isNumberedList = /^\d+[\.\)]\s/.test(text);
+
+      if (isNumberedList) {
+        // Split by list items (1. 2. 3. or 1) 2) 3))
+        const items = text.split(/\d+[\.\)]\s/).filter(item => item.trim());
+
+        let html = '';
+        items.forEach((item, index) => {
+          if (item.trim()) {
+            // Highlight first word/phrase in bold
+            let formattedItem = item.trim();
+
+            // Find colon - text before colon becomes bold
+            if (formattedItem.includes(':')) {
+              const parts = formattedItem.split(':');
+              formattedItem = `<span class="bold">${parts[0]}:</span>${parts.slice(1).join(':')}`;
+            }
+
+            html += `
+              <div class="list-item">
+                <div class="list-number">${index + 1}</div>
+                <div class="list-text">${formattedItem}</div>
+              </div>
+            `;
+          }
+        });
+
+        contentEl.innerHTML = html;
+      } else {
+        // Not a list - just format bold words
+        // Bold words in quotes or after dash
+        text = text.replace(/"([^"]+)"/g, '<span class="underline">$1</span>');
+        text = text.replace(/—\s*([^—\.]+)/g, '— <span class="bold">$1</span>');
+
+        contentEl.innerHTML = text;
+      }
+    }
+
+    // Run formatting after page loads
+    window.addEventListener('DOMContentLoaded', formatContent);
+  </script>
+</body>
+</html>

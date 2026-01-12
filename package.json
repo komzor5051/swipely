@@ -1,0 +1,32 @@
+{
+  "name": "swipely-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot for generating beautiful carousels from voice/text",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "carousel",
+    "AI",
+    "Claude"
+  ],
+  "author": "LVMN",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.1",
+    "@supabase/supabase-js": "^2.90.1",
+    "axios": "^1.7.9",
+    "better-sqlite3": "^11.7.0",
+    "dotenv": "^16.4.7",
+    "node-telegram-bot-api": "^0.67.0",
+    "openai": "^4.73.0",
+    "puppeteer": "^23.11.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
