@@ -220,11 +220,147 @@ async function getUserStats(telegramId) {
   }
 }
 
+/**
+ * Проверка завершения онбординга
+ */
+async function checkOnboardingStatus(telegramId) {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('onboarding_completed, onboarding_step, user_role, tov_profile, user_context, niche')
+      .eq('telegram_id', telegramId)
+      .single();
+
+    if (error) {
+      console.error('❌ Ошибка проверки онбординга:', error);
+      return null;
+    }
+
+    return profile;
+  } catch (err) {
+    console.error('❌ Критическая ошибка checkOnboardingStatus:', err);
+    return null;
+  }
+}
+
+/**
+ * Сохранение контекста пользователя (Phase 1)
+ */
+async function saveUserContext(telegramId, context) {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        user_context: context,
+        onboarding_step: 'tov'
+      })
+      .eq('telegram_id', telegramId);
+
+    if (error) {
+      console.error('❌ Ошибка сохранения контекста:', error);
+      return false;
+    }
+
+    console.log(`💾 Контекст сохранен для пользователя ${telegramId}`);
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка saveUserContext:', err);
+    return false;
+  }
+}
+
+/**
+ * Сохранение ToV профиля (Phase 2)
+ */
+async function saveTovProfile(telegramId, tovProfile) {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        tov_profile: tovProfile,
+        onboarding_step: 'role'
+      })
+      .eq('telegram_id', telegramId);
+
+    if (error) {
+      console.error('❌ Ошибка сохранения ToV профиля:', error);
+      return false;
+    }
+
+    console.log(`🎯 ToV профиль сохранен для пользователя ${telegramId}`);
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка saveTovProfile:', err);
+    return false;
+  }
+}
+
+/**
+ * Завершение онбординга (Phase 3)
+ */
+async function completeOnboarding(telegramId, userRole, niche = null) {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        user_role: userRole,
+        niche: niche,
+        onboarding_completed: true,
+        onboarding_step: 'completed'
+      })
+      .eq('telegram_id', telegramId);
+
+    if (error) {
+      console.error('❌ Ошибка завершения онбординга:', error);
+      return false;
+    }
+
+    console.log(`✅ Онбординг завершен для пользователя ${telegramId}`);
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка completeOnboarding:', err);
+    return false;
+  }
+}
+
+/**
+ * Пропуск онбординга (быстрый старт)
+ */
+async function skipOnboarding(telegramId) {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        onboarding_completed: true,
+        onboarding_step: 'completed',
+        user_role: 'expert' // Дефолтная роль
+      })
+      .eq('telegram_id', telegramId);
+
+    if (error) {
+      console.error('❌ Ошибка пропуска онбординга:', error);
+      return false;
+    }
+
+    console.log(`⏩ Онбординг пропущен для пользователя ${telegramId}`);
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка skipOnboarding:', err);
+    return false;
+  }
+}
+
 module.exports = {
   supabase,
   upsertUser,
   saveMessage,
   getUserMessageHistory,
   saveCarouselGeneration,
-  getUserStats
+  getUserStats,
+  // Онбординг функции
+  checkOnboardingStatus,
+  saveUserContext,
+  saveTovProfile,
+  completeOnboarding,
+  skipOnboarding
 };
