@@ -2,7 +2,7 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const db = require('./services/database');
 const { transcribeVoice } = require('./services/whisper');
-const { generateCarouselContent } = require('./services/claude');
+const { generateCarouselContent } = require('./services/gemini');
 const { renderSlides } = require('./services/renderer');
 const {
   upsertUser,

@@ -1,27 +1,12 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const axios = require('axios');
 
 // ============================================
 // TOV (TONE OF VOICE) ANALYZER
 // ============================================
-// Анализирует стиль текста пользователя через Google Gemini
+// Анализирует стиль текста пользователя через Claude (OpenRouter)
 
-const GOOGLE_API_KEY = process.env.GOOGLE_GEMINI_API_KEY;
-const MODEL = 'gemini-2.5-flash-lite'; // Легкая модель, меньше нагрузка (январь 2026)
-
-let genAI = null;
-
-function initGemini() {
-  if (!GOOGLE_API_KEY) {
-    console.error('❌ GOOGLE_GEMINI_API_KEY не настроен');
-    return null;
-  }
-
-  if (!genAI) {
-    genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
-  }
-
-  return genAI;
-}
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const MODEL = 'anthropic/claude-3.5-haiku';
 
 /**
  * Анализирует Tone of Voice из примера текста пользователя
@@ -29,15 +14,13 @@ function initGemini() {
  * @returns {Promise<object>} - ToV профиль: {sentence_length, emoji_usage_rate, tone, language_level}
  */
 async function analyzeToneOfVoice(exampleText) {
-  const ai = initGemini();
-
-  if (!ai) {
-    console.error('❌ Google Gemini API не настроен');
+  if (!OPENROUTER_API_KEY) {
+    console.error('❌ OPENROUTER_API_KEY не настроен');
     return getDefaultTovProfile();
   }
 
   try {
-    console.log('🔍 Анализирую Tone of Voice через Gemini...');
+    console.log('🔍 Анализирую Tone of Voice через Claude...');
 
     const systemPrompt = `Ты — эксперт по анализу стиля текста. Твоя задача — проанализировать пример текста и выдать точный профиль Tone of Voice.
 
@@ -57,21 +40,29 @@ async function analyzeToneOfVoice(exampleText) {
 
     const userPrompt = `Проанализируй стиль этого текста:\n\n${exampleText}`;
 
-    const model = ai.getGenerativeModel({
-      model: MODEL,
-      generationConfig: {
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
         temperature: 0.3,
-        maxOutputTokens: 500,
+        max_tokens: 500
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://swipely.ai',
+          'X-Title': 'Swipely ToV Analyzer'
+        }
       }
-    });
+    );
 
-    const fullPrompt = `${systemPrompt}\n\nUSER REQUEST:\n${userPrompt}`;
-
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    const rawContent = response.text();
-
-    console.log('📦 Сырой ответ от Gemini:', rawContent);
+    const rawContent = response.data.choices[0].message.content;
+    console.log('📦 Сырой ответ от Claude:', rawContent);
 
     // Очистка от markdown обертки
     let cleanedContent = rawContent.trim();
@@ -84,12 +75,12 @@ async function analyzeToneOfVoice(exampleText) {
     }
 
     const tovProfile = JSON.parse(cleanedContent);
-    console.log('✅ ToV профиль получен через Gemini:', tovProfile);
+    console.log('✅ ToV профиль получен через Claude:', tovProfile);
 
     return tovProfile;
 
   } catch (error) {
-    console.error('❌ Ошибка анализа ToV через Gemini:', error.message);
+    console.error('❌ Ошибка анализа ToV через Claude:', error.message);
     return getDefaultTovProfile();
   }
 }
