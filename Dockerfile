@@ -36,8 +36,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (production only)
-ENV NODE_ENV=production
-RUN npm ci
+RUN npm install --production --no-audit --no-fund
 
 # Copy application code
 COPY . .
