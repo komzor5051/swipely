@@ -35,8 +35,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --omit=dev
+# Install dependencies (production only)
+ENV NODE_ENV=production
+RUN npm ci
 
 # Copy application code
 COPY . .
