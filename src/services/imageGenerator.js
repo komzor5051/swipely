@@ -1,12 +1,11 @@
 /**
  * Image Generator Service — Gemini 2.5 Flash Image (Nano Banana)
  *
- * Генерация изображений через новый @google/genai SDK
- * Модель: gemini-2.5-flash-preview-05-20 (с поддержкой image generation)
+ * Генерация изображений через @google/genai SDK (ESM)
+ * Модель: gemini-2.0-flash-exp-image-generation
  * Стоимость: ~$0.039 за изображение
  */
 
-const { GoogleGenAI } = require('@google/genai');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
@@ -34,9 +33,13 @@ const STYLE_PROMPTS = {
 
 let genAI = null;
 
-function initGenAI() {
+/**
+ * Инициализация GoogleGenAI (dynamic import для ESM модуля)
+ */
+async function initGenAI() {
   if (!GOOGLE_API_KEY) return null;
   if (!genAI) {
+    const { GoogleGenAI } = await import('@google/genai');
     genAI = new GoogleGenAI({ apiKey: GOOGLE_API_KEY });
   }
   return genAI;
@@ -60,7 +63,7 @@ async function downloadTelegramPhoto(bot, fileId) {
  * Генерация одного изображения с reference photo
  */
 async function generateImageWithReference(slideContent, referencePhotoBase64, style, slideNumber, totalSlides) {
-  const ai = initGenAI();
+  const ai = await initGenAI();
   if (!ai) throw new Error('Gemini не настроен');
 
   const styleConfig = STYLE_PROMPTS[style] || STYLE_PROMPTS.cartoon;
@@ -129,7 +132,7 @@ DO NOT include any text in the image - text will be added separately.`;
  * Генерация изображения без reference (только по тексту)
  */
 async function generateImageFromText(prompt, style) {
-  const ai = initGenAI();
+  const ai = await initGenAI();
   if (!ai) throw new Error('Gemini не настроен');
 
   const styleConfig = STYLE_PROMPTS[style] || STYLE_PROMPTS.cartoon;
