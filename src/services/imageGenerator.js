@@ -1,9 +1,11 @@
 /**
- * Image Generator Service — Gemini 2.5 Flash Image (Nano Banana)
+ * Image Generator Service — Gemini 3 Pro Image (Nano Banana Pro)
  *
  * Генерация изображений через @google/genai SDK (ESM)
- * Модель: gemini-2.0-flash-exp-image-generation
- * Стоимость: ~$0.039 за изображение
+ * Модель: gemini-3-pro-image-preview
+ * Качество: 2K (2048px)
+ * Поддержка: до 5 reference фото людей
+ * Стоимость: ~$0.04 за изображение
  */
 
 const axios = require('axios');
@@ -11,23 +13,25 @@ const fs = require('fs');
 const path = require('path');
 
 const GOOGLE_API_KEY = process.env.GOOGLE_GEMINI_API_KEY;
-const IMAGE_MODEL = 'gemini-2.0-flash-exp-image-generation';
+const IMAGE_MODEL = 'gemini-3-pro-image-preview';
 
 const OUTPUT_DIR = path.join(__dirname, '../../output');
 
-// Стили для генерации
+// Стили для генерации (визуал без текста!)
 const STYLE_PROMPTS = {
   cartoon: {
     name: 'Мультяшный',
-    prompt: `Vibrant cartoon illustration style, similar to Pixar or Disney animation.
-      Bold colors, clean lines, expressive features, playful and engaging.
-      The person should look like an animated character version of themselves.`
+    prompt: `3D Pixar/Disney animation style illustration.
+      Vibrant saturated colors, soft lighting, expressive cartoon features.
+      The person transformed into an animated character while keeping recognizable face.
+      Professional studio lighting, clean background with soft bokeh.`
   },
   realistic: {
     name: 'Реалистичный',
-    prompt: `Professional photography style with cinematic lighting.
-      High-end commercial photography look, natural skin tones,
-      shallow depth of field effect, professional studio quality.`
+    prompt: `High-end professional photography, cinematic lighting.
+      Magazine cover quality, natural skin tones, shallow depth of field.
+      Professional studio setup, soft diffused lighting.
+      Commercial advertising aesthetic.`
   }
 };
 
@@ -61,6 +65,8 @@ async function downloadTelegramPhoto(bot, fileId) {
 
 /**
  * Генерация одного изображения с reference photo
+ * Использует Gemini 3 Pro Image (Nano Banana Pro)
+ * ВАЖНО: Изображение генерируется БЕЗ текста - текст накладывается отдельно
  */
 async function generateImageWithReference(slideContent, referencePhotoBase64, style, slideNumber, totalSlides) {
   const ai = await initGenAI();
@@ -70,25 +76,26 @@ async function generateImageWithReference(slideContent, referencePhotoBase64, st
 
   console.log(`🎨 Генерация изображения ${slideNumber}/${totalSlides} (стиль: ${styleConfig.name})...`);
 
-  const prompt = `Generate an Instagram carousel slide image in portrait orientation (4:5 aspect ratio).
+  // Промпт фокусируется ТОЛЬКО на визуале, без упоминания текста слайда
+  const prompt = `Create a portrait image for Instagram (4:5 aspect ratio).
 
-STYLE: ${styleConfig.prompt}
+VISUAL STYLE:
+${styleConfig.prompt}
 
-SLIDE CONTENT:
-- Title: "${slideContent.title}"
-- Message: "${slideContent.content}"
-- This is slide ${slideNumber} of ${totalSlides}
+COMPOSITION:
+- Transform the person from the reference photo into this style
+- Keep their face recognizable and expressive
+- Professional dynamic pose suggesting confidence
+- Clean, uncluttered background with soft blur
+- Leave clear space at TOP (20%) and BOTTOM (25%) of image for text overlay
+- Center the subject in the middle portion of the frame
+- High quality, sharp focus on the face
 
-REQUIREMENTS:
-1. Use the person from the reference photo as the main subject
-2. Transform them into the specified style while keeping recognizable features
-3. Create a scene that matches the slide content/message
-4. Portrait orientation for Instagram (1080x1350)
-5. Leave space at top and bottom for text overlay
-6. Make it visually engaging and professional
-7. The person should be in a relevant pose or setting
-
-DO NOT include any text in the image - text will be added separately.`;
+CRITICAL REQUIREMENTS:
+⛔ ABSOLUTELY NO TEXT, LETTERS, NUMBERS, WORDS, CAPTIONS, TITLES, OR TYPOGRAPHY
+⛔ NO watermarks, logos, signatures, or any written elements
+⛔ The image must be 100% visual - pure illustration/photo only
+✅ Focus entirely on the visual aesthetic and the person`;
 
   try {
     const contents = [
@@ -105,7 +112,11 @@ DO NOT include any text in the image - text will be added separately.`;
       model: IMAGE_MODEL,
       contents: contents,
       config: {
-        responseModalities: ['TEXT', 'IMAGE']
+        responseModalities: ['TEXT', 'IMAGE'],
+        imageConfig: {
+          aspectRatio: '4:5',
+          imageSize: '2K'
+        }
       }
     });
 
@@ -113,7 +124,7 @@ DO NOT include any text in the image - text will be added separately.`;
     if (response.candidates && response.candidates[0]?.content?.parts) {
       for (const part of response.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.data) {
-          console.log(`✅ Изображение ${slideNumber} сгенерировано`);
+          console.log(`✅ Изображение ${slideNumber} сгенерировано (2K качество)`);
           return part.inlineData.data;
         }
       }
@@ -124,35 +135,97 @@ DO NOT include any text in the image - text will be added separately.`;
 
   } catch (error) {
     console.error(`❌ Ошибка генерации изображения ${slideNumber}:`, error.message);
+    // Если ошибка связана с моделью, попробуем fallback
+    if (error.message.includes('not found') || error.message.includes('not supported')) {
+      console.log(`🔄 Пробую fallback модель...`);
+      return await generateImageWithReferenceFallback(slideContent, referencePhotoBase64, style, slideNumber, totalSlides);
+    }
+    return null;
+  }
+}
+
+/**
+ * Fallback на старую модель если gemini-3-pro-image-preview недоступна
+ */
+async function generateImageWithReferenceFallback(slideContent, referencePhotoBase64, style, slideNumber, totalSlides) {
+  const ai = await initGenAI();
+  if (!ai) return null;
+
+  const styleConfig = STYLE_PROMPTS[style] || STYLE_PROMPTS.cartoon;
+  const FALLBACK_MODEL = 'gemini-2.0-flash-exp-image-generation';
+
+  console.log(`🔄 Fallback: используем ${FALLBACK_MODEL}`);
+
+  const prompt = `Create a portrait image (4:5 ratio).
+Style: ${styleConfig.prompt}
+Transform the person from reference photo into this style.
+Keep face recognizable. Professional pose. Clean background.
+Leave space at top and bottom for text overlay.
+⛔ ABSOLUTELY NO TEXT OR LETTERS IN THE IMAGE`;
+
+  try {
+    const contents = [
+      { text: prompt },
+      { inlineData: { mimeType: 'image/jpeg', data: referencePhotoBase64 } }
+    ];
+
+    const response = await ai.models.generateContent({
+      model: FALLBACK_MODEL,
+      contents: contents,
+      config: { responseModalities: ['TEXT', 'IMAGE'] }
+    });
+
+    if (response.candidates && response.candidates[0]?.content?.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          console.log(`✅ Fallback: изображение ${slideNumber} сгенерировано`);
+          return part.inlineData.data;
+        }
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error(`❌ Fallback ошибка:`, error.message);
     return null;
   }
 }
 
 /**
  * Генерация изображения без reference (только по тексту)
+ * Используется как fallback когда reference photo не сработало
  */
-async function generateImageFromText(prompt, style) {
+async function generateImageFromText(themeDescription, style) {
   const ai = await initGenAI();
   if (!ai) throw new Error('Gemini не настроен');
 
   const styleConfig = STYLE_PROMPTS[style] || STYLE_PROMPTS.cartoon;
 
-  const fullPrompt = `Generate an Instagram carousel slide image in portrait orientation (4:5).
+  const fullPrompt = `Create a portrait image for Instagram (4:5 aspect ratio).
 
-STYLE: ${styleConfig.prompt}
+VISUAL STYLE:
+${styleConfig.prompt}
 
-CONTENT: ${prompt}
+THEME: Create an abstract/conceptual visual representation related to: "${themeDescription}"
+- Use symbolic imagery, colors, and shapes
+- Professional quality, visually striking
+- Clean composition with soft background
+- Leave clear space at TOP and BOTTOM for text overlay
 
-Create a visually engaging, professional image.
-Leave space for text overlay at top and bottom.
-NO text in the image.`;
+CRITICAL:
+⛔ ABSOLUTELY NO TEXT, LETTERS, NUMBERS, WORDS, OR TYPOGRAPHY
+⛔ The image must be 100% visual only
+✅ Focus on mood, colors, abstract representation`;
 
   try {
     const response = await ai.models.generateContent({
       model: IMAGE_MODEL,
       contents: fullPrompt,
       config: {
-        responseModalities: ['TEXT', 'IMAGE']
+        responseModalities: ['TEXT', 'IMAGE'],
+        imageConfig: {
+          aspectRatio: '4:5',
+          imageSize: '2K'
+        }
       }
     });
 
@@ -173,19 +246,22 @@ NO text in the image.`;
 
 /**
  * Генерация всех изображений для карусели
+ * Использует Gemini 3 Pro Image для высокого качества
  */
 async function generateCarouselImages(carouselData, referencePhotoBase64, style) {
-  console.log(`🖼️ Начинаю генерацию ${carouselData.slides.length} изображений...`);
-  console.log(`💰 Примерная стоимость: $${(carouselData.slides.length * 0.039).toFixed(2)}`);
+  const totalSlides = carouselData.slides.length;
+
+  console.log(`🖼️ Начинаю генерацию ${totalSlides} изображений...`);
+  console.log(`📸 Модель: ${IMAGE_MODEL} (2K качество)`);
+  console.log(`💰 Примерная стоимость: $${(totalSlides * 0.04).toFixed(2)}`);
 
   const images = [];
-  const totalSlides = carouselData.slides.length;
 
   for (let i = 0; i < totalSlides; i++) {
     const slide = carouselData.slides[i];
 
     try {
-      // Пробуем сгенерировать с reference photo
+      // Пробуем сгенерировать с reference photo (включая fallback внутри)
       let imageBase64 = await generateImageWithReference(
         slide,
         referencePhotoBase64,
@@ -194,11 +270,11 @@ async function generateCarouselImages(carouselData, referencePhotoBase64, style)
         totalSlides
       );
 
-      // Если не получилось, пробуем без reference
+      // Если всё ещё не получилось, пробуем без reference вообще
       if (!imageBase64) {
-        console.log(`🔄 Fallback: генерация без reference для слайда ${i + 1}`);
+        console.log(`🔄 Fallback: генерация абстрактного визуала для слайда ${i + 1}`);
         imageBase64 = await generateImageFromText(
-          `${slide.title}. ${slide.content}`,
+          slide.title || 'professional creative visual',
           style
         );
       }
@@ -207,7 +283,7 @@ async function generateCarouselImages(carouselData, referencePhotoBase64, style)
 
       // Задержка между запросами для избежания rate limit
       if (i < totalSlides - 1) {
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 2000)); // Увеличили до 2 сек для стабильности
       }
 
     } catch (error) {

@@ -329,6 +329,7 @@ async function renderSlidesWithImages(carouselData, imageBase64Array) {
 
 /**
  * Генерация HTML для слайда с AI-изображением на фоне
+ * Текст накладывается поверх изображения с улучшенной читаемостью
  */
 function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
   // Если изображение null, используем градиентный фон
@@ -342,7 +343,7 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Inter:wght@600;800&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -367,6 +368,7 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
       ${backgroundStyle}
     }
 
+    /* Улучшенный градиент для читаемости текста */
     .gradient-overlay {
       position: absolute;
       top: 0;
@@ -375,10 +377,12 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
       height: 100%;
       background: linear-gradient(
         to bottom,
-        rgba(0,0,0,0.7) 0%,
-        rgba(0,0,0,0.1) 25%,
-        rgba(0,0,0,0.1) 65%,
-        rgba(0,0,0,0.8) 100%
+        rgba(0,0,0,0.75) 0%,
+        rgba(0,0,0,0.3) 20%,
+        rgba(0,0,0,0.05) 35%,
+        rgba(0,0,0,0.05) 60%,
+        rgba(0,0,0,0.4) 75%,
+        rgba(0,0,0,0.85) 100%
       );
     }
 
@@ -391,48 +395,69 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 60px;
+      padding: 50px 55px;
+    }
+
+    .top-section {
+      padding-top: 20px;
     }
 
     .headline {
-      font-size: 58px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 52px;
       font-weight: 900;
       color: #FFFFFF;
-      text-shadow: 0 4px 30px rgba(0,0,0,0.5);
-      line-height: 1.15;
+      line-height: 1.1;
       text-transform: uppercase;
-      max-width: 90%;
-    }
-
-    .content {
-      font-size: 28px;
-      font-weight: 600;
-      color: #FFFFFF;
-      text-shadow: 0 2px 15px rgba(0,0,0,0.5);
-      line-height: 1.5;
-      max-width: 90%;
-    }
-
-    .slide-counter {
-      position: absolute;
-      top: 60px;
-      right: 60px;
-      font-size: 24px;
-      font-weight: 800;
-      color: rgba(255,255,255,0.9);
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    }
-
-    .accent {
-      background: linear-gradient(135deg, #FF006E, #FF5C00);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-fill-color: transparent;
+      letter-spacing: -1px;
+      max-width: 85%;
+      /* Улучшенная тень для читаемости на любом фоне */
+      text-shadow:
+        0 2px 4px rgba(0,0,0,0.8),
+        0 4px 20px rgba(0,0,0,0.6),
+        0 8px 40px rgba(0,0,0,0.4);
     }
 
     .bottom-section {
       margin-top: auto;
+      padding-bottom: 20px;
+    }
+
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: #FFFFFF;
+      line-height: 1.45;
+      max-width: 90%;
+      text-shadow:
+        0 1px 3px rgba(0,0,0,0.8),
+        0 3px 15px rgba(0,0,0,0.5);
+    }
+
+    .slide-counter {
+      position: absolute;
+      top: 50px;
+      right: 55px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.95);
+      text-shadow:
+        0 2px 8px rgba(0,0,0,0.8),
+        0 4px 20px rgba(0,0,0,0.5);
+      /* Тонкая подложка для лучшей видимости */
+      background: rgba(0,0,0,0.25);
+      padding: 8px 16px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    .accent {
+      color: #FFD93D;
+      text-shadow:
+        0 2px 4px rgba(0,0,0,0.9),
+        0 4px 20px rgba(255,217,61,0.3);
     }
   </style>
 </head>
