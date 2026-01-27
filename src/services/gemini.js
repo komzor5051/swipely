@@ -133,7 +133,9 @@ function getDesignConfig(stylePreset) {
     editorial: { name: 'Editorial', max_words_per_slide: 45, tone: 'high-fashion, magazine, bold' },
     zen: { name: 'Zen', max_words_per_slide: 35, tone: 'minimalist, japanese, calm' },
     memphis: { name: 'Memphis', max_words_per_slide: 40, tone: '80s retro, playful, vibrant' },
-    luxe: { name: 'Luxe', max_words_per_slide: 40, tone: 'premium, luxury, elegant' }
+    luxe: { name: 'Luxe', max_words_per_slide: 40, tone: 'premium, luxury, elegant' },
+    // Режим с AI-аватарами - короткие тексты для overlay поверх изображений
+    photo_mode: { name: 'AI Photo', max_words_per_slide: 25, tone: 'impactful, concise, visual-first' }
   };
   return presets[stylePreset] || presets.minimal_pop;
 }

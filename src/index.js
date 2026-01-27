@@ -3,7 +3,8 @@ const TelegramBot = require('node-telegram-bot-api');
 const db = require('./services/database');
 const { transcribeVoice } = require('./services/whisper');
 const { generateCarouselContent } = require('./services/gemini');
-const { renderSlides } = require('./services/renderer');
+const { renderSlides, renderSlidesWithImages } = require('./services/renderer');
+const { downloadTelegramPhoto, generateCarouselImages, STYLE_PROMPTS } = require('./services/imageGenerator');
 const { upsertUser, saveCarouselGeneration } = require('./services/supabaseService');
 const copy = require('./utils/copy');
 const demoCarousel = require('./data/demoCarousel');
@@ -90,6 +91,115 @@ bot.on('voice', async (msg) => {
     await bot.sendMessage(chatId, copy.errors.voice);
   }
 });
+
+// ============================================
+// ОБРАБОТКА ФОТО (для AI-аватаров)
+// ============================================
+bot.on('photo', async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+
+  // Проверяем, ждём ли мы фото от этого пользователя
+  if (!sessions[userId]?.awaitingPhoto) {
+    return bot.sendMessage(chatId, copy.photoMode.photoRequest.wrongContext);
+  }
+
+  try {
+    await bot.sendMessage(chatId, copy.photoMode.progress.photoReceived);
+
+    // Получаем самое большое фото (последнее в массиве)
+    const photoSizes = msg.photo;
+    const largestPhoto = photoSizes[photoSizes.length - 1];
+
+    // Скачиваем и конвертируем в base64
+    const photoBase64 = await downloadTelegramPhoto(bot, largestPhoto.file_id);
+
+    sessions[userId].referencePhoto = photoBase64;
+    sessions[userId].awaitingPhoto = false;
+
+    // Запускаем генерацию
+    await startPhotoModeGeneration(chatId, userId);
+
+  } catch (error) {
+    console.error('❌ Ошибка обработки фото:', error);
+    await bot.sendMessage(chatId, copy.photoMode.errors.photoProcessing);
+  }
+});
+
+/**
+ * Генерация карусели в режиме с фото (AI-аватары)
+ */
+async function startPhotoModeGeneration(chatId, userId) {
+  const session = sessions[userId];
+
+  if (!session || !session.transcription || !session.referencePhoto) {
+    return bot.sendMessage(chatId, '❌ Данные сессии потеряны. Начни сначала с /start');
+  }
+
+  try {
+    const slideCount = session.slideCount || 5;
+    const imageStyle = session.imageStyle || 'cartoon';
+    const styleName = STYLE_PROMPTS[imageStyle]?.name || imageStyle;
+
+    // 1. Генерация контента
+    await bot.sendMessage(chatId, copy.photoMode.progress.generatingContent);
+    const carouselData = await generateCarouselContent(
+      session.transcription,
+      'photo_mode',
+      slideCount,
+      null
+    );
+
+    // 2. Генерация AI-изображений
+    await bot.sendMessage(chatId, copy.photoMode.progress.generatingImages(slideCount));
+    const images = await generateCarouselImages(
+      carouselData,
+      session.referencePhoto,
+      imageStyle
+    );
+
+    // 3. Рендеринг слайдов с текстом поверх изображений
+    await bot.sendMessage(chatId, copy.photoMode.progress.composingSlides);
+    const finalImages = await renderSlidesWithImages(carouselData, images);
+
+    // 4. Отправка карусели
+    const mediaGroup = finalImages.map((imgPath, idx) => ({
+      type: 'photo',
+      media: imgPath,
+      caption: idx === 0 ? `✨ AI-карусель в стиле "${styleName}"` : undefined
+    }));
+
+    await bot.sendMediaGroup(chatId, mediaGroup);
+
+    // 5. Логирование в Supabase
+    console.log(`📊 Сохраняю AI-генерацию для пользователя ${userId}...`);
+    await saveCarouselGeneration(
+      userId,
+      session.transcription,
+      `photo_${imageStyle}`,
+      slideCount,
+      { mode: 'photo', imageStyle: imageStyle }
+    );
+
+    // 6. Результат
+    await bot.sendMessage(chatId, copy.photoMode.result, {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: copy.mainFlow.resultButtons.createNew, callback_data: 'create_now' }]
+        ]
+      }
+    });
+
+    // Очищаем сессию
+    delete sessions[userId];
+
+  } catch (error) {
+    console.error('❌ Ошибка photo mode generation:');
+    console.error('Message:', error.message);
+    console.error('Stack:', error.stack);
+    await bot.sendMessage(chatId, copy.photoMode.errors.imageGeneration);
+  }
+}
 
 // ============================================
 // ОБРАБОТКА ТЕКСТОВЫХ СООБЩЕНИЙ
@@ -238,8 +348,31 @@ bot.on('callback_query', async (query) => {
         sessions[userId] = { slideCount };
       }
 
+      // Показываем выбор режима генерации
       await bot.editMessageText(
-        `📊 Отлично! Создам ${slideCount} слайдов.\n\n${copy.mainFlow.selectStyle}`,
+        copy.photoMode.modeSelection.text(slideCount),
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.photoMode.modeSelection.buttons.standard, callback_data: 'mode_standard' }],
+              [{ text: copy.photoMode.modeSelection.buttons.photo, callback_data: 'mode_photo' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // ==================== РЕЖИМ: ОБЫЧНЫЙ (HTML шаблоны) ====================
+    if (data === 'mode_standard') {
+      if (sessions[userId]) {
+        sessions[userId].generationMode = 'standard';
+      }
+
+      await bot.editMessageText(
+        copy.mainFlow.selectStyle,
         {
           chat_id: chatId,
           message_id: messageId,
@@ -264,6 +397,55 @@ bot.on('callback_query', async (query) => {
               [{ text: '💎 Luxe', callback_data: 'style_luxe' }]
             ]
           }
+        }
+      );
+      return;
+    }
+
+    // ==================== РЕЖИМ: С ФОТО (AI-аватары) ====================
+    if (data === 'mode_photo') {
+      if (sessions[userId]) {
+        sessions[userId].generationMode = 'photo';
+
+        // Ограничиваем количество слайдов для экономии
+        if (sessions[userId].slideCount > 7) {
+          sessions[userId].slideCount = 7;
+          await bot.sendMessage(chatId, copy.photoMode.slideLimit);
+        }
+      }
+
+      await bot.editMessageText(
+        copy.photoMode.styleSelection.text,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.photoMode.styleSelection.buttons.cartoon, callback_data: 'imgstyle_cartoon' }],
+              [{ text: copy.photoMode.styleSelection.buttons.realistic, callback_data: 'imgstyle_realistic' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // ==================== ВЫБОР СТИЛЯ ИЗОБРАЖЕНИЯ (для photo mode) ====================
+    if (data.startsWith('imgstyle_')) {
+      const imageStyle = data.replace('imgstyle_', '');
+
+      if (sessions[userId]) {
+        sessions[userId].imageStyle = imageStyle;
+        sessions[userId].awaitingPhoto = true;
+      }
+
+      const styleName = STYLE_PROMPTS[imageStyle]?.name || imageStyle;
+
+      await bot.editMessageText(
+        copy.photoMode.photoRequest.text(styleName),
+        {
+          chat_id: chatId,
+          message_id: messageId
         }
       );
       return;
