@@ -1,17 +1,18 @@
 /**
  * Image Generator Service — Gemini 2.5 Flash Image (Nano Banana)
  *
- * Генерация изображений с reference photo пользователя
+ * Генерация изображений через новый @google/genai SDK
+ * Модель: gemini-2.5-flash-preview-05-20 (с поддержкой image generation)
  * Стоимость: ~$0.039 за изображение
  */
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
 const GOOGLE_API_KEY = process.env.GOOGLE_GEMINI_API_KEY;
-const IMAGE_MODEL = 'gemini-2.0-flash-exp'; // Модель с поддержкой генерации изображений
+const IMAGE_MODEL = 'gemini-2.0-flash-exp-image-generation';
 
 const OUTPUT_DIR = path.join(__dirname, '../../output');
 
@@ -19,13 +20,13 @@ const OUTPUT_DIR = path.join(__dirname, '../../output');
 const STYLE_PROMPTS = {
   cartoon: {
     name: 'Мультяшный',
-    prompt: `Create in vibrant cartoon illustration style, similar to Pixar or Disney animation.
+    prompt: `Vibrant cartoon illustration style, similar to Pixar or Disney animation.
       Bold colors, clean lines, expressive features, playful and engaging.
       The person should look like an animated character version of themselves.`
   },
   realistic: {
     name: 'Реалистичный',
-    prompt: `Create in professional photography style with cinematic lighting.
+    prompt: `Professional photography style with cinematic lighting.
       High-end commercial photography look, natural skin tones,
       shallow depth of field effect, professional studio quality.`
   }
@@ -36,7 +37,7 @@ let genAI = null;
 function initGenAI() {
   if (!GOOGLE_API_KEY) return null;
   if (!genAI) {
-    genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
+    genAI = new GoogleGenAI({ apiKey: GOOGLE_API_KEY });
   }
   return genAI;
 }
@@ -66,17 +67,7 @@ async function generateImageWithReference(slideContent, referencePhotoBase64, st
 
   console.log(`🎨 Генерация изображения ${slideNumber}/${totalSlides} (стиль: ${styleConfig.name})...`);
 
-  // Модель для генерации изображений
-  const model = ai.getGenerativeModel({
-    model: IMAGE_MODEL,
-    generationConfig: {
-      temperature: 1,
-      topP: 0.95,
-      topK: 40,
-    }
-  });
-
-  const prompt = `Generate an Instagram carousel slide image.
+  const prompt = `Generate an Instagram carousel slide image in portrait orientation (4:5 aspect ratio).
 
 STYLE: ${styleConfig.prompt}
 
@@ -89,48 +80,48 @@ REQUIREMENTS:
 1. Use the person from the reference photo as the main subject
 2. Transform them into the specified style while keeping recognizable features
 3. Create a scene that matches the slide content/message
-4. Portrait orientation (4:5 aspect ratio for Instagram)
-5. Leave space at top for title text and bottom for content text
+4. Portrait orientation for Instagram (1080x1350)
+5. Leave space at top and bottom for text overlay
 6. Make it visually engaging and professional
-7. The person should be in a relevant pose or setting for the content
+7. The person should be in a relevant pose or setting
 
-DO NOT include any text in the image - text will be added later.`;
+DO NOT include any text in the image - text will be added separately.`;
 
   try {
-    const result = await model.generateContent([
-      prompt,
+    const contents = [
+      { text: prompt },
       {
         inlineData: {
           mimeType: 'image/jpeg',
           data: referencePhotoBase64
         }
       }
-    ]);
+    ];
 
-    const response = await result.response;
-    const text = response.text();
+    const response = await ai.models.generateContent({
+      model: IMAGE_MODEL,
+      contents: contents,
+      config: {
+        responseModalities: ['TEXT', 'IMAGE']
+      }
+    });
 
-    // Gemini 2.0 Flash Exp может не поддерживать генерацию изображений напрямую
-    // В этом случае используем альтернативный подход
-    console.log('📝 Ответ модели получен');
-
-    // Проверяем есть ли изображение в ответе
+    // Проверяем ответ на наличие изображения
     if (response.candidates && response.candidates[0]?.content?.parts) {
       for (const part of response.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.data) {
-          console.log('✅ Изображение сгенерировано');
+          console.log(`✅ Изображение ${slideNumber} сгенерировано`);
           return part.inlineData.data;
         }
       }
     }
 
-    // Если изображения нет, возвращаем null (будем использовать fallback)
-    console.log('⚠️ Модель не вернула изображение');
+    console.log(`⚠️ Модель не вернула изображение для слайда ${slideNumber}`);
     return null;
 
   } catch (error) {
-    console.error('❌ Ошибка генерации изображения:', error.message);
-    throw error;
+    console.error(`❌ Ошибка генерации изображения ${slideNumber}:`, error.message);
+    return null;
   }
 }
 
@@ -143,27 +134,24 @@ async function generateImageFromText(prompt, style) {
 
   const styleConfig = STYLE_PROMPTS[style] || STYLE_PROMPTS.cartoon;
 
-  const model = ai.getGenerativeModel({
-    model: IMAGE_MODEL,
-    generationConfig: {
-      temperature: 1,
-      topP: 0.95,
-    }
-  });
-
-  const fullPrompt = `Generate an image for Instagram carousel.
+  const fullPrompt = `Generate an Instagram carousel slide image in portrait orientation (4:5).
 
 STYLE: ${styleConfig.prompt}
 
 CONTENT: ${prompt}
 
-Create a visually engaging, professional image in portrait orientation (4:5).
+Create a visually engaging, professional image.
 Leave space for text overlay at top and bottom.
 NO text in the image.`;
 
   try {
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
+    const response = await ai.models.generateContent({
+      model: IMAGE_MODEL,
+      contents: fullPrompt,
+      config: {
+        responseModalities: ['TEXT', 'IMAGE']
+      }
+    });
 
     if (response.candidates && response.candidates[0]?.content?.parts) {
       for (const part of response.candidates[0].content.parts) {
@@ -176,7 +164,7 @@ NO text in the image.`;
     return null;
   } catch (error) {
     console.error('❌ Ошибка генерации изображения:', error.message);
-    throw error;
+    return null;
   }
 }
 
@@ -194,7 +182,8 @@ async function generateCarouselImages(carouselData, referencePhotoBase64, style)
     const slide = carouselData.slides[i];
 
     try {
-      const imageBase64 = await generateImageWithReference(
+      // Пробуем сгенерировать с reference photo
+      let imageBase64 = await generateImageWithReference(
         slide,
         referencePhotoBase64,
         style,
@@ -202,31 +191,31 @@ async function generateCarouselImages(carouselData, referencePhotoBase64, style)
         totalSlides
       );
 
-      if (imageBase64) {
-        images.push(imageBase64);
-      } else {
-        // Fallback: генерируем без reference
+      // Если не получилось, пробуем без reference
+      if (!imageBase64) {
         console.log(`🔄 Fallback: генерация без reference для слайда ${i + 1}`);
-        const fallbackImage = await generateImageFromText(
+        imageBase64 = await generateImageFromText(
           `${slide.title}. ${slide.content}`,
           style
         );
-        images.push(fallbackImage);
       }
+
+      images.push(imageBase64);
 
       // Задержка между запросами для избежания rate limit
       if (i < totalSlides - 1) {
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 1500));
       }
 
     } catch (error) {
       console.error(`❌ Ошибка на слайде ${i + 1}:`, error.message);
-      // Добавляем null, чтобы не прерывать процесс
       images.push(null);
     }
   }
 
-  console.log(`✅ Сгенерировано ${images.filter(img => img !== null).length}/${totalSlides} изображений`);
+  const successCount = images.filter(img => img !== null).length;
+  console.log(`✅ Сгенерировано ${successCount}/${totalSlides} изображений`);
+
   return images;
 }
 
