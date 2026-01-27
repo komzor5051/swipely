@@ -335,7 +335,9 @@ bot.on('callback_query', async (query) => {
     }
 
   } catch (error) {
-    console.error('Ошибка callback_query:', error);
+    console.error('❌ Ошибка callback_query:');
+    console.error('Message:', error.message);
+    console.error('Stack:', error.stack);
     await bot.sendMessage(chatId, copy.errors.generation);
   }
 });

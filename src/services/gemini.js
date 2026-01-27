@@ -34,7 +34,7 @@ async function generateViaOpenRouter(prompt, systemPrompt) {
       'X-Title': 'Swipely Bot'
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-lite-001',
+      model: 'google/gemini-2.0-flash-001',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt }
@@ -84,11 +84,12 @@ async function generateCarouselContent(userText, stylePreset, slideCount = 5, to
     content = await generateViaGemini(userPrompt, systemPrompt);
     console.log('✅ Gemini Direct OK');
   } catch (error) {
-    console.log('⚠️ Gemini Direct failed:', error.message.substring(0, 80));
+    console.error('❌ Gemini Direct failed:', error.message);
 
     // Fallback на OpenRouter
     if (OPENROUTER_API_KEY) {
       try {
+        console.log('🔄 Fallback: OpenRouter...');
         content = await generateViaOpenRouter(userPrompt, systemPrompt);
         console.log('✅ OpenRouter OK');
       } catch (e) {
