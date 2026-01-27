@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;900&family=Archivo:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1A1A1A;
+      --cream: #F7F4EF;
+      --red: #E63946;
+      --tan: #D4A574;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--cream);
+      font-family: 'Archivo', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Large color block - signature element */
+    .color-block {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 420px;
+      height: 100%;
+      background: var(--ink);
+      z-index: 1;
+    }
+
+    /* Red accent strip */
+    .accent-strip {
+      position: absolute;
+      top: 0;
+      right: 420px;
+      width: 25px;
+      height: 100%;
+      background: var(--red);
+      z-index: 2;
+    }
+
+    /* Main content area */
+    .content-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 445px;
+      height: 100%;
+      padding: 100px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 3;
+    }
+
+    .slide-counter {
+      position: absolute;
+      top: 80px;
+      left: 80px;
+      font-size: 120px;
+      font-weight: 900;
+      color: var(--ink);
+      opacity: 0.08;
+      line-height: 1;
+      z-index: 4;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .slide-indicator {
+      position: absolute;
+      bottom: 80px;
+      left: 80px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      z-index: 4;
+    }
+
+    .headline {
+      font-family: 'Playfair Display', serif;
+      font-size: 78px;
+      font-weight: 900;
+      line-height: 1.05;
+      color: var(--ink);
+      margin-bottom: 45px;
+      letter-spacing: -2px;
+    }
+
+    .content {
+      font-size: 24px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      max-width: 500px;
+      letter-spacing: 0.3px;
+    }
+
+    /* Sidebar content on dark block */
+    .sidebar {
+      position: absolute;
+      top: 50%;
+      right: 60px;
+      transform: translateY(-50%);
+      width: 300px;
+      z-index: 5;
+    }
+
+    .sidebar-text {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--cream);
+      opacity: 0.7;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Large decorative number */
+    .big-number {
+      position: absolute;
+      bottom: 150px;
+      right: 80px;
+      font-family: 'Playfair Display', serif;
+      font-size: 280px;
+      font-weight: 900;
+      color: var(--cream);
+      opacity: 0.1;
+      line-height: 1;
+      z-index: 2;
+    }
+
+    /* Decorative lines */
+    .h-line {
+      position: absolute;
+      height: 1px;
+      background: var(--ink);
+      opacity: 0.15;
+    }
+
+    .line-1 {
+      top: 250px;
+      left: 80px;
+      width: 100px;
+    }
+
+    .line-2 {
+      bottom: 200px;
+      left: 80px;
+      width: 60px;
+    }
+
+    /* Dot pattern accent */
+    .dot-pattern {
+      position: absolute;
+      top: 100px;
+      right: 480px;
+      width: 100px;
+      height: 100px;
+      background-image: radial-gradient(var(--tan) 2px, transparent 2px);
+      background-size: 12px 12px;
+      opacity: 0.5;
+      z-index: 2;
+    }
+
+    /* Small brand mark */
+    .brand-mark {
+      position: absolute;
+      top: 80px;
+      right: 480px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--red);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div class="color-block"></div>
+  <div class="accent-strip"></div>
+
+  <div class="content-area">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+
+  <div class="slide-counter">{{SLIDE_NUMBER}}</div>
+  <div class="slide-indicator">{{SLIDE_NUMBER}} — {{TOTAL_SLIDES}}</div>
+
+  <div class="sidebar">
+    <p class="sidebar-text">Swipely Editorial</p>
+  </div>
+
+  <div class="big-number">{{SLIDE_NUMBER}}</div>
+
+  <div class="h-line line-1"></div>
+  <div class="h-line line-2"></div>
+  <div class="dot-pattern"></div>
+  <div class="brand-mark">Swipely</div>
+</body>
+</html>

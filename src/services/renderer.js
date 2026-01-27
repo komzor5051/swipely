@@ -96,6 +96,24 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset) {
     case 'darkest':
       templatePath = path.join(TEMPLATES_DIR, 'darkest.html');
       break;
+    case 'aurora':
+      templatePath = path.join(TEMPLATES_DIR, 'aurora.html');
+      break;
+    case 'terminal':
+      templatePath = path.join(TEMPLATES_DIR, 'terminal.html');
+      break;
+    case 'editorial':
+      templatePath = path.join(TEMPLATES_DIR, 'editorial.html');
+      break;
+    case 'zen':
+      templatePath = path.join(TEMPLATES_DIR, 'zen.html');
+      break;
+    case 'memphis':
+      templatePath = path.join(TEMPLATES_DIR, 'memphis.html');
+      break;
+    case 'luxe':
+      templatePath = path.join(TEMPLATES_DIR, 'luxe.html');
+      break;
     default:
       templatePath = path.join(TEMPLATES_DIR, 'minimal_pop.html');
   }

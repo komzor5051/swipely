@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FEF9EF;
+      --pink: #FF6B9D;
+      --yellow: #FFE156;
+      --blue: #4ECDC4;
+      --purple: #9B5DE5;
+      --orange: #FF9F43;
+      --black: #1A1A2E;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 90px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Dot pattern background */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(var(--black) 1.5px, transparent 1.5px);
+      background-size: 30px 30px;
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .slide-counter {
+      position: absolute;
+      top: 60px;
+      right: 80px;
+      font-family: 'Bowlby One', cursive;
+      font-size: 48px;
+      color: var(--purple);
+      z-index: 10;
+      text-shadow: 4px 4px 0 var(--yellow);
+    }
+
+    .content-wrapper {
+      position: relative;
+      z-index: 5;
+    }
+
+    .headline {
+      font-family: 'Bowlby One', cursive;
+      font-size: 82px;
+      line-height: 1.1;
+      color: var(--black);
+      margin-bottom: 45px;
+      text-transform: uppercase;
+      position: relative;
+    }
+
+    /* Wavy underline */
+    .headline::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 0;
+      width: 250px;
+      height: 12px;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='12' viewBox='0 0 40 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,6 Q10,0 20,6 T40,6' stroke='%23FF6B9D' stroke-width='4' fill='none'/%3E%3C/svg%3E") repeat-x;
+    }
+
+    .content {
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1.75;
+      color: var(--black);
+      max-width: 800px;
+      position: relative;
+    }
+
+    /* Memphis shapes */
+    .shape {
+      position: absolute;
+      z-index: 1;
+    }
+
+    /* Large circle */
+    .circle-big {
+      width: 280px;
+      height: 280px;
+      background: var(--yellow);
+      border-radius: 50%;
+      top: -60px;
+      right: -60px;
+      opacity: 0.9;
+    }
+
+    /* Striped rectangle */
+    .rect-stripe {
+      width: 120px;
+      height: 180px;
+      background: repeating-linear-gradient(
+        45deg,
+        var(--blue),
+        var(--blue) 8px,
+        var(--bg) 8px,
+        var(--bg) 16px
+      );
+      bottom: 150px;
+      left: 60px;
+      transform: rotate(-10deg);
+    }
+
+    /* Small pink circle */
+    .circle-small {
+      width: 80px;
+      height: 80px;
+      background: var(--pink);
+      border-radius: 50%;
+      bottom: 100px;
+      right: 200px;
+    }
+
+    /* Squiggle line */
+    .squiggle {
+      position: absolute;
+      top: 200px;
+      left: 100px;
+      z-index: 2;
+    }
+
+    .squiggle svg {
+      width: 150px;
+      height: 60px;
+    }
+
+    /* Triangle */
+    .triangle {
+      width: 0;
+      height: 0;
+      border-left: 60px solid transparent;
+      border-right: 60px solid transparent;
+      border-bottom: 100px solid var(--purple);
+      top: 300px;
+      right: 100px;
+      transform: rotate(15deg);
+      opacity: 0.8;
+    }
+
+    /* Small dots cluster */
+    .dots-cluster {
+      position: absolute;
+      bottom: 250px;
+      right: 150px;
+      z-index: 2;
+    }
+
+    .dot {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: var(--orange);
+      border-radius: 50%;
+    }
+
+    .dot:nth-child(1) { top: 0; left: 0; }
+    .dot:nth-child(2) { top: 0; left: 25px; }
+    .dot:nth-child(3) { top: 0; left: 50px; }
+    .dot:nth-child(4) { top: 25px; left: 12px; }
+    .dot:nth-child(5) { top: 25px; left: 37px; }
+    .dot:nth-child(6) { top: 50px; left: 25px; }
+
+    /* Zigzag line */
+    .zigzag {
+      position: absolute;
+      bottom: 80px;
+      right: 80px;
+      z-index: 2;
+    }
+
+    .zigzag svg {
+      width: 120px;
+      height: 40px;
+    }
+
+    /* Cross mark */
+    .cross {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      top: 450px;
+      left: 150px;
+      z-index: 2;
+    }
+
+    .cross::before,
+    .cross::after {
+      content: '';
+      position: absolute;
+      background: var(--black);
+    }
+
+    .cross::before {
+      width: 50px;
+      height: 8px;
+      top: 21px;
+      left: 0;
+    }
+
+    .cross::after {
+      width: 8px;
+      height: 50px;
+      top: 0;
+      left: 21px;
+    }
+
+    /* Semi-circle */
+    .semi-circle {
+      width: 100px;
+      height: 50px;
+      background: var(--blue);
+      border-radius: 100px 100px 0 0;
+      bottom: 60px;
+      left: 250px;
+      transform: rotate(-20deg);
+    }
+  </style>
+</head>
+<body>
+  <div class="slide-counter">{{SLIDE_NUMBER}}</div>
+
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+
+  <!-- Memphis shapes -->
+  <div class="shape circle-big"></div>
+  <div class="shape rect-stripe"></div>
+  <div class="shape circle-small"></div>
+  <div class="shape triangle"></div>
+  <div class="shape semi-circle"></div>
+
+  <div class="squiggle">
+    <svg viewBox="0 0 150 60">
+      <path d="M10,30 Q30,10 50,30 T90,30 T130,30" stroke="#FF6B9D" stroke-width="6" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="dots-cluster">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="zigzag">
+    <svg viewBox="0 0 120 40">
+      <polyline points="0,20 20,5 40,35 60,5 80,35 100,5 120,20" stroke="#9B5DE5" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <div class="cross"></div>
+</body>
+</html>
