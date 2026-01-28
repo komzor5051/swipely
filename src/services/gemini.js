@@ -119,12 +119,12 @@ async function generateCarouselContent(userText, stylePreset, slideCount = 5, to
 
   const carouselData = JSON.parse(jsonMatch[0]);
 
-  // Очистка markdown из всех текстов
+  // Очистка markdown и форматирование списков
   if (carouselData.slides) {
     carouselData.slides = carouselData.slides.map(slide => ({
       ...slide,
       title: cleanMarkdown(slide.title),
-      content: cleanMarkdown(slide.content)
+      content: formatSlideContent(cleanMarkdown(slide.content))
     }));
   }
 
@@ -159,6 +159,40 @@ function cleanMarkdown(text) {
     // Убираем лишние пробелы
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/**
+ * Форматирование контента слайда
+ * Разбивает списки вида "1. текст 2. текст" на отдельные строки
+ */
+function formatSlideContent(text) {
+  if (!text) return text;
+
+  // Проверяем, есть ли нумерованный список в одну строку (1. ... 2. ... 3. ...)
+  const hasInlineList = /\d+\.\s+[^0-9]+\d+\.\s+/.test(text);
+
+  if (hasInlineList) {
+    // Разбиваем по паттерну "цифра. " (но не в начале строки)
+    // Сначала добавляем разделитель перед каждым номером (кроме первого)
+    let formatted = text.replace(/\s+(\d+)\.\s+/g, '\n$1. ');
+
+    // Разбиваем на строки и обрабатываем каждую
+    const lines = formatted.split('\n').map(line => line.trim()).filter(line => line);
+
+    // Убираем номера и форматируем
+    const cleanLines = lines.map(line => {
+      // Убираем номер в начале строки "1. текст" -> "текст"
+      const withoutNumber = line.replace(/^\d+\.\s*/, '');
+      // Первая буква — заглавная
+      return withoutNumber.charAt(0).toLowerCase() === withoutNumber.charAt(0)
+        ? withoutNumber.charAt(0).toUpperCase() + withoutNumber.slice(1)
+        : withoutNumber;
+    });
+
+    return cleanLines.join('\n\n');
+  }
+
+  return text;
 }
 
 function getDesignConfig(stylePreset) {
