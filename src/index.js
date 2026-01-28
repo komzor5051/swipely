@@ -6,6 +6,7 @@ const { generateCarouselContent } = require('./services/gemini');
 const { renderSlides, renderSlidesWithImages } = require('./services/renderer');
 const { downloadTelegramPhoto, generateCarouselImages, STYLE_PROMPTS } = require('./services/imageGenerator');
 const { upsertUser, saveCarouselGeneration } = require('./services/supabaseService');
+const { logUser, logGeneration } = require('./services/userLogger');
 const copy = require('./utils/copy');
 const demoCarousel = require('./data/demoCarousel');
 
@@ -32,6 +33,9 @@ bot.onText(/\/start/, async (msg) => {
   try {
     // Регистрируем пользователя в локальной БД
     db.createUser(userId, msg.from.username || msg.from.first_name);
+
+    // Логируем пользователя в файл
+    logUser(msg.from);
 
     // Регистрируем/обновляем пользователя в Supabase
     await upsertUser(msg.from);
@@ -171,7 +175,8 @@ async function startPhotoModeGeneration(chatId, userId) {
 
     await bot.sendMediaGroup(chatId, mediaGroup);
 
-    // 5. Логирование в Supabase
+    // 5. Логирование
+    logGeneration(userId, `photo_${imageStyle}`, slideCount);
     console.log(`📊 Сохраняю AI-генерацию для пользователя ${userId}...`);
     await saveCarouselGeneration(
       userId,
@@ -498,7 +503,8 @@ bot.on('callback_query', async (query) => {
 
       await bot.sendMediaGroup(chatId, mediaGroup);
 
-      // Сохраняем генерацию в Supabase
+      // Логируем генерацию
+      logGeneration(userId, styleKey, slideCount);
       console.log(`📊 Сохраняю генерацию карусели для пользователя ${userId}...`);
       await saveCarouselGeneration(userId, userText, styleKey, slideCount, null);
 
