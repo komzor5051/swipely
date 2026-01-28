@@ -10,11 +10,26 @@ if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
+// Размеры форматов
+const FORMAT_SIZES = {
+  square: { width: 1080, height: 1080 },
+  portrait: { width: 1080, height: 1350 }
+};
+
 /**
  * Рендеринг слайдов в изображения
+ * @param {Object} carouselData - данные карусели
+ * @param {string} stylePreset - стиль оформления
+ * @param {Object} options - дополнительные опции
+ * @param {string} options.format - формат изображения ('square' | 'portrait')
+ * @param {string} options.username - юзернейм для отображения в углу
  */
-async function renderSlides(carouselData, stylePreset) {
-  console.log(`🎨 Рендеринг ${carouselData.slides?.length || 0} слайдов (стиль: ${stylePreset})...`);
+async function renderSlides(carouselData, stylePreset, options = {}) {
+  const format = options.format || 'portrait';
+  const username = options.username || null;
+  const { width, height } = FORMAT_SIZES[format] || FORMAT_SIZES.portrait;
+
+  console.log(`🎨 Рендеринг ${carouselData.slides?.length || 0} слайдов (стиль: ${stylePreset}, формат: ${format}, username: ${username || 'нет'})...`);
 
   if (!carouselData.slides || carouselData.slides.length === 0) {
     throw new Error('Нет слайдов для рендеринга');
@@ -36,15 +51,15 @@ async function renderSlides(carouselData, stylePreset) {
       console.log(`📄 Рендеринг слайда ${slideNumber}/${totalSlides}...`);
 
       // Генерируем HTML для слайда
-      const html = generateSlideHTML(slide, slideNumber, totalSlides, stylePreset);
+      const html = generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, { width, height, username });
 
       // Рендерим в изображение
       const page = await browser.newPage();
 
-      // Устанавливаем размер страницы (Instagram 1080x1350)
+      // Устанавливаем размер страницы
       await page.setViewport({
-        width: 1080,
-        height: 1350,
+        width,
+        height,
         deviceScaleFactor: 2 // Для высокого качества
       });
 
@@ -81,8 +96,18 @@ async function renderSlides(carouselData, stylePreset) {
 
 /**
  * Генерация HTML для слайда
+ * @param {Object} slide - данные слайда
+ * @param {number} slideNumber - номер слайда
+ * @param {number} totalSlides - всего слайдов
+ * @param {string} stylePreset - стиль оформления
+ * @param {Object} options - дополнительные опции
+ * @param {number} options.width - ширина изображения
+ * @param {number} options.height - высота изображения
+ * @param {string} options.username - юзернейм для отображения
  */
-function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset) {
+function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options = {}) {
+  const { width = 1080, height = 1350, username = null } = options;
+
   // Загружаем шаблон в зависимости от пресета
   let templatePath;
 
@@ -128,6 +153,11 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset) {
     template = getDefaultTemplate(stylePreset);
   }
 
+  // Применяем размеры формата
+  template = template
+    .replace(/width:\s*1080px/g, `width: ${width}px`)
+    .replace(/height:\s*1350px/g, `height: ${height}px`);
+
   // Заменяем плейсхолдеры
   let html = template
     .replace(/\{\{SLIDE_NUMBER\}\}/g, slideNumber)
@@ -143,6 +173,62 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset) {
       html = html.replace(regex, '<span class="accent">$1</span>');
     });
   }
+
+  // Добавляем юзернейм если указан
+  if (username) {
+    html = injectUsernameOverlay(html, username, stylePreset);
+  }
+
+  return html;
+}
+
+/**
+ * Внедрение оверлея с юзернеймом в HTML
+ */
+function injectUsernameOverlay(html, username, stylePreset) {
+  // Определяем цвета в зависимости от стиля
+  const styleColors = {
+    minimal_pop: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.7)' },
+    notebook: { text: '#1A1A1A', bg: 'rgba(254,249,231,0.8)' },
+    darkest: { text: '#00D4FF', bg: 'rgba(0,0,0,0.5)' },
+    aurora: { text: '#FFFFFF', bg: 'rgba(0,0,0,0.4)' },
+    terminal: { text: '#00FF00', bg: 'rgba(13,17,23,0.8)' },
+    editorial: { text: '#1A1A1A', bg: 'rgba(245,245,240,0.8)' },
+    zen: { text: '#2D2D2D', bg: 'rgba(248,246,240,0.8)' },
+    memphis: { text: '#2D2D2D', bg: 'rgba(255,230,109,0.8)' },
+    luxe: { text: '#D4AF37', bg: 'rgba(26,26,26,0.8)' }
+  };
+
+  const colors = styleColors[stylePreset] || { text: '#FFFFFF', bg: 'rgba(0,0,0,0.5)' };
+
+  // CSS для юзернейма
+  const usernameStyles = `
+    .username-overlay {
+      position: absolute;
+      bottom: 25px;
+      left: 25px;
+      font-family: 'Manrope', 'Inter', -apple-system, sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: ${colors.text};
+      background: ${colors.bg};
+      padding: 8px 16px;
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      letter-spacing: 0.3px;
+    }
+  `;
+
+  // HTML для юзернейма
+  const usernameHtml = `<div class="username-overlay">${username}</div>`;
+
+  // Вставляем стили перед </style>
+  html = html.replace('</style>', `${usernameStyles}</style>`);
+
+  // Вставляем HTML перед </body>
+  html = html.replace('</body>', `${usernameHtml}</body>`);
 
   return html;
 }
@@ -271,9 +357,18 @@ function getDefaultTemplate(stylePreset) {
 /**
  * Рендеринг слайдов с AI-сгенерированными фоновыми изображениями
  * Накладывает текст поверх изображений
+ * @param {Object} carouselData - данные карусели
+ * @param {Array} imageBase64Array - массив base64 изображений
+ * @param {Object} options - дополнительные опции
+ * @param {string} options.format - формат изображения ('square' | 'portrait')
+ * @param {string} options.username - юзернейм для отображения
  */
-async function renderSlidesWithImages(carouselData, imageBase64Array) {
-  console.log(`🎨 Рендеринг ${carouselData.slides.length} слайдов с AI-изображениями...`);
+async function renderSlidesWithImages(carouselData, imageBase64Array, options = {}) {
+  const format = options.format || 'portrait';
+  const username = options.username || null;
+  const { width, height } = FORMAT_SIZES[format] || FORMAT_SIZES.portrait;
+
+  console.log(`🎨 Рендеринг ${carouselData.slides.length} слайдов с AI-изображениями (формат: ${format}, username: ${username || 'нет'})...`);
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -292,13 +387,13 @@ async function renderSlidesWithImages(carouselData, imageBase64Array) {
       console.log(`📄 Рендеринг слайда с фото ${slideNumber}/${totalSlides}...`);
 
       // Генерируем HTML с фоновым изображением
-      const html = generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64);
+      const html = generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64, { width, height, username });
 
       const page = await browser.newPage();
 
       await page.setViewport({
-        width: 1080,
-        height: 1350,
+        width,
+        height,
         deviceScaleFactor: 2
       });
 
@@ -332,8 +427,18 @@ async function renderSlidesWithImages(carouselData, imageBase64Array) {
 /**
  * Генерация HTML для слайда с AI-изображением на фоне
  * PREMIUM Typography System — крупный, читаемый текст с динамическим масштабированием
+ * @param {Object} slide - данные слайда
+ * @param {number} slideNumber - номер слайда
+ * @param {number} totalSlides - всего слайдов
+ * @param {string} imageBase64 - base64 изображения
+ * @param {Object} options - дополнительные опции
+ * @param {number} options.width - ширина изображения
+ * @param {number} options.height - высота изображения
+ * @param {string} options.username - юзернейм для отображения
  */
-function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
+function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64, options = {}) {
+  const { width = 1080, height = 1350, username = null } = options;
+
   // Если изображение null, используем градиентный фон
   const backgroundStyle = imageBase64
     ? `background-image: url('data:image/png;base64,${imageBase64}'); background-size: cover; background-position: center;`
@@ -359,12 +464,36 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
   else if (contentLength <= 200) contentSize = 32;
   else contentSize = 28;
 
+  // CSS для юзернейма (если указан)
+  const usernameStyles = username ? `
+    .username-overlay {
+      position: absolute;
+      bottom: 25px;
+      left: 25px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: #FFFFFF;
+      background: rgba(0,0,0,0.5);
+      padding: 8px 16px;
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      letter-spacing: 0.3px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+  ` : '';
+
+  // HTML для юзернейма (если указан)
+  const usernameHtml = username ? `<div class="username-overlay">${username}</div>` : '';
+
   return `
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <meta name="viewport" content="width=${width}, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     * {
@@ -374,12 +503,13 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
     }
 
     body {
-      width: 1080px;
-      height: 1350px;
+      width: ${width}px;
+      height: ${height}px;
       font-family: 'Manrope', sans-serif;
       position: relative;
       overflow: hidden;
     }
+    ${usernameStyles}
 
     .background-image {
       position: absolute;
@@ -546,6 +676,7 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
 
   <div class="slide-counter">${slideNumber}/${totalSlides}</div>
   <div class="accent-line"></div>
+  ${usernameHtml}
 </body>
 </html>
   `;

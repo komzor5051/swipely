@@ -5,7 +5,7 @@ const { transcribeVoice } = require('./services/whisper');
 const { generateCarouselContent } = require('./services/gemini');
 const { renderSlides, renderSlidesWithImages } = require('./services/renderer');
 const { downloadTelegramPhoto, generateCarouselImages, STYLE_PROMPTS } = require('./services/imageGenerator');
-const { upsertUser, saveCarouselGeneration } = require('./services/supabaseService');
+const { upsertUser, saveCarouselGeneration, saveDisplayUsername, getDisplayUsername } = require('./services/supabaseService');
 const { logUser, logGeneration } = require('./services/userLogger');
 const { getPreviewPaths, STYLE_INFO } = require('./services/previewService');
 const copy = require('./utils/copy');
@@ -46,6 +46,43 @@ bot.onText(/\/start/, async (msg) => {
 
   } catch (error) {
     console.error('Ошибка /start:', error);
+    await bot.sendMessage(chatId, copy.errors.generation);
+  }
+});
+
+// ============================================
+// КОМАНДА /USERNAME - настройка отображаемого юзернейма
+// ============================================
+bot.onText(/\/username/, async (msg) => {
+  const userId = msg.from.id;
+  const chatId = msg.chat.id;
+
+  try {
+    // Получаем текущий юзернейм
+    const currentUsername = await getDisplayUsername(userId);
+
+    let text = copy.username.prompt;
+    if (currentUsername) {
+      text = copy.username.currentUsername(currentUsername) + '\n\n' + text;
+    } else {
+      text = copy.username.noUsername + '\n\n' + text;
+    }
+
+    // Устанавливаем флаг ожидания юзернейма
+    sessions[userId] = { ...sessions[userId], awaitingUsername: true };
+
+    await bot.sendMessage(chatId, text, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: copy.username.buttons.clear, callback_data: 'clear_username' }],
+          [{ text: copy.username.buttons.cancel, callback_data: 'cancel_username' }]
+        ]
+      }
+    });
+
+  } catch (error) {
+    console.error('Ошибка /username:', error);
     await bot.sendMessage(chatId, copy.errors.generation);
   }
 });
@@ -144,7 +181,11 @@ async function startPhotoModeGeneration(chatId, userId) {
   try {
     const slideCount = session.slideCount || 5;
     const imageStyle = session.imageStyle || 'cartoon';
+    const format = session.format || 'portrait';
     const styleName = STYLE_PROMPTS[imageStyle]?.name || imageStyle;
+
+    // Получаем юзернейм пользователя
+    const username = await getDisplayUsername(userId);
 
     // 1. Генерация контента
     await bot.sendMessage(chatId, copy.photoMode.progress.generatingContent);
@@ -165,7 +206,7 @@ async function startPhotoModeGeneration(chatId, userId) {
 
     // 3. Рендеринг слайдов с текстом поверх изображений
     await bot.sendMessage(chatId, copy.photoMode.progress.composingSlides);
-    const finalImages = await renderSlidesWithImages(carouselData, images);
+    const finalImages = await renderSlidesWithImages(carouselData, images, { format, username });
 
     // 4. Отправка карусели
     const mediaGroup = finalImages.map((imgPath, idx) => ({
@@ -235,6 +276,25 @@ async function handleTextMessage(msg) {
       return;
     }
 
+    // Проверяем, ожидаем ли ввод юзернейма
+    if (sessions[userId]?.awaitingUsername) {
+      // Очищаем @, пробелы, и лишние символы
+      let username = text.trim();
+      if (username.startsWith('@')) {
+        username = username.substring(1);
+      }
+      username = '@' + username.replace(/[^a-zA-Z0-9_а-яА-ЯёЁ]/g, '');
+
+      // Сохраняем юзернейм
+      await saveDisplayUsername(userId, username);
+      delete sessions[userId].awaitingUsername;
+
+      await bot.sendMessage(chatId, copy.username.saved(username), {
+        parse_mode: 'Markdown'
+      });
+      return;
+    }
+
     // Сразу показываем выбор количества слайдов
     await bot.sendMessage(chatId, copy.mainFlow.requestSlideCount(text), {
       reply_markup: {
@@ -278,6 +338,28 @@ bot.on('callback_query', async (query) => {
   }
 
   try {
+    // ==================== USERNAME CALLBACKS ====================
+    if (data === 'clear_username') {
+      await saveDisplayUsername(userId, null);
+      delete sessions[userId]?.awaitingUsername;
+
+      await bot.editMessageText(
+        copy.username.cleared,
+        {
+          chat_id: chatId,
+          message_id: messageId
+        }
+      );
+      return;
+    }
+
+    if (data === 'cancel_username') {
+      delete sessions[userId]?.awaitingUsername;
+
+      await bot.deleteMessage(chatId, messageId);
+      return;
+    }
+
     // ==================== DEMO CAROUSEL ====================
     if (data === 'demo_carousel') {
       await bot.sendMessage(chatId, copy.demo.generating);
@@ -368,6 +450,36 @@ bot.on('callback_query', async (query) => {
       } else {
         sessions[userId] = { slideCount };
       }
+
+      // Показываем выбор формата изображения
+      await bot.editMessageText(
+        copy.mainFlow.selectFormat,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.mainFlow.formatButtons.square, callback_data: 'format_square' }],
+              [{ text: copy.mainFlow.formatButtons.portrait, callback_data: 'format_portrait' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // ==================== ВЫБОР ФОРМАТА ИЗОБРАЖЕНИЯ ====================
+    if (data.startsWith('format_')) {
+      const format = data.replace('format_', '');
+
+      // Сохраняем формат в сессию
+      if (sessions[userId]) {
+        sessions[userId].format = format;
+      } else {
+        sessions[userId] = { format };
+      }
+
+      const slideCount = sessions[userId]?.slideCount || 5;
 
       // Показываем выбор режима генерации
       await bot.editMessageText(
@@ -519,10 +631,14 @@ bot.on('callback_query', async (query) => {
 
       const userText = sessions[userId]?.transcription;
       const slideCount = sessions[userId]?.slideCount || 5;
+      const format = sessions[userId]?.format || 'portrait';
 
       if (!userText) {
         return bot.sendMessage(chatId, '❌ Текст не найден. Начни сначала с /start');
       }
+
+      // Получаем юзернейм пользователя
+      const username = await getDisplayUsername(userId);
 
       // Генерация контента через Gemini
       await bot.sendMessage(chatId, copy.mainFlow.progress.analyzing);
@@ -530,7 +646,7 @@ bot.on('callback_query', async (query) => {
 
       // Рендеринг слайдов
       await bot.sendMessage(chatId, copy.mainFlow.progress.rendering);
-      const images = await renderSlides(carouselData, styleKey);
+      const images = await renderSlides(carouselData, styleKey, { format, username });
 
       // Отправка карусели
       const mediaGroup = images.map((imgPath, idx) => ({

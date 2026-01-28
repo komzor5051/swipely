@@ -350,6 +350,55 @@ async function skipOnboarding(telegramId) {
   }
 }
 
+/**
+ * Сохранение отображаемого юзернейма
+ */
+async function saveDisplayUsername(telegramId, displayUsername) {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        display_username: displayUsername
+      })
+      .eq('telegram_id', telegramId);
+
+    if (error) {
+      console.error('❌ Ошибка сохранения юзернейма:', error);
+      return false;
+    }
+
+    console.log(`✅ Юзернейм сохранен для пользователя ${telegramId}: ${displayUsername}`);
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка saveDisplayUsername:', err);
+    return false;
+  }
+}
+
+/**
+ * Получение отображаемого юзернейма
+ */
+async function getDisplayUsername(telegramId) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('display_username, telegram_username')
+      .eq('telegram_id', telegramId)
+      .single();
+
+    if (error) {
+      console.error('❌ Ошибка получения юзернейма:', error);
+      return null;
+    }
+
+    // Возвращаем display_username или telegram_username как fallback
+    return data?.display_username || data?.telegram_username || null;
+  } catch (err) {
+    console.error('❌ Критическая ошибка getDisplayUsername:', err);
+    return null;
+  }
+}
+
 module.exports = {
   supabase,
   upsertUser,
@@ -362,5 +411,8 @@ module.exports = {
   saveUserContext,
   saveTovProfile,
   completeOnboarding,
-  skipOnboarding
+  skipOnboarding,
+  // Настройки пользователя
+  saveDisplayUsername,
+  getDisplayUsername
 };
