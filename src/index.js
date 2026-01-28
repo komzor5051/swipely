@@ -7,6 +7,7 @@ const { renderSlides, renderSlidesWithImages } = require('./services/renderer');
 const { downloadTelegramPhoto, generateCarouselImages, STYLE_PROMPTS } = require('./services/imageGenerator');
 const { upsertUser, saveCarouselGeneration } = require('./services/supabaseService');
 const { logUser, logGeneration } = require('./services/userLogger');
+const { getPreviewPaths, STYLE_INFO } = require('./services/previewService');
 const copy = require('./utils/copy');
 const demoCarousel = require('./data/demoCarousel');
 
@@ -318,7 +319,22 @@ bot.on('callback_query', async (query) => {
 
     // ==================== VIEW STYLES ====================
     if (data === 'view_styles') {
-      await bot.sendMessage(chatId, copy.mainFlow.selectStyle, {
+      // Отправляем превью стилей альбомом
+      try {
+        const previews = await getPreviewPaths();
+
+        const mediaGroup = previews.map((preview, idx) => ({
+          type: 'photo',
+          media: preview.path,
+          caption: idx === 0 ? '🎨 Доступные стили карусели' : undefined
+        }));
+
+        await bot.sendMediaGroup(chatId, mediaGroup);
+      } catch (err) {
+        console.error('⚠️ Не удалось отправить превью стилей:', err.message);
+      }
+
+      await bot.sendMessage(chatId, 'Выбери стиль для просмотра примера:', {
         reply_markup: {
           inline_keyboard: [
             [{ text: '✨ Minimal Pop', callback_data: 'view_style_minimal_pop' }],
@@ -376,11 +392,33 @@ bot.on('callback_query', async (query) => {
         sessions[userId].generationMode = 'standard';
       }
 
-      await bot.editMessageText(
+      // Удаляем предыдущее сообщение с выбором режима
+      try {
+        await bot.deleteMessage(chatId, messageId);
+      } catch (err) {
+        // Игнорируем ошибку если сообщение уже удалено
+      }
+
+      // Отправляем превью стилей альбомом
+      try {
+        const previews = await getPreviewPaths();
+
+        const mediaGroup = previews.map((preview, idx) => ({
+          type: 'photo',
+          media: preview.path,
+          caption: idx === 0 ? '👆 Превью всех стилей' : undefined
+        }));
+
+        await bot.sendMediaGroup(chatId, mediaGroup);
+      } catch (err) {
+        console.error('⚠️ Не удалось отправить превью стилей:', err.message);
+      }
+
+      // Отправляем сообщение с кнопками выбора стиля
+      await bot.sendMessage(
+        chatId,
         copy.mainFlow.selectStyle,
         {
-          chat_id: chatId,
-          message_id: messageId,
           reply_markup: {
             inline_keyboard: [
               [
