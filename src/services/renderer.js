@@ -149,15 +149,17 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset) {
 
 /**
  * Получение встроенного шаблона если файл не найден
+ * PREMIUM fallback с крупной типографикой
  */
 function getDefaultTemplate(stylePreset) {
-  if (stylePreset === 'minimal_pop') {
-    return `
+  // Universal premium fallback template
+  return `
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -168,99 +170,99 @@ function getDefaultTemplate(stylePreset) {
     body {
       width: 1080px;
       height: 1350px;
-      background: #FFFFFF;
-      font-family: 'Roboto', 'Inter', sans-serif;
+      background: #0A0A0A;
+      font-family: 'Manrope', sans-serif;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: flex-start;
-      padding: 80px 60px;
+      padding: 100px 90px;
       position: relative;
+      overflow: hidden;
     }
 
-    .headline {
-      font-size: 70px;
-      font-weight: 300;
-      line-height: 1.15;
-      color: #000000;
-      max-width: 900px;
-      margin-bottom: 40px;
-    }
-
-    .content {
-      font-size: 26px;
-      font-weight: 400;
-      line-height: 1.4;
-      color: #000000;
-      max-width: 900px;
-    }
-
-    .accent {
-      background: #FF0080;
-      color: #FFFFFF;
-      padding: 8px 15px;
-      font-weight: 700;
-      display: inline-block;
-    }
-
-    .decorative-circle {
+    /* Gradient accent */
+    .accent-bar {
       position: absolute;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: #00BCD4;
-      bottom: 60px;
-      right: 60px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, #FF2D6A 0%, #FF6B35 50%, #FFD93D 100%);
     }
 
     .slide-counter {
       position: absolute;
-      top: 40px;
-      right: 60px;
-      font-size: 14px;
-      color: #999999;
-      font-weight: 400;
-    }
-  </style>
-</head>
-<body>
-  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
-  <h1 class="headline">{{TITLE}}</h1>
-  <p class="content">{{CONTENT}}</p>
-  <div class="decorative-circle"></div>
-</body>
-</html>
-    `;
-  }
-
-  // Базовый шаблон для других стилей
-  return `
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body {
-      width: 1080px;
-      height: 1350px;
-      background: #000000;
+      top: 70px;
+      right: 90px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
       color: #FFFFFF;
-      font-family: Arial, sans-serif;
+      opacity: 0.15;
+    }
+
+    .content-wrapper {
+      position: relative;
+      z-index: 5;
+      flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 80px;
     }
-    h1 { font-size: 60px; margin-bottom: 30px; }
-    p { font-size: 24px; line-height: 1.5; }
+
+    .headline {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 82px;
+      font-weight: 900;
+      line-height: 1.0;
+      color: #FFFFFF;
+      margin-bottom: 50px;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      max-width: 900px;
+    }
+
+    .content {
+      font-family: 'Manrope', sans-serif;
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1.6;
+      color: #FFFFFF;
+      max-width: 850px;
+      opacity: 0.85;
+    }
+
+    .accent {
+      background: linear-gradient(135deg, #FF2D6A 0%, #FF6B35 100%);
+      color: white;
+      padding: 6px 16px;
+      font-weight: 700;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    /* Decorative circle */
+    .deco-circle {
+      position: absolute;
+      bottom: 100px;
+      right: 100px;
+      width: 120px;
+      height: 120px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body>
-  <h1>{{TITLE}}</h1>
-  <p>{{CONTENT}}</p>
-  <div style="position: absolute; top: 40px; right: 80px; font-size: 14px;">
-    {{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}
+  <div class="accent-bar"></div>
+  <div class="slide-counter">{{SLIDE_NUMBER}}</div>
+
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
   </div>
+
+  <div class="deco-circle"></div>
 </body>
 </html>
   `;
@@ -329,13 +331,33 @@ async function renderSlidesWithImages(carouselData, imageBase64Array) {
 
 /**
  * Генерация HTML для слайда с AI-изображением на фоне
- * Текст накладывается поверх изображения с улучшенной читаемостью
+ * PREMIUM Typography System — крупный, читаемый текст с динамическим масштабированием
  */
 function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
   // Если изображение null, используем градиентный фон
   const backgroundStyle = imageBase64
     ? `background-image: url('data:image/png;base64,${imageBase64}'); background-size: cover; background-position: center;`
-    : `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);`;
+    : `background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);`;
+
+  // Определяем длину текста для адаптивного размера
+  const titleLength = (slide.title || '').length;
+  const contentLength = (slide.content || '').length;
+
+  // Адаптивные размеры заголовка (больше = меньше шрифт)
+  let titleSize = 72; // базовый размер
+  if (titleLength <= 20) titleSize = 96;
+  else if (titleLength <= 35) titleSize = 80;
+  else if (titleLength <= 50) titleSize = 68;
+  else if (titleLength <= 70) titleSize = 58;
+  else titleSize = 48;
+
+  // Адаптивные размеры контента
+  let contentSize = 36; // базовый размер
+  if (contentLength <= 50) contentSize = 44;
+  else if (contentLength <= 100) contentSize = 40;
+  else if (contentLength <= 150) contentSize = 36;
+  else if (contentLength <= 200) contentSize = 32;
+  else contentSize = 28;
 
   return `
 <!DOCTYPE html>
@@ -343,7 +365,7 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Inter:wght@600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -354,7 +376,7 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
     body {
       width: 1080px;
       height: 1350px;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Manrope', sans-serif;
       position: relative;
       overflow: hidden;
     }
@@ -368,7 +390,7 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
       ${backgroundStyle}
     }
 
-    /* Улучшенный градиент для читаемости текста */
+    /* Премиальный многослойный градиент */
     .gradient-overlay {
       position: absolute;
       top: 0;
@@ -376,14 +398,29 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
       width: 100%;
       height: 100%;
       background: linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.75) 0%,
-        rgba(0,0,0,0.3) 20%,
-        rgba(0,0,0,0.05) 35%,
-        rgba(0,0,0,0.05) 60%,
-        rgba(0,0,0,0.4) 75%,
-        rgba(0,0,0,0.85) 100%
+        180deg,
+        rgba(0,0,0,0.85) 0%,
+        rgba(0,0,0,0.4) 15%,
+        rgba(0,0,0,0.0) 30%,
+        rgba(0,0,0,0.0) 55%,
+        rgba(0,0,0,0.5) 70%,
+        rgba(0,0,0,0.92) 100%
       );
+    }
+
+    /* Виньетка по краям */
+    .vignette {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(
+        ellipse at center,
+        transparent 50%,
+        rgba(0,0,0,0.4) 100%
+      );
+      pointer-events: none;
     }
 
     .content-wrapper {
@@ -395,86 +432,120 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64) {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 50px 55px;
+      padding: 70px 65px;
     }
 
     .top-section {
-      padding-top: 20px;
+      flex: 0 0 auto;
+      padding-top: 10px;
     }
 
     .headline {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 52px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: ${titleSize}px;
       font-weight: 900;
       color: #FFFFFF;
-      line-height: 1.1;
+      line-height: 1.05;
       text-transform: uppercase;
-      letter-spacing: -1px;
-      max-width: 85%;
-      /* Улучшенная тень для читаемости на любом фоне */
+      letter-spacing: -2px;
+      max-width: 95%;
+      word-wrap: break-word;
+      /* Мощная многослойная тень для читаемости */
       text-shadow:
-        0 2px 4px rgba(0,0,0,0.8),
-        0 4px 20px rgba(0,0,0,0.6),
-        0 8px 40px rgba(0,0,0,0.4);
+        0 0 40px rgba(0,0,0,0.95),
+        0 4px 8px rgba(0,0,0,0.9),
+        0 8px 30px rgba(0,0,0,0.7),
+        0 15px 60px rgba(0,0,0,0.5);
+      /* Мягкое свечение букв */
+      filter: drop-shadow(0 0 2px rgba(255,255,255,0.1));
     }
 
     .bottom-section {
-      margin-top: auto;
-      padding-bottom: 20px;
+      flex: 0 0 auto;
+      padding-bottom: 15px;
+    }
+
+    /* Стеклянная подложка под текст */
+    .content-glass {
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 28px 32px;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .content {
-      font-family: 'Inter', sans-serif;
-      font-size: 26px;
+      font-family: 'Manrope', sans-serif;
+      font-size: ${contentSize}px;
       font-weight: 600;
       color: #FFFFFF;
-      line-height: 1.45;
-      max-width: 90%;
+      line-height: 1.5;
+      letter-spacing: -0.3px;
       text-shadow:
-        0 1px 3px rgba(0,0,0,0.8),
-        0 3px 15px rgba(0,0,0,0.5);
+        0 2px 8px rgba(0,0,0,0.8),
+        0 4px 20px rgba(0,0,0,0.5);
     }
 
     .slide-counter {
       position: absolute;
-      top: 50px;
-      right: 55px;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 22px;
+      top: 65px;
+      right: 65px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 28px;
       font-weight: 700;
-      color: rgba(255,255,255,0.95);
-      text-shadow:
-        0 2px 8px rgba(0,0,0,0.8),
-        0 4px 20px rgba(0,0,0,0.5);
-      /* Тонкая подложка для лучшей видимости */
-      background: rgba(0,0,0,0.25);
-      padding: 8px 16px;
-      border-radius: 20px;
-      backdrop-filter: blur(4px);
+      color: #FFFFFF;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 12px 22px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.15);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
     }
 
     .accent {
-      color: #FFD93D;
+      color: #FFE566;
       text-shadow:
-        0 2px 4px rgba(0,0,0,0.9),
-        0 4px 20px rgba(255,217,61,0.3);
+        0 0 20px rgba(255,229,102,0.5),
+        0 2px 8px rgba(0,0,0,0.9);
+    }
+
+    /* Декоративная линия-акцент */
+    .accent-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255,255,255,0.3) 20%,
+        rgba(255,255,255,0.5) 50%,
+        rgba(255,255,255,0.3) 80%,
+        transparent 100%
+      );
     }
   </style>
 </head>
 <body>
   <div class="background-image"></div>
   <div class="gradient-overlay"></div>
+  <div class="vignette"></div>
 
   <div class="content-wrapper">
     <div class="top-section">
       <h1 class="headline">${slide.title || ''}</h1>
     </div>
     <div class="bottom-section">
-      <p class="content">${slide.content || ''}</p>
+      <div class="content-glass">
+        <p class="content">${slide.content || ''}</p>
+      </div>
     </div>
   </div>
 
   <div class="slide-counter">${slideNumber}/${totalSlides}</div>
+  <div class="accent-line"></div>
 </body>
 </html>
   `;

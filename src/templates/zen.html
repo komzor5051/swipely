@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;500;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --paper: #FAF9F6;
-      --ink: #2C2C2C;
+      --paper: #FAF9F5;
+      --ink: #1C1C1C;
       --stone: #8B8680;
-      --bamboo: #7A8B69;
+      --bamboo: #6B7F5E;
       --sand: #D4CFC4;
     }
 
@@ -27,12 +27,12 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 140px 120px;
+      padding: 120px 110px;
       position: relative;
       overflow: hidden;
     }
 
-    /* Subtle paper texture */
+    /* Paper texture */
     body::before {
       content: '';
       position: absolute;
@@ -40,24 +40,24 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-      opacity: 0.02;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.025;
       pointer-events: none;
       z-index: 0;
     }
 
     .slide-counter {
       position: absolute;
-      top: 70px;
-      right: 100px;
-      font-size: 14px;
+      top: 75px;
+      right: 110px;
+      font-size: 20px;
       color: var(--stone);
       font-weight: 300;
-      letter-spacing: 6px;
+      letter-spacing: 8px;
       z-index: 10;
     }
 
-    /* Vertical Japanese text decoration */
+    /* Vertical Japanese text */
     .vertical-text {
       position: absolute;
       right: 100px;
@@ -65,128 +65,118 @@
       transform: translateY(-50%);
       writing-mode: vertical-rl;
       font-family: 'Noto Serif JP', serif;
-      font-size: 18px;
+      font-size: 24px;
       color: var(--sand);
-      letter-spacing: 12px;
+      letter-spacing: 16px;
       z-index: 5;
     }
 
     .content-wrapper {
       position: relative;
       z-index: 5;
+      max-width: 800px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* HEADLINE — elegant Japanese serif */
+    .headline {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 82px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: var(--ink);
+      margin-bottom: 60px;
+      letter-spacing: 3px;
       max-width: 750px;
     }
 
-    .headline {
-      font-family: 'Noto Serif JP', serif;
-      font-size: 72px;
-      font-weight: 400;
-      line-height: 1.3;
-      color: var(--ink);
-      margin-bottom: 60px;
-      letter-spacing: 2px;
-    }
-
+    /* CONTENT — refined, readable */
     .content {
-      font-size: 24px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 34px;
       font-weight: 300;
-      line-height: 2;
+      line-height: 1.85;
       color: var(--ink);
-      max-width: 650px;
-      letter-spacing: 0.5px;
-      opacity: 0.8;
+      max-width: 700px;
+      letter-spacing: 0.8px;
+      opacity: 0.85;
     }
 
-    /* Enso circle - Zen symbol */
+    /* Enso circle — Zen symbol */
     .enso {
       position: absolute;
-      top: 180px;
-      left: 100px;
-      width: 120px;
-      height: 120px;
-      border: 3px solid var(--stone);
+      top: 160px;
+      left: 90px;
+      width: 150px;
+      height: 150px;
+      border: 4px solid var(--stone);
       border-radius: 50%;
-      opacity: 0.15;
+      opacity: 0.12;
       z-index: 1;
-      /* Incomplete circle effect */
       clip-path: polygon(0 0, 100% 0, 100% 100%, 20% 100%, 0 80%);
     }
 
-    /* Minimalist branch decoration */
+    /* Branch decoration */
     .branch {
       position: absolute;
-      bottom: 150px;
-      right: 180px;
+      bottom: 130px;
+      right: 160px;
       z-index: 5;
     }
 
     .branch svg {
-      width: 200px;
-      height: 120px;
+      width: 220px;
+      height: 130px;
     }
 
     .branch-line {
       stroke: var(--bamboo);
-      stroke-width: 2;
+      stroke-width: 2.5;
       fill: none;
-      opacity: 0.4;
+      opacity: 0.45;
     }
 
-    /* Stone dots - representing zen garden stones */
+    /* Stone dots */
     .stone-dot {
       position: absolute;
       background: var(--stone);
       border-radius: 50%;
-      opacity: 0.2;
+      opacity: 0.25;
     }
 
-    .stone-1 {
-      width: 12px;
-      height: 12px;
-      bottom: 100px;
-      left: 120px;
-    }
+    .stone-1 { width: 16px; height: 16px; bottom: 100px; left: 140px; }
+    .stone-2 { width: 10px; height: 10px; bottom: 120px; left: 180px; }
+    .stone-3 { width: 8px; height: 8px; bottom: 95px; left: 210px; }
 
-    .stone-2 {
-      width: 8px;
-      height: 8px;
-      bottom: 115px;
-      left: 150px;
-    }
-
-    .stone-3 {
-      width: 6px;
-      height: 6px;
-      bottom: 95px;
-      left: 175px;
-    }
-
-    /* Horizontal line - representing horizon */
+    /* Horizon line */
     .horizon-line {
       position: absolute;
       bottom: 200px;
-      left: 120px;
-      width: 200px;
-      height: 1px;
+      left: 110px;
+      width: 250px;
+      height: 2px;
       background: linear-gradient(90deg, var(--stone), transparent);
-      opacity: 0.3;
+      opacity: 0.25;
       z-index: 5;
     }
 
-    /* Small seal stamp */
+    /* Seal stamp */
     .seal {
       position: absolute;
-      bottom: 70px;
-      left: 120px;
-      width: 50px;
-      height: 50px;
-      border: 2px solid var(--bamboo);
-      opacity: 0.25;
+      bottom: 75px;
+      left: 110px;
+      width: 60px;
+      height: 60px;
+      border: 3px solid var(--bamboo);
+      opacity: 0.3;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: 'Noto Serif JP', serif;
-      font-size: 20px;
+      font-size: 26px;
       color: var(--bamboo);
       z-index: 5;
     }
@@ -205,10 +195,10 @@
   <div class="enso"></div>
 
   <div class="branch">
-    <svg viewBox="0 0 200 120">
-      <path class="branch-line" d="M10,100 Q60,80 100,60 T180,30" />
-      <path class="branch-line" d="M100,60 Q110,50 130,55" />
-      <path class="branch-line" d="M140,40 Q150,35 170,38" />
+    <svg viewBox="0 0 220 130">
+      <path class="branch-line" d="M10,110 Q70,85 110,60 T200,25" />
+      <path class="branch-line" d="M110,60 Q125,48 150,55" />
+      <path class="branch-line" d="M155,38 Q170,30 195,35" />
     </svg>
   </div>
 
@@ -217,7 +207,6 @@
   <div class="stone-dot stone-3"></div>
 
   <div class="horizon-line"></div>
-
   <div class="seal">禅</div>
 </body>
 </html>

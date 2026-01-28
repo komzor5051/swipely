@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --white: #FFFFFF;
+      --white: #FAFAFA;
       --black: #0A0A0A;
-      --gray: #E5E5E5;
-      --electric-pink: #FF006E;
-      --electric-orange: #FF5C00;
+      --gray-light: #F0F0F0;
+      --electric-pink: #FF2D6A;
+      --electric-orange: #FF6B35;
+      --accent-gradient: linear-gradient(135deg, var(--electric-pink) 0%, var(--electric-orange) 100%);
     }
 
     * {
@@ -23,16 +24,14 @@
       width: 1080px;
       height: 1350px;
       background: var(--white);
-      font-family: 'IBM Plex Sans', sans-serif;
+      font-family: 'Manrope', sans-serif;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding: 0;
     }
 
-    /* Halftone dot pattern background - subtle texture */
+    /* Subtle dot pattern */
     body::before {
       content: '';
       position: absolute;
@@ -40,175 +39,189 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: radial-gradient(circle, rgba(10,10,10,0.03) 1px, transparent 1px);
-      background-size: 20px 20px;
+      background-image: radial-gradient(circle, rgba(10,10,10,0.04) 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
       z-index: 0;
       pointer-events: none;
     }
 
-    /* MASSIVE diagonal gradient slash - THE signature element */
+    /* Diagonal accent slash — signature element */
     .diagonal-slash {
       position: absolute;
-      width: 900px;
-      height: 180px;
-      background: linear-gradient(135deg, var(--electric-pink) 0%, var(--electric-orange) 100%);
-      transform: rotate(-15deg);
-      top: 45%;
-      left: -150px;
+      width: 1400px;
+      height: 220px;
+      background: var(--accent-gradient);
+      transform: rotate(-12deg);
+      top: 42%;
+      left: -200px;
       z-index: 1;
       box-shadow:
-        0 20px 60px rgba(255, 0, 110, 0.25),
-        0 10px 30px rgba(255, 92, 0, 0.15);
+        0 30px 80px rgba(255, 45, 106, 0.25),
+        0 15px 40px rgba(255, 107, 53, 0.2);
     }
 
-    /* Ultra-thick border frame */
+    /* Frame border */
     .frame {
       position: absolute;
-      top: 60px;
-      left: 60px;
-      right: 60px;
-      bottom: 60px;
-      border: 14px solid var(--black);
+      top: 50px;
+      left: 50px;
+      right: 50px;
+      bottom: 50px;
+      border: 10px solid var(--black);
       z-index: 0;
       pointer-events: none;
     }
 
-    /* Large geometric slide counter */
+    /* Slide counter — bold and prominent */
     .slide-counter {
       position: absolute;
-      top: 80px;
-      right: 80px;
-      font-family: 'Syne', sans-serif;
-      font-size: 64px;
-      font-weight: 800;
-      color: var(--black);
-      letter-spacing: -2px;
-      line-height: 1;
+      top: 85px;
+      right: 90px;
+      font-family: 'Unbounded', sans-serif;
       z-index: 10;
+      text-align: right;
     }
 
     .slide-counter .current {
-      font-size: 96px;
+      font-size: 120px;
+      font-weight: 900;
+      color: var(--black);
+      letter-spacing: -6px;
+      line-height: 0.85;
       display: block;
     }
 
     .slide-counter .total {
-      font-size: 36px;
-      opacity: 0.3;
-      margin-top: -8px;
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--black);
+      opacity: 0.25;
+      margin-top: 5px;
     }
 
-    /* Content container - positioned above diagonal */
+    /* Main content area */
     .content-wrapper {
       position: relative;
       z-index: 5;
-      padding: 0 100px;
-      max-width: 900px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 90px;
+      padding-right: 220px; /* Space for counter */
     }
 
-    /* Headline - ultra-bold geometric */
+    /* HEADLINE — massive, impactful */
     .headline {
-      font-family: 'Syne', sans-serif;
-      font-size: 92px;
-      font-weight: 800;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 82px;
+      font-weight: 900;
       line-height: 0.95;
       color: var(--black);
       letter-spacing: -3px;
       margin-bottom: 50px;
       text-transform: uppercase;
       position: relative;
+      max-width: 800px;
     }
 
-    /* Small decorative arrow before headline */
+    /* Arrow decoration */
     .headline::before {
-      content: '↗';
+      content: '\2197';
       position: absolute;
-      left: -70px;
-      top: -10px;
-      font-size: 48px;
+      left: -65px;
+      top: 0;
+      font-size: 50px;
       color: var(--electric-pink);
       font-weight: 400;
+      font-family: sans-serif;
     }
 
-    /* Body content - technical precision */
+    /* CONTENT — large, readable */
     .content {
-      font-size: 26px;
-      font-weight: 400;
-      line-height: 1.7;
+      font-family: 'Manrope', sans-serif;
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1.55;
       color: var(--black);
-      max-width: 750px;
+      max-width: 780px;
       position: relative;
     }
 
-    /* Accent highlight - electric gradient background */
+    /* Accent text styling */
     .accent {
-      background: linear-gradient(135deg, var(--electric-pink) 0%, var(--electric-orange) 100%);
+      background: var(--accent-gradient);
       color: white;
-      padding: 4px 14px;
-      font-weight: 600;
+      padding: 6px 18px;
+      font-weight: 700;
       display: inline-block;
-      margin: 0 3px;
-      transform: skewX(-5deg);
-      box-shadow: 0 4px 16px rgba(255, 0, 110, 0.3);
+      margin: 0 4px;
+      transform: skewX(-4deg);
+      box-shadow: 0 6px 25px rgba(255, 45, 106, 0.35);
+      border-radius: 4px;
     }
 
-    /* Small geometric decoration - bottom corner */
+    /* Bottom decorative elements */
     .corner-mark {
       position: absolute;
-      bottom: 80px;
-      left: 100px;
-      width: 80px;
-      height: 4px;
-      background: var(--black);
+      bottom: 90px;
+      left: 90px;
       z-index: 10;
     }
 
-    .corner-mark::after {
+    .corner-mark-line {
+      width: 100px;
+      height: 5px;
+      background: var(--black);
+    }
+
+    .corner-mark-line::after {
       content: '';
       position: absolute;
       left: 0;
-      bottom: -16px;
-      width: 4px;
-      height: 16px;
+      bottom: -20px;
+      width: 5px;
+      height: 20px;
       background: var(--black);
     }
 
-    /* Decorative circle - small accent */
-    .circle-dot {
+    /* Accent dot */
+    .accent-dot {
       position: absolute;
       bottom: 100px;
       right: 100px;
-      width: 24px;
-      height: 24px;
-      background: linear-gradient(135deg, var(--electric-pink) 0%, var(--electric-orange) 100%);
+      width: 32px;
+      height: 32px;
+      background: var(--accent-gradient);
       border-radius: 50%;
       z-index: 10;
-      box-shadow: 0 4px 12px rgba(255, 0, 110, 0.4);
+      box-shadow: 0 8px 25px rgba(255, 45, 106, 0.45);
     }
 
-    /* Arrow pointer decoration */
-    .arrow-pointer {
+    /* Large watermark arrow */
+    .watermark-arrow {
       position: absolute;
       top: 50%;
-      right: 100px;
-      transform: translateY(-50%) rotate(-15deg);
-      font-size: 120px;
+      right: 80px;
+      transform: translateY(-50%);
+      font-size: 300px;
       color: var(--black);
-      opacity: 0.05;
+      opacity: 0.03;
       z-index: 0;
       font-weight: 900;
       line-height: 1;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <!-- Ultra-thick frame -->
+  <!-- Frame -->
   <div class="frame"></div>
 
-  <!-- Massive diagonal gradient slash - signature element -->
+  <!-- Diagonal accent slash -->
   <div class="diagonal-slash"></div>
 
-  <!-- Large geometric counter -->
+  <!-- Slide counter -->
   <div class="slide-counter">
     <span class="current">{{SLIDE_NUMBER}}</span>
     <span class="total">/{{TOTAL_SLIDES}}</span>
@@ -221,8 +234,10 @@
   </div>
 
   <!-- Decorative elements -->
-  <div class="corner-mark"></div>
-  <div class="circle-dot"></div>
-  <div class="arrow-pointer">→</div>
+  <div class="corner-mark">
+    <div class="corner-mark-line"></div>
+  </div>
+  <div class="accent-dot"></div>
+  <div class="watermark-arrow">→</div>
 </body>
 </html>

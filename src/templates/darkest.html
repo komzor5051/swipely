@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --midnight: #0A0E27;
-      --deep-blue: #1A1F3A;
-      --electric: #00F5FF;
-      --neon-pink: #FF006E;
+      --void: #050510;
+      --deep: #0A0A1F;
+      --surface: #12122A;
+      --cyan: #00FFE5;
+      --magenta: #FF00AA;
       --white: #FFFFFF;
-      --gray: #8B92B0;
+      --gray: #6B7194;
     }
 
     * {
@@ -23,17 +24,17 @@
     body {
       width: 1080px;
       height: 1350px;
-      background: linear-gradient(165deg, var(--midnight) 0%, var(--deep-blue) 100%);
-      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(170deg, var(--void) 0%, var(--deep) 60%, var(--surface) 100%);
+      font-family: 'Space Grotesk', sans-serif;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 100px 80px;
+      padding: 100px 85px;
       position: relative;
       overflow: hidden;
     }
 
-    /* Glowing grid background */
+    /* Cyber grid */
     body::before {
       content: '';
       position: absolute;
@@ -42,21 +43,21 @@
       width: 100%;
       height: 100%;
       background-image:
-        linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      opacity: 0.4;
+        linear-gradient(rgba(0,255,229,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,229,0.03) 1px, transparent 1px);
+      background-size: 80px 80px;
+      opacity: 0.6;
       pointer-events: none;
       z-index: 0;
     }
 
-    /* Radial glow effect */
+    /* Central glow */
     body::after {
       content: '';
       position: absolute;
-      width: 800px;
-      height: 800px;
-      background: radial-gradient(circle, rgba(0,245,255,0.08) 0%, transparent 60%);
+      width: 900px;
+      height: 900px;
+      background: radial-gradient(circle, rgba(0,255,229,0.1) 0%, rgba(255,0,170,0.05) 40%, transparent 70%);
       border-radius: 50%;
       top: 50%;
       left: 50%;
@@ -65,129 +66,165 @@
       pointer-events: none;
     }
 
+    /* Slide counter — glowing */
     .slide-counter {
       position: absolute;
-      top: 50px;
-      right: 80px;
-      font-size: 22px;
-      color: var(--electric);
-      font-weight: 600;
-      letter-spacing: 4px;
+      top: 60px;
+      right: 85px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 6px;
       z-index: 10;
-      text-shadow: 0 0 20px rgba(0,245,255,0.5);
+      text-shadow:
+        0 0 20px rgba(0,255,229,0.7),
+        0 0 40px rgba(0,255,229,0.4);
     }
 
-    .headline {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 110px;
-      font-weight: 400;
-      line-height: 1.05;
-      color: var(--white);
-      margin-bottom: 50px;
+    /* Content wrapper */
+    .content-wrapper {
       position: relative;
-      z-index: 2;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      text-shadow: 0 0 30px rgba(0,245,255,0.3);
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    /* Electric underline accent */
+    /* HEADLINE — massive neon */
+    .headline {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 92px;
+      font-weight: 900;
+      line-height: 1.0;
+      color: var(--white);
+      margin-bottom: 55px;
+      position: relative;
+      letter-spacing: -2px;
+      text-transform: uppercase;
+      max-width: 900px;
+      text-shadow:
+        0 0 40px rgba(0,255,229,0.4),
+        0 0 80px rgba(0,255,229,0.2);
+    }
+
+    /* Neon underline */
     .headline::after {
       content: '';
       position: absolute;
-      bottom: -18px;
+      bottom: -20px;
       left: 0;
-      width: 180px;
-      height: 4px;
-      background: linear-gradient(90deg, var(--electric) 0%, transparent 100%);
-      box-shadow: 0 0 15px var(--electric);
+      width: 220px;
+      height: 5px;
+      background: linear-gradient(90deg, var(--cyan) 0%, transparent 100%);
+      box-shadow:
+        0 0 20px var(--cyan),
+        0 0 40px var(--cyan);
     }
 
+    /* CONTENT — readable, glowing */
     .content {
-      font-size: 26px;
-      font-weight: 300;
-      line-height: 1.75;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 34px;
+      font-weight: 400;
+      line-height: 1.65;
       color: var(--white);
       position: relative;
       z-index: 2;
-      max-width: 850px;
-      opacity: 0.85;
-      letter-spacing: 0.5px;
+      max-width: 880px;
+      opacity: 0.92;
+      letter-spacing: 0.3px;
     }
 
-    /* Neon accent highlight */
+    /* Neon accent */
     .accent {
-      background: linear-gradient(135deg, var(--neon-pink) 0%, var(--electric) 100%);
+      background: linear-gradient(135deg, var(--magenta) 0%, var(--cyan) 100%);
       color: var(--white);
-      padding: 4px 14px;
-      font-weight: 600;
+      padding: 6px 18px;
+      font-weight: 700;
       display: inline-block;
-      margin: 0 4px;
-      border-radius: 3px;
-      box-shadow: 0 0 20px rgba(255,0,110,0.4);
+      margin: 0 5px;
+      border-radius: 4px;
+      box-shadow:
+        0 0 25px rgba(255,0,170,0.5),
+        0 0 50px rgba(0,255,229,0.3);
       text-transform: uppercase;
-      font-size: 0.95em;
+      font-size: 0.9em;
       letter-spacing: 1px;
     }
 
-    /* Geometric accent shapes */
-    .shape-corner {
+    /* Corner brackets */
+    .corner {
       position: absolute;
+      width: 100px;
+      height: 100px;
       z-index: 1;
     }
 
     .corner-tl {
-      top: 60px;
-      left: 60px;
-      width: 80px;
-      height: 80px;
-      border-top: 3px solid var(--electric);
-      border-left: 3px solid var(--electric);
-      opacity: 0.4;
-      box-shadow: 0 0 15px rgba(0,245,255,0.3);
+      top: 70px;
+      left: 70px;
+      border-top: 4px solid var(--cyan);
+      border-left: 4px solid var(--cyan);
+      opacity: 0.5;
+      box-shadow:
+        0 0 20px rgba(0,255,229,0.4),
+        inset 0 0 20px rgba(0,255,229,0.1);
     }
 
     .corner-br {
-      bottom: 60px;
-      right: 60px;
-      width: 80px;
-      height: 80px;
-      border-bottom: 3px solid var(--neon-pink);
-      border-right: 3px solid var(--neon-pink);
-      opacity: 0.4;
-      box-shadow: 0 0 15px rgba(255,0,110,0.3);
+      bottom: 70px;
+      right: 70px;
+      border-bottom: 4px solid var(--magenta);
+      border-right: 4px solid var(--magenta);
+      opacity: 0.5;
+      box-shadow:
+        0 0 20px rgba(255,0,170,0.4),
+        inset 0 0 20px rgba(255,0,170,0.1);
     }
 
-    /* Floating particle effect */
+    /* Floating particles */
     .particle {
       position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      opacity: 0.8;
+    }
+
+    .p1 {
+      top: 220px;
+      left: 140px;
+      background: var(--cyan);
+      box-shadow: 0 0 15px var(--cyan), 0 0 30px var(--cyan);
+    }
+
+    .p2 {
+      top: 500px;
+      right: 180px;
+      background: var(--magenta);
+      box-shadow: 0 0 15px var(--magenta), 0 0 30px var(--magenta);
+    }
+
+    .p3 {
+      bottom: 350px;
+      left: 200px;
+      background: var(--cyan);
+      box-shadow: 0 0 15px var(--cyan);
+    }
+
+    .p4 {
+      bottom: 200px;
+      right: 300px;
+      background: var(--magenta);
+      box-shadow: 0 0 12px var(--magenta);
       width: 4px;
       height: 4px;
-      background: var(--electric);
-      border-radius: 50%;
-      opacity: 0.6;
-      box-shadow: 0 0 10px var(--electric);
     }
 
-    .particle-1 {
-      top: 200px;
-      left: 120px;
-    }
-
-    .particle-2 {
-      top: 450px;
-      right: 200px;
-      background: var(--neon-pink);
-      box-shadow: 0 0 10px var(--neon-pink);
-    }
-
-    .particle-3 {
-      bottom: 300px;
-      left: 180px;
-    }
-
-    /* Scanline effect */
-    .scanline {
+    /* Scanlines */
+    .scanlines {
       position: absolute;
       top: 0;
       left: 0;
@@ -195,29 +232,49 @@
       height: 100%;
       background: repeating-linear-gradient(
         0deg,
-        rgba(0,0,0,0.15) 0px,
+        rgba(0,0,0,0.12) 0px,
         transparent 1px,
-        transparent 2px,
-        rgba(0,0,0,0.15) 3px
+        transparent 3px,
+        rgba(0,0,0,0.12) 4px
       );
       pointer-events: none;
-      z-index: 5;
-      opacity: 0.3;
+      z-index: 8;
+      opacity: 0.4;
     }
+
+    /* Glitch line decoration */
+    .glitch-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--cyan);
+      opacity: 0.15;
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    .gl1 { top: 25%; }
+    .gl2 { top: 75%; }
   </style>
 </head>
 <body>
-  <div class="scanline"></div>
+  <div class="scanlines"></div>
   <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
 
-  <h1 class="headline">{{TITLE}}</h1>
-  <p class="content">{{CONTENT}}</p>
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
 
-  <div class="shape-corner corner-tl"></div>
-  <div class="shape-corner corner-br"></div>
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-br"></div>
 
-  <div class="particle particle-1"></div>
-  <div class="particle particle-2"></div>
-  <div class="particle particle-3"></div>
+  <div class="particle p1"></div>
+  <div class="particle p2"></div>
+  <div class="particle p3"></div>
+  <div class="particle p4"></div>
+
+  <div class="glitch-line gl1"></div>
+  <div class="glitch-line gl2"></div>
 </body>
 </html>
