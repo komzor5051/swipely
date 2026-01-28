@@ -118,9 +118,47 @@ async function generateCarouselContent(userText, stylePreset, slideCount = 5, to
   }
 
   const carouselData = JSON.parse(jsonMatch[0]);
+
+  // Очистка markdown из всех текстов
+  if (carouselData.slides) {
+    carouselData.slides = carouselData.slides.map(slide => ({
+      ...slide,
+      title: cleanMarkdown(slide.title),
+      content: cleanMarkdown(slide.content)
+    }));
+  }
+
   console.log(`✅ Сгенерировано ${carouselData.slides?.length || 0} слайдов`);
 
   return carouselData;
+}
+
+/**
+ * Очистка текста от markdown-разметки
+ */
+function cleanMarkdown(text) {
+  if (!text) return text;
+
+  return text
+    // Убираем жирный текст **text** и __text__
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    // Убираем курсив *text* и _text_
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    // Убираем зачёркнутый ~~text~~
+    .replace(/~~([^~]+)~~/g, '$1')
+    // Убираем заголовки # ## ###
+    .replace(/^#{1,6}\s*/gm, '')
+    // Убираем буллеты - и *
+    .replace(/^[\-\*]\s+/gm, '')
+    // Убираем инлайн-код `code`
+    .replace(/`([^`]+)`/g, '$1')
+    // Убираем ссылки [text](url)
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Убираем лишние пробелы
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function getDesignConfig(stylePreset) {
@@ -151,7 +189,14 @@ ${toneSection}
 
 ЗАДАЧА: Создай РОВНО ${slideCount} слайдов. Каждый: 25-${designConfig.max_words_per_slide} слов.
 
-ЗАГОЛОВКИ (3-6 слов):
+КРИТИЧЕСКИ ВАЖНО — ЧИСТЫЙ ТЕКСТ:
+• НИКАКОГО markdown: без **, *, _, #, ~~, \`
+• НИКАКИХ символов разметки в тексте
+• Пиши живым разговорным языком
+• Короткие предложения, легко читаются на слайде
+• Списки в content: просто "1. Текст 2. Текст" без спецсимволов
+
+ЗАГОЛОВКИ (3-6 слов, без символов):
 • Цифры: "5 ошибок", "3 способа"
 • Шок: "99% делают неправильно"
 • Боль: "Устал продавать?"
@@ -165,7 +210,7 @@ ${toneSection}
 OUTPUT ONLY JSON:
 {
   "slides": [
-    {"type": "hook", "title": "5 ошибок", "content": "Текст слайда...", "emphasize": ["ошибки"]}
+    {"type": "hook", "title": "5 ошибок новичков", "content": "Почему 90% стартапов закрываются в первый год. Разберём главные причины провала.", "emphasize": ["ошибки"]}
   ]
 }`;
 }
