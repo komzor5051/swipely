@@ -1,5 +1,7 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
+const fs = require('fs');
+const path = require('path');
 const db = require('./services/database');
 const { transcribeVoice } = require('./services/whisper');
 const { generateCarouselContent } = require('./services/gemini');
@@ -71,7 +73,8 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
           [
             { text: copy.start.buttons.demo, callback_data: 'demo_carousel' },
             { text: copy.start.buttons.howItWorks, callback_data: 'how_it_works' }
-          ]
+          ],
+          [{ text: copy.start.buttons.legal, callback_data: 'menu_legal' }]
         ]
       }
     });
@@ -863,7 +866,8 @@ bot.on('callback_query', async (query) => {
               [
                 { text: copy.start.buttons.demo, callback_data: 'demo_carousel' },
                 { text: copy.start.buttons.howItWorks, callback_data: 'how_it_works' }
-              ]
+              ],
+              [{ text: copy.start.buttons.legal, callback_data: 'menu_legal' }]
             ]
           }
         }
@@ -929,6 +933,80 @@ bot.on('callback_query', async (query) => {
         },
         parse_mode: 'Markdown'
       });
+      return;
+    }
+
+    // ==================== LEGAL DOCUMENTS ====================
+    if (data === 'menu_legal') {
+      await bot.editMessageText(
+        copy.legal.menu,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.legal.buttons.privacy, callback_data: 'legal_privacy' }],
+              [{ text: copy.legal.buttons.offer, callback_data: 'legal_offer' }],
+              [{ text: copy.legal.buttons.back, callback_data: 'menu_main' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Отправка политики конфиденциальности
+    if (data === 'legal_privacy') {
+      const docsPath = path.join(__dirname, '..', 'docs');
+      const possibleFiles = [
+        path.join(docsPath, 'personal policy.pdf'),
+        path.join(docsPath, 'privacy_policy.pdf'),
+        path.join(docsPath, 'privacy_policy.txt')
+      ];
+
+      let filePath = null;
+      for (const p of possibleFiles) {
+        if (fs.existsSync(p)) {
+          filePath = p;
+          break;
+        }
+      }
+
+      if (filePath) {
+        await bot.sendDocument(chatId, filePath, {
+          caption: '🔒 Политика конфиденциальности Swipely'
+        });
+      } else {
+        await bot.sendMessage(chatId, copy.legal.notFound);
+      }
+      return;
+    }
+
+    // Отправка оферты
+    if (data === 'legal_offer') {
+      const docsPath = path.join(__dirname, '..', 'docs');
+      const possibleFiles = [
+        path.join(docsPath, 'privacy policy.pdf'),
+        path.join(docsPath, 'public_offer.pdf'),
+        path.join(docsPath, 'offer.pdf')
+      ];
+
+      let filePath = null;
+      for (const p of possibleFiles) {
+        if (fs.existsSync(p)) {
+          filePath = p;
+          break;
+        }
+      }
+
+      if (filePath) {
+        await bot.sendDocument(chatId, filePath, {
+          caption: '📄 Публичная оферта Swipely'
+        });
+      } else {
+        await bot.sendMessage(chatId, copy.legal.notFound);
+      }
       return;
     }
 
