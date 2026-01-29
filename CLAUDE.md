@@ -8,7 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Tech Stack:**
 - `node-telegram-bot-api` v0.67.0 (NOT Telegraf - important!)
-- Google Gemini API (`gemini-2.5-flash-lite`) for AI content generation
+- Google Gemini API:
+  - `gemini-2.5-flash-lite` for AI content generation
+  - `gemini-3-pro-image-preview` for AI image generation (Nano Banana Pro, 2K quality)
 - Puppeteer v23.11.1 for HTML → PNG rendering (1080x1350px Instagram format)
 - Supabase (PostgreSQL) for user profiles, messages, usage tracking
 - OpenAI Whisper (optional) for voice transcription
@@ -43,29 +45,74 @@ OPENAI_API_KEY=<optional for voice>
 
 **CRITICAL**: Bot uses `service_role` key (not `anon`) because it's a backend service. Variable name says `ANON_KEY` but should contain `service_role` value.
 
+## Pricing & Monetization
+
+**Model: Subscriptions + Pay-per-use**
+
+### Subscriptions
+| Tier | Price | Standard | Photo Mode |
+|------|-------|----------|------------|
+| FREE | 0₽ | 3/month | unavailable |
+| PRO | 990₽/mo | unlimited | -20% discount |
+
+### Photo Mode Pricing (Pay-per-use)
+| Slides | FREE price | PRO price | Cost | Margin |
+|--------|------------|-----------|------|--------|
+| 3 | 149₽ | 119₽ | 40₽ | 73%/66% |
+| 5 | 249₽ | 199₽ | 67₽ | 73%/66% |
+| 7 | 349₽ | 279₽ | 94₽ | 73%/66% |
+
+### Slide Packs (bulk discount)
+| Pack | Slides | Price | Per slide |
+|------|--------|-------|-----------|
+| Small | 15 | 490₽ | 33₽ |
+| Medium | 50 | 1490₽ | 30₽ |
+| Large | 150 | 3990₽ | 27₽ |
+
+**Key files:**
+- `src/config/pricing.js` - All prices and limits
+- `src/services/database.js` - Balance/limit functions
+- `src/utils/copy.js` - Payment UI text (section `pricing`)
+- `docs/PRICING.md` - Full documentation
+
+**Bot commands:**
+- `/account` - View balance and subscription status
+- `/buy` - Purchase packs or PRO
+
 ## Architecture
 
+**Two Generation Modes:**
+
+### Standard Mode (HTML Templates)
 ```
 User Input (text/voice)
-    ↓
-[Onboarding] (optional 3-phase setup)
-    Phase 1: Context ("who are you?")
-    Phase 2: Tone of Voice analysis (Gemini)
-    Phase 3: Role selection (expert/visionary/friend)
     ↓
 [Session] (in-memory: transcription, slide count)
     ↓
 [Gemini] Content generation with viral hooks
-    System Prompt: SMM strategist, 3-6 word headlines
-    Tone Adaptation: matches user's writing style
     ↓
 [Puppeteer] HTML templates → PNG (1080x1350px)
-    minimal_pop.html / notebook.html / darkest.html
+    9 templates: minimal_pop, notebook, darkest, aurora, terminal, editorial, zen, memphis, luxe
     ↓
-[Telegram] sendMediaGroup() - delivers carousel
-    ↓
-[Supabase] Logs generation + usage tracking
+[Telegram] sendMediaGroup()
 ```
+
+### Photo Mode (AI-Avatars / Nano Banana)
+```
+User Input (text/voice) + Reference Photo
+    ↓
+[Gemini Content] Short text for overlay (25 words/slide)
+    ↓
+[Gemini 3 Pro Image] AI image generation (2K, no text on image)
+    - cartoon style (Pixar/Disney)
+    - realistic style (professional photography)
+    ↓
+[Puppeteer] Overlay text on AI images → PNG
+    ↓
+[Telegram] sendMediaGroup()
+```
+
+**Max 7 slides** in Photo Mode (API cost optimization)
 
 ## Core Services
 
@@ -80,6 +127,8 @@ User Input (text/voice)
 
 ### src/services/renderer.js (Visual Rendering)
 - **Framework**: Puppeteer (headless Chrome)
+- **Formats**: square (1080×1080) and portrait (1080×1350)
+- **Username overlay**: If user has set username via /username, it's injected as bottom-left overlay
 - **Process**:
   1. Load HTML template for selected style
   2. Inject content via **string replacement** (NOT template engine):
@@ -87,8 +136,9 @@ User Input (text/voice)
      html = html.replace(/\{\{TITLE\}\}/g, slide.title);
      html = html.replace(/\{\{CONTENT\}\}/g, slide.content);
      ```
-  3. Screenshot at 1080x1350px (2x scale for quality)
-  4. Save to `/output/slide_<timestamp>_<num>.png`
+  3. Apply format dimensions and inject username overlay CSS/HTML
+  4. Screenshot at selected format (2x scale for quality)
+  5. Save to `/output/slide_<timestamp>_<num>.png`
 - **Auto-formatting**: `notebook.html` has JavaScript that runs on `DOMContentLoaded` to format numbered lists
 
 ### src/services/supabaseService.js (Database)
@@ -97,64 +147,81 @@ User Input (text/voice)
   - `saveMessage()` - log for tone analysis
   - `getUserMessageHistory()` - fetch last N messages
   - `checkOnboardingStatus()` - check if user completed setup
+  - `saveDisplayUsername(telegramId, username)` - save custom username
+  - `getDisplayUsername(telegramId)` - get username for slide overlay
 - **Tables**: `profiles`, `user_messages`, `usage_tracking`, `projects`
+
+### src/services/imageGenerator.js (AI Image Generation)
+- **Model**: `gemini-3-pro-image-preview` (Nano Banana Pro)
+- **Fallback**: `gemini-2.0-flash-exp-image-generation` if primary unavailable
+- **Quality**: 2K resolution, 4:5 aspect ratio
+- **Key Functions**:
+  - `generateImageWithReference(slideContent, photoBase64, style, slideNum, total)` - with user photo
+  - `generateImageFromText(theme, style)` - fallback without photo
+  - `generateCarouselImages(carouselData, photoBase64, style)` - orchestrator
+  - `downloadTelegramPhoto(bot, fileId)` - download and convert to base64
+- **Styles**: `cartoon` (Pixar/Disney) and `realistic` (professional photography)
+- **CRITICAL**: Prompts explicitly forbid any text/letters on generated images
 
 ### src/services/whisper.js (Voice Transcription)
 - **Optional**: If `OPENAI_API_KEY` missing, voice input disabled gracefully
 - Downloads Telegram voice (OGG) → Whisper API → Russian text
 
+### src/services/previewService.js (Style Previews)
+- Generates 540×540 preview images for each style
+- Previews stored in `/previews/` folder (auto-generated on first use)
+- Sent as media album when user selects "Standard" mode or "View Styles"
+
 ### src/utils/copy.js (UI Text)
 - **Centralized** Russian-language strings for all bot messages
-- Organized by feature: `start`, `onboarding`, `mainFlow`, `errors`
+- Organized by feature: `start`, `onboarding`, `mainFlow`, `photoMode`, `username`, `errors`
 
 ## User Flow
 
 ```
-/start
-  ├─→ First-time user:
-  │   ├─→ Welcome Screen [Demo] [How it Works] [View Styles]
-  │   └─→ Optional Onboarding (3 phases)
-  │
-  └─→ Returning user: Main Menu
+/start → Main Menu
+
+/username → Set display username (shows in corner of all slides)
 
 Text/Voice Input
   ↓
 Select slide count [3] [5] [7] [10] [12]
   ↓
-Select style [Minimal Pop] [Notebook] [Darkest]
+Select format:
+  ├─→ [◻️ Квадрат] (1080×1080) - Instagram feed
+  └─→ [▯ Портрет] (1080×1350) - Instagram Stories
   ↓
-Gemini generates content → Puppeteer renders → Telegram delivers
+Select mode:
+  ├─→ [🎨 Standard] → Preview album (9 styles) → Select template → Generate
+  └─→ [📸 Photo Mode] → Select style [Cartoon/Realistic] → Send photo → Generate
 ```
 
 ## Design Templates
 
-**Three Templates** (1080x1350px Instagram format):
+**9 HTML Templates** (1080x1350px Instagram format):
 
-1. **minimal_pop.html** - Neo-brutalist editorial
-   - Massive diagonal gradient slash (15° angle)
-   - Ultra-thick 14px black border
-   - Typography: Syne + IBM Plex Sans
-   - 25-40 words/slide
+| Template | Style | Typography |
+|----------|-------|------------|
+| `minimal_pop` | Neo-brutalist, diagonal slash | Syne + IBM Plex Sans |
+| `notebook` | Handwritten notes, paper texture | Caveat + Lora |
+| `darkest` | Cyberpunk, neon effects | Bebas Neue + Montserrat |
+| `aurora` | Ethereal gradients | — |
+| `terminal` | Retro computer | — |
+| `editorial` | Fashion magazine | — |
+| `zen` | Japanese minimalism | — |
+| `memphis` | 80s retro | — |
+| `luxe` | Luxury (gold + marble) | — |
 
-2. **notebook.html** - Handwritten notes
-   - Caveat (cursive) + Lora (serif)
-   - Paper texture with ruled lines
-   - Auto-formats lists: "1. Name: Description"
-   - JavaScript formatContent() on page load
-   - 25-45 words/slide
+**Rendering Pattern**: Load template → Replace `{{TITLE}}`, `{{CONTENT}}`, `{{SLIDE_NUMBER}}` → Screenshot → PNG
 
-3. **darkest.html** - Cyberpunk/dark professional
-   - Bebas Neue + Montserrat
-   - Neon effects, grid background
-   - 25-50 words/slide
-
-**Rendering Pattern**: Load template → Replace `{{VARIABLES}}` → Screenshot → PNG
+**Photo Mode Rendering**: AI image (base64) → CSS background-image → Gradient overlay → Text with text-shadow
 
 ## Database Schema (Supabase)
 
 **profiles** - Unified user table (web + Telegram)
 - `telegram_id` BIGINT (for bot users)
 - `auth_user_id` UUID (for web users)
+- `display_username` TEXT (custom username shown on slides)
 - `onboarding_completed` BOOLEAN
 - `user_context` TEXT (who are you?)
 - `user_role` TEXT (expert/visionary/friend)
@@ -182,7 +249,14 @@ Gemini generates content → Puppeteer renders → Telegram delivers
 sessions[userId] = {
   transcription: string,      // User's text or voice
   slideCount: number,         // Selected count
-  onboarding_phase: string    // Current onboarding step
+  format: string,             // 'square' (1080×1080) or 'portrait' (1080×1350)
+  generationMode: string,     // 'standard' or 'photo'
+  onboarding_phase: string,   // Current onboarding step
+  awaitingUsername: boolean,  // Waiting for username input
+  // Photo Mode specific:
+  awaitingPhoto: boolean,     // Waiting for user photo
+  referencePhoto: string,     // Base64 of user's photo
+  imageStyle: string          // 'cartoon' or 'realistic'
 }
 ```
 
@@ -239,12 +313,15 @@ Bot reads user's message history and adapts:
 
 ## Critical Files
 
-- `src/index.js` (519 lines) - Main bot logic, all handlers
+- `src/index.js` - Main bot logic, all handlers
 - `src/services/gemini.js` - AI content generation with retry logic
-- `src/services/renderer.js` - Puppeteer HTML→PNG pipeline
+- `src/services/imageGenerator.js` - AI image generation (Nano Banana Pro)
+- `src/services/renderer.js` - Puppeteer HTML→PNG pipeline + text overlay + username
+- `src/services/previewService.js` - Style preview image generation
 - `src/services/supabaseService.js` - Database CRUD operations
 - `src/utils/copy.js` - All UI text (Russian)
-- `src/templates/*.html` - Design templates with inline CSS
+- `src/templates/*.html` - 9 design templates with inline CSS
+- `previews/*.png` - Style preview images (auto-generated)
 - `.env` - Configuration (NEVER commit, contains secrets)
 
 ## Common Issues
@@ -266,7 +343,14 @@ Bot reads user's message history and adapts:
 ### 4. Gemini API Errors
 - **429 Too Many Requests**: Quota exceeded, wait or upgrade
 - **503 Service Unavailable**: Server overloaded, retry logic handles this (3 attempts)
-- **404 Not Found**: Model name incorrect, use `gemini-2.5-flash-lite`
+- **404 Not Found**: Model name incorrect
+  - Content: `gemini-2.5-flash-lite`
+  - Images: `gemini-3-pro-image-preview` (fallback: `gemini-2.0-flash-exp-image-generation`)
+
+### 5. Image Generation Issues
+- **Model not available**: Auto-fallback to older model implemented
+- **Text appearing on images**: Prompt explicitly forbids text, but may still occur occasionally
+- **Rate limiting**: 2 second delay between image generations
 
 ## Testing
 
@@ -308,3 +392,7 @@ No automated tests. Manual testing via Telegram:
 - **Speed**: Gemini 2.5 Flash Lite is faster
 - **Code**: `src/services/claude.js` kept for backward compatibility but deprecated
 - Migration completed: January 2026
+
+**Image Generation Model Evolution**:
+- `gemini-2.0-flash-exp-image-generation` → `gemini-3-pro-image-preview` (Nano Banana Pro)
+- 2K quality, better instruction following, explicit no-text prompts

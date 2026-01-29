@@ -10,6 +10,8 @@ const { logUser, logGeneration } = require('./services/userLogger');
 const { getPreviewPaths, STYLE_INFO } = require('./services/previewService');
 const copy = require('./utils/copy');
 const demoCarousel = require('./data/demoCarousel');
+const pricing = require('./config/pricing');
+const yookassa = require('./services/yookassa');
 
 // Инициализация бота
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
@@ -25,11 +27,12 @@ db.init();
 console.log('🤖 Swipely Bot запускается...');
 
 // ============================================
-// КОМАНДА /START
+// КОМАНДА /START и /MENU - Главное меню
 // ============================================
-bot.onText(/\/start/, async (msg) => {
+bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
   const userId = msg.from.id;
   const chatId = msg.chat.id;
+  const param = match[2]?.trim(); // Параметр после /start (например, payment_xxx)
 
   try {
     // Регистрируем пользователя в локальной БД
@@ -41,11 +44,189 @@ bot.onText(/\/start/, async (msg) => {
     // Регистрируем/обновляем пользователя в Supabase
     await upsertUser(msg.from);
 
-    // Сразу показываем главное меню
-    await bot.sendMessage(chatId, copy.mainFlow.requestInput);
+    // Проверяем, это возврат из платёжной системы?
+    if (param && param.startsWith('payment_')) {
+      const paymentId = param.replace('payment_', '');
+      await handlePaymentReturn(chatId, userId, paymentId);
+      return;
+    }
+
+    // Получаем статус пользователя
+    const status = db.getUserStatus(userId);
+
+    // Показываем главное меню
+    const welcomeText = status
+      ? copy.start.welcome(status)
+      : copy.start.welcomeNew;
+
+    await bot.sendMessage(chatId, welcomeText, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: copy.start.buttons.create, callback_data: 'menu_create' }],
+          [
+            { text: copy.start.buttons.buy, callback_data: 'menu_buy' },
+            { text: copy.start.buttons.account, callback_data: 'menu_account' }
+          ],
+          [
+            { text: copy.start.buttons.demo, callback_data: 'demo_carousel' },
+            { text: copy.start.buttons.howItWorks, callback_data: 'how_it_works' }
+          ]
+        ]
+      }
+    });
 
   } catch (error) {
     console.error('Ошибка /start:', error);
+    await bot.sendMessage(chatId, copy.errors.generation);
+  }
+});
+
+/**
+ * Обработка возврата из платёжной системы
+ */
+async function handlePaymentReturn(chatId, userId, paymentId) {
+  try {
+    await bot.sendMessage(chatId, '⏳ Проверяю статус платежа...');
+
+    // Получаем статус из ЮКассы
+    const paymentStatus = await yookassa.getPaymentStatus(paymentId);
+
+    if (!paymentStatus.success) {
+      await bot.sendMessage(chatId, '❌ Не удалось проверить платёж. Попробуй позже или напиши в поддержку.');
+      return;
+    }
+
+    if (paymentStatus.status === 'succeeded') {
+      // Обрабатываем успешный платёж
+      const result = db.processSuccessfulPayment(paymentId);
+
+      if (result) {
+        const status = db.getUserStatus(userId);
+
+        if (result.product_type.startsWith('pro_')) {
+          // PRO подписка
+          const expiresAt = new Date(status.subscriptionExpiresAt).toLocaleDateString('ru-RU');
+          await bot.sendMessage(chatId, copy.pricing.success.pro(expiresAt), {
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: '✨ Создать карусель', callback_data: 'menu_create' }],
+                [{ text: '← Главное меню', callback_data: 'menu_main' }]
+              ]
+            }
+          });
+        } else {
+          // Пакет слайдов
+          await bot.sendMessage(chatId,
+            copy.pricing.success.slides(result.product_data.slides, status.photoSlidesBalance),
+            {
+              parse_mode: 'Markdown',
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: '✨ Создать карусель', callback_data: 'menu_create' }],
+                  [{ text: '← Главное меню', callback_data: 'menu_main' }]
+                ]
+              }
+            }
+          );
+        }
+      }
+    } else if (paymentStatus.status === 'canceled') {
+      await bot.sendMessage(chatId, copy.pricing.cancelled, {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔄 Попробовать снова', callback_data: 'menu_buy' }],
+            [{ text: '← Главное меню', callback_data: 'menu_main' }]
+          ]
+        }
+      });
+    } else {
+      // pending - ещё в процессе
+      await bot.sendMessage(chatId,
+        '⏳ Платёж ещё обрабатывается. Подожди немного и нажми кнопку проверки.',
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '🔄 Проверить статус', callback_data: `check_payment_${paymentId}` }],
+              [{ text: '← Главное меню', callback_data: 'menu_main' }]
+            ]
+          }
+        }
+      );
+    }
+
+  } catch (error) {
+    console.error('❌ Ошибка обработки возврата платежа:', error);
+    await bot.sendMessage(chatId, '❌ Произошла ошибка. Попробуй позже или напиши в поддержку.');
+  }
+}
+
+// ============================================
+// КОМАНДА /account - статус аккаунта и баланс
+// ============================================
+bot.onText(/\/(account|status|balance)/, async (msg) => {
+  const userId = msg.from.id;
+  const chatId = msg.chat.id;
+
+  try {
+    const status = db.getUserStatus(userId);
+
+    if (!status) {
+      return bot.sendMessage(chatId, 'Сначала отправь /start');
+    }
+
+    // Форматируем дату истечения подписки
+    let expiresFormatted = '';
+    if (status.subscriptionExpiresAt) {
+      expiresFormatted = new Date(status.subscriptionExpiresAt).toLocaleDateString('ru-RU');
+    }
+
+    const statusText = copy.pricing.status({
+      ...status,
+      expiresFormatted
+    });
+
+    await bot.sendMessage(chatId, statusText, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: copy.pricing.buttons.viewPacks, callback_data: 'view_packs' }],
+          [{ text: copy.pricing.buttons.viewPro, callback_data: 'view_pro' }],
+          [{ text: '📝 Создать карусель', callback_data: 'create_now' }]
+        ]
+      }
+    });
+
+  } catch (error) {
+    console.error('Ошибка /account:', error);
+    await bot.sendMessage(chatId, copy.errors.generation);
+  }
+});
+
+// ============================================
+// КОМАНДА /buy - страница оплаты
+// ============================================
+bot.onText(/\/buy/, async (msg) => {
+  const userId = msg.from.id;
+  const chatId = msg.chat.id;
+
+  try {
+    await bot.sendMessage(chatId, copy.pricing.slidePacks, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: copy.pricing.buttons.buySlides(15, 490), callback_data: 'buy_pack_small' }],
+          [{ text: copy.pricing.buttons.buySlides(50, 1490), callback_data: 'buy_pack_medium' }],
+          [{ text: copy.pricing.buttons.buySlides(150, 3990), callback_data: 'buy_pack_large' }],
+          [{ text: '───────────────', callback_data: 'noop' }],
+          [{ text: copy.pricing.buttons.viewPro, callback_data: 'view_pro' }]
+        ]
+      }
+    });
+
+  } catch (error) {
+    console.error('Ошибка /buy:', error);
     await bot.sendMessage(chatId, copy.errors.generation);
   }
 });
@@ -217,7 +398,10 @@ async function startPhotoModeGeneration(chatId, userId) {
 
     await bot.sendMediaGroup(chatId, mediaGroup);
 
-    // 5. Логирование
+    // 5. Списываем Photo слайды
+    db.deductPhotoSlides(userId, slideCount);
+
+    // 6. Логирование
     logGeneration(userId, `photo_${imageStyle}`, slideCount);
     console.log(`📊 Сохраняю AI-генерацию для пользователя ${userId}...`);
     await saveCarouselGeneration(
@@ -228,7 +412,7 @@ async function startPhotoModeGeneration(chatId, userId) {
       { mode: 'photo', imageStyle: imageStyle }
     );
 
-    // 6. Результат
+    // 7. Результат
     await bot.sendMessage(chatId, copy.photoMode.result, {
       reply_markup: {
         inline_keyboard: [
@@ -338,6 +522,355 @@ bot.on('callback_query', async (query) => {
   }
 
   try {
+    // ==================== PRICING & PAYMENT CALLBACKS ====================
+
+    // Просмотр пакетов слайдов
+    if (data === 'view_packs') {
+      await bot.editMessageText(copy.pricing.slidePacks, {
+        chat_id: chatId,
+        message_id: messageId,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: copy.pricing.buttons.buySlides(15, 490), callback_data: 'buy_pack_small' }],
+            [{ text: copy.pricing.buttons.buySlides(50, 1490), callback_data: 'buy_pack_medium' }],
+            [{ text: copy.pricing.buttons.buySlides(150, 3990), callback_data: 'buy_pack_large' }],
+            [{ text: '───────────────', callback_data: 'noop' }],
+            [{ text: copy.pricing.buttons.viewPro, callback_data: 'view_pro' }],
+            [{ text: '← Назад', callback_data: 'menu_buy' }]
+          ]
+        }
+      });
+      return;
+    }
+
+    // Просмотр PRO подписки
+    if (data === 'view_pro') {
+      await bot.editMessageText(copy.pricing.proSubscription, {
+        chat_id: chatId,
+        message_id: messageId,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: copy.pricing.buttons.buyPro, callback_data: 'buy_pro_month' }],
+            [{ text: copy.pricing.buttons.buyProYear, callback_data: 'buy_pro_year' }],
+            [{ text: '← Назад', callback_data: 'menu_buy' }]
+          ]
+        }
+      });
+      return;
+    }
+
+    // Назад к статусу (личный кабинет)
+    if (data === 'back_to_status') {
+      const status = db.getUserStatus(userId);
+      let expiresFormatted = '';
+      if (status?.subscriptionExpiresAt) {
+        expiresFormatted = new Date(status.subscriptionExpiresAt).toLocaleDateString('ru-RU');
+      }
+
+      await bot.editMessageText(copy.pricing.account({ ...status, expiresFormatted }), {
+        chat_id: chatId,
+        message_id: messageId,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '✨ Создать карусель', callback_data: 'menu_create' }],
+            [{ text: '💳 Пополнить баланс', callback_data: 'menu_buy' }],
+            [{ text: '← Главное меню', callback_data: 'menu_main' }]
+          ]
+        }
+      });
+      return;
+    }
+
+    // Покупка пакета слайдов
+    if (data.startsWith('buy_pack_')) {
+      const packId = data.replace('buy_pack_', '');
+      const pack = pricing.slidePacks[packId];
+
+      if (!pack) {
+        return bot.sendMessage(chatId, '❌ Пакет не найден');
+      }
+
+      // Создаём платёж в ЮКассе
+      await bot.editMessageText('⏳ Создаю ссылку на оплату...', {
+        chat_id: chatId,
+        message_id: messageId
+      });
+
+      const botInfo = await bot.getMe();
+      const returnUrl = yookassa.getTelegramReturnUrl(botInfo.username, 'PAYMENT_ID');
+
+      const payment = await yookassa.createPayment({
+        amount: pack.price,
+        description: `Swipely: ${pack.name}`,
+        metadata: {
+          user_id: userId,
+          product_type: packId,
+          slides: pack.slides
+        },
+        returnUrl: returnUrl.replace('PAYMENT_ID', '') // Заменим после создания
+      });
+
+      if (!payment.success) {
+        await bot.editMessageText(
+          `❌ Ошибка создания платежа: ${payment.error}\n\nПопробуй позже.`,
+          { chat_id: chatId, message_id: messageId }
+        );
+        return;
+      }
+
+      // Сохраняем платёж в БД
+      db.createPayment(payment.paymentId, userId, pack.price, packId, { slides: pack.slides });
+
+      // Обновляем return URL с реальным ID платежа
+      const realReturnUrl = yookassa.getTelegramReturnUrl(botInfo.username, payment.paymentId);
+
+      await bot.editMessageText(
+        `💳 **Оплата пакета "${pack.name}"**\n\n` +
+        `📦 Слайдов: ${pack.slides}\n` +
+        `💰 Сумма: ${pricing.formatPrice(pack.price)}\n\n` +
+        `👇 Нажми кнопку для перехода к оплате:`,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: `💳 Оплатить ${pack.price}₽`, url: payment.confirmationUrl }],
+              [{ text: '🔄 Я оплатил, проверить', callback_data: `check_payment_${payment.paymentId}` }],
+              [{ text: '← Назад', callback_data: 'menu_buy' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Проверка статуса платежа
+    if (data.startsWith('check_payment_')) {
+      const paymentId = data.replace('check_payment_', '');
+      await handlePaymentReturn(chatId, userId, paymentId);
+      return;
+    }
+
+    // Покупка PRO подписки
+    if (data === 'buy_pro_month' || data === 'buy_pro_year') {
+      const months = data === 'buy_pro_year' ? 12 : 1;
+      const price = data === 'buy_pro_year' ? 9900 : 990;
+      const productType = data === 'buy_pro_year' ? 'pro_year' : 'pro_month';
+
+      // Создаём платёж в ЮКассе
+      await bot.editMessageText('⏳ Создаю ссылку на оплату...', {
+        chat_id: chatId,
+        message_id: messageId
+      });
+
+      const botInfo = await bot.getMe();
+
+      const payment = await yookassa.createPayment({
+        amount: price,
+        description: `Swipely PRO на ${months === 12 ? 'год' : 'месяц'}`,
+        metadata: {
+          user_id: userId,
+          product_type: productType,
+          months: months
+        },
+        returnUrl: 'https://t.me/' + botInfo.username // Временный URL
+      });
+
+      if (!payment.success) {
+        await bot.editMessageText(
+          `❌ Ошибка создания платежа: ${payment.error}\n\nПопробуй позже.`,
+          { chat_id: chatId, message_id: messageId }
+        );
+        return;
+      }
+
+      // Сохраняем платёж в БД
+      db.createPayment(payment.paymentId, userId, price, productType, { months });
+
+      await bot.editMessageText(
+        `💳 **PRO-подписка на ${months === 12 ? 'год' : 'месяц'}**\n\n` +
+        `✨ Безлимит Standard каруселей\n` +
+        `🎨 Скидка 20% на Photo Mode\n` +
+        `💰 Сумма: ${pricing.formatPrice(price)}\n\n` +
+        `👇 Нажми кнопку для перехода к оплате:`,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: `💳 Оплатить ${price}₽`, url: payment.confirmationUrl }],
+              [{ text: '🔄 Я оплатил, проверить', callback_data: `check_payment_${payment.paymentId}` }],
+              [{ text: '← Назад', callback_data: 'view_pro' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Оплата Photo Mode перед генерацией
+    if (data.startsWith('pay_photo_')) {
+      const slideCount = parseInt(data.replace('pay_photo_', ''));
+      const tier = db.getActiveSubscription(userId);
+      const price = pricing.getPhotoModePrice(slideCount, tier);
+
+      // Создаём платёж в ЮКассе
+      await bot.sendMessage(chatId, '⏳ Создаю ссылку на оплату...');
+
+      const botInfo = await bot.getMe();
+
+      const payment = await yookassa.createPayment({
+        amount: price,
+        description: `Swipely: AI-карусель ${slideCount} слайдов`,
+        metadata: {
+          user_id: userId,
+          product_type: 'photo_slides',
+          slides: slideCount
+        },
+        returnUrl: yookassa.getTelegramReturnUrl(botInfo.username, 'temp')
+      });
+
+      if (!payment.success) {
+        await bot.sendMessage(chatId, `❌ Ошибка создания платежа: ${payment.error}\n\nПопробуй позже.`);
+        return;
+      }
+
+      // Сохраняем платёж в БД
+      db.createPayment(payment.paymentId, userId, price, 'photo_slides', { slides: slideCount });
+
+      await bot.sendMessage(chatId,
+        `💳 **AI-карусель: ${slideCount} слайдов**\n\n` +
+        `💰 Сумма: ${pricing.formatPrice(price)}${tier === 'pro' ? ' (PRO скидка -20%)' : ''}\n\n` +
+        `👇 Нажми кнопку для оплаты:`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: `💳 Оплатить ${price}₽`, url: payment.confirmationUrl }],
+              [{ text: '🔄 Я оплатил, проверить', callback_data: `check_payment_${payment.paymentId}` }],
+              [{ text: '← Назад', callback_data: 'menu_create' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // noop для разделителей
+    if (data === 'noop') {
+      return;
+    }
+
+    // ==================== MAIN MENU CALLBACKS ====================
+
+    // Создать карусель
+    if (data === 'menu_create') {
+      await bot.editMessageText(
+        copy.mainFlow.requestInput,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '← Главное меню', callback_data: 'menu_main' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Пополнить баланс
+    if (data === 'menu_buy') {
+      await bot.editMessageText(
+        copy.pricing.slidePacks,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.pricing.buttons.buySlides(15, 490), callback_data: 'buy_pack_small' }],
+              [{ text: copy.pricing.buttons.buySlides(50, 1490), callback_data: 'buy_pack_medium' }],
+              [{ text: copy.pricing.buttons.buySlides(150, 3990), callback_data: 'buy_pack_large' }],
+              [{ text: '───────────────', callback_data: 'noop' }],
+              [{ text: copy.pricing.buttons.viewPro, callback_data: 'view_pro' }],
+              [{ text: '← Главное меню', callback_data: 'menu_main' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Личный кабинет
+    if (data === 'menu_account') {
+      const status = db.getUserStatus(userId);
+
+      if (!status) {
+        return bot.sendMessage(chatId, 'Сначала отправь /start');
+      }
+
+      let expiresFormatted = '';
+      if (status.subscriptionExpiresAt) {
+        expiresFormatted = new Date(status.subscriptionExpiresAt).toLocaleDateString('ru-RU');
+      }
+
+      await bot.editMessageText(
+        copy.pricing.account({ ...status, expiresFormatted }),
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '✨ Создать карусель', callback_data: 'menu_create' }],
+              [{ text: '💳 Пополнить баланс', callback_data: 'menu_buy' }],
+              [{ text: '← Главное меню', callback_data: 'menu_main' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Главное меню (возврат)
+    if (data === 'menu_main') {
+      const status = db.getUserStatus(userId);
+
+      const welcomeText = status
+        ? copy.start.welcome(status)
+        : copy.start.welcomeNew;
+
+      await bot.editMessageText(
+        welcomeText,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.start.buttons.create, callback_data: 'menu_create' }],
+              [
+                { text: copy.start.buttons.buy, callback_data: 'menu_buy' },
+                { text: copy.start.buttons.account, callback_data: 'menu_account' }
+              ],
+              [
+                { text: copy.start.buttons.demo, callback_data: 'demo_carousel' },
+                { text: copy.start.buttons.howItWorks, callback_data: 'how_it_works' }
+              ]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
     // ==================== USERNAME CALLBACKS ====================
     if (data === 'clear_username') {
       await saveDisplayUsername(userId, null);
@@ -436,7 +969,13 @@ bot.on('callback_query', async (query) => {
 
     // ==================== CREATE NOW ====================
     if (data === 'create_now') {
-      await bot.sendMessage(chatId, copy.mainFlow.requestInput);
+      await bot.sendMessage(chatId, copy.mainFlow.requestInput, {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '← Главное меню', callback_data: 'menu_main' }]
+          ]
+        }
+      });
       return;
     }
 
@@ -500,6 +1039,27 @@ bot.on('callback_query', async (query) => {
 
     // ==================== РЕЖИМ: ОБЫЧНЫЙ (HTML шаблоны) ====================
     if (data === 'mode_standard') {
+      // Проверяем лимит Standard генераций
+      const standardCheck = db.canGenerateStandard(userId);
+
+      if (!standardCheck.canGenerate) {
+        await bot.editMessageText(
+          copy.pricing.standardLimitReached,
+          {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: copy.pricing.buttons.viewPro, callback_data: 'view_pro' }],
+                [{ text: '📸 Photo Mode (платно)', callback_data: 'mode_photo' }]
+              ]
+            }
+          }
+        );
+        return;
+      }
+
       if (sessions[userId]) {
         sessions[userId].generationMode = 'standard';
       }
@@ -569,6 +1129,40 @@ bot.on('callback_query', async (query) => {
         }
       }
 
+      const slideCount = sessions[userId]?.slideCount || 5;
+
+      // Проверяем баланс Photo Mode слайдов
+      const photoCheck = db.canGeneratePhoto(userId, slideCount);
+
+      if (!photoCheck.canGenerate) {
+        // Нужна оплата
+        const tier = db.getActiveSubscription(userId);
+        const price = pricing.getPhotoModePrice(slideCount, tier);
+
+        await bot.editMessageText(
+          copy.pricing.photoNeedPayment({
+            slideCount,
+            price,
+            balance: photoCheck.balance,
+            tier
+          }),
+          {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: copy.pricing.buttons.payOnce(price), callback_data: `pay_photo_${slideCount}` }],
+                [{ text: copy.pricing.buttons.viewPacks, callback_data: 'view_packs' }],
+                [{ text: '🎨 Standard (бесплатно)', callback_data: 'mode_standard' }]
+              ]
+            }
+          }
+        );
+        return;
+      }
+
+      // Баланс есть, продолжаем
       await bot.editMessageText(
         copy.photoMode.styleSelection.text,
         {
@@ -656,6 +1250,9 @@ bot.on('callback_query', async (query) => {
       }));
 
       await bot.sendMediaGroup(chatId, mediaGroup);
+
+      // Списываем лимит Standard
+      db.deductStandard(userId);
 
       // Логируем генерацию
       logGeneration(userId, styleKey, slideCount);
