@@ -85,26 +85,39 @@ async function generateImageWithReference(slideContent, referencePhotoBase64, st
 
   console.log(`🎨 Генерация изображения ${slideNumber}/${totalSlides} (стиль: ${styleConfig.name}, формат: ${aspectDescription})...`);
 
-  // Промпт фокусируется ТОЛЬКО на визуале, без упоминания текста слайда
-  const prompt = `Create an image for Instagram (${aspectDescription} aspect ratio).
+  // Промпт с чеклистом и валидацией
+  const prompt = `# Purpose
+Create a high-quality image for use in a visual carousel, transforming the reference person into a specified visual style while meeting strict compositional and content constraints.
 
-VISUAL STYLE:
-${styleConfig.prompt}
+Begin with a concise checklist (3-7 bullets) of the core visual transformation and compositional steps before generating the image; keep items high-level.
 
-COMPOSITION:
-- Transform the person from the reference photo into this style
-- Keep their face recognizable and expressive
-- Professional dynamic pose suggesting confidence
-- Clean, uncluttered background with soft blur
-- Leave clear space at TOP (20%) and BOTTOM (25%) of image for text overlay
-- Center the subject in the middle portion of the frame
-- High quality, sharp focus on the face
+## VISUAL STYLE
+- Use: ${styleConfig.prompt}
 
-CRITICAL REQUIREMENTS:
-⛔ ABSOLUTELY NO TEXT, LETTERS, NUMBERS, WORDS, CAPTIONS, TITLES, OR TYPOGRAPHY
-⛔ NO watermarks, logos, signatures, or any written elements
-⛔ The image must be 100% visual - pure illustration/photo only
-✅ Focus entirely on the visual aesthetic and the person`;
+## IMAGE FORMAT
+- Aspect ratio: ${aspectDescription}
+
+## COMPOSITION REQUIREMENTS
+- Transform the individual from the reference photo into the given style.
+- Ensure the face remains clearly recognizable and expressive.
+- Use a confident, natural pose.
+- Background should be clean and uncluttered, with a soft blur.
+- Provide clear space for text overlay:
+  - Top: 20% of the frame
+  - Bottom: 25% of the frame
+- Subject must be centered in the middle of the frame.
+- Focus must be sharp on the face; ensure high image quality.
+
+After creating the image, review it for compliance with all compositional and critical requirements. If any issue is detected, self-correct and repeat the process once to achieve validity.
+
+## CRITICAL REQUIREMENTS (ABSOLUTE)
+- ⛔ NO text of any kind.
+- ⛔ NO letters, numbers, symbols, or typography.
+- ⛔ NO captions, logos, watermarks, or UI elements.
+- ⛔ NO text-like shapes or symbols.
+
+> **If ANY text, letters, or text-like marks appear, the result is INVALID.**
+> The image must be purely visual.`;
 
   try {
     const contents = [
@@ -171,9 +184,11 @@ async function generateImageWithReferenceFallback(slideContent, referencePhotoBa
   const prompt = `Create an image (${aspectDescription} ratio).
 Style: ${styleConfig.prompt}
 Transform the person from reference photo into this style.
-Keep face recognizable. Professional pose. Clean background.
-Leave space at top and bottom for text overlay.
-⛔ ABSOLUTELY NO TEXT OR LETTERS IN THE IMAGE`;
+Keep face recognizable. Professional pose. Clean background with soft blur.
+Leave 20% space at top and 25% at bottom for text overlay.
+Center subject in frame. Sharp focus on face.
+⛔ CRITICAL: ABSOLUTELY NO TEXT, LETTERS, NUMBERS OR TYPOGRAPHY IN THE IMAGE.
+The image must be purely visual.`;
 
   try {
     const contents = [
@@ -220,21 +235,31 @@ async function generateImageFromText(themeDescription, style, format = 'portrait
   const aspectRatio = ASPECT_RATIOS[format] || ASPECT_RATIOS.portrait;
   const aspectDescription = format === 'square' ? '1:1 square' : '4:5 portrait';
 
-  const fullPrompt = `Create an image for Instagram (${aspectDescription} aspect ratio).
+  const fullPrompt = `Begin with a concise checklist (3-7 bullets) of the approach to creating the image; keep points conceptual rather than implementation-specific.
+
+Create an abstract or conceptual image for a visual carousel.
 
 VISUAL STYLE:
-${styleConfig.prompt}
+- Follow the provided style configuration: ${styleConfig.prompt}
 
-THEME: Create an abstract/conceptual visual representation related to: "${themeDescription}"
-- Use symbolic imagery, colors, and shapes
-- Professional quality, visually striking
-- Clean composition with soft background
-- Leave clear space at TOP and BOTTOM for text overlay
+IMAGE FORMAT:
+- Aspect ratio: ${aspectDescription}
 
-CRITICAL:
-⛔ ABSOLUTELY NO TEXT, LETTERS, NUMBERS, WORDS, OR TYPOGRAPHY
-⛔ The image must be 100% visual only
-✅ Focus on mood, colors, abstract representation`;
+THEME:
+- Develop a visual metaphor related to: "${themeDescription}"
+
+GUIDELINES:
+- Utilize symbolic shapes, colors, and mood
+- Ensure a strong visual focus
+- Maintain a clean composition
+- Use a soft background
+- Leave 20% of space at the TOP and 25% at the BOTTOM for future text overlay
+
+CRITICAL REQUIREMENTS:
+- ⛔ Absolutely NO text, letters, numbers, symbols, or any kind of typography
+- ⛔ The image must be exclusively visual, with 100% non-textual elements only
+
+After generating the image concept, validate that (1) the space allocation for future overlays is clearly visible, and (2) no typographic elements are present. If validation fails, revise the concept accordingly.`;
 
   try {
     const response = await ai.models.generateContent({
