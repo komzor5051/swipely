@@ -385,7 +385,8 @@ async function startPhotoModeGeneration(chatId, userId) {
     const images = await generateCarouselImages(
       carouselData,
       session.referencePhoto,
-      imageStyle
+      imageStyle,
+      format
     );
 
     // 3. Рендеринг слайдов с текстом поверх изображений

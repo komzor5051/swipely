@@ -35,6 +35,12 @@ const STYLE_PROMPTS = {
   }
 };
 
+// Соотношения сторон для разных форматов
+const ASPECT_RATIOS = {
+  portrait: '4:5',  // 1080x1350
+  square: '1:1'     // 1080x1080
+};
+
 let genAI = null;
 
 /**
@@ -67,17 +73,20 @@ async function downloadTelegramPhoto(bot, fileId) {
  * Генерация одного изображения с reference photo
  * Использует Gemini 3 Pro Image (Nano Banana Pro)
  * ВАЖНО: Изображение генерируется БЕЗ текста - текст накладывается отдельно
+ * @param {string} format - 'portrait' (4:5) или 'square' (1:1)
  */
-async function generateImageWithReference(slideContent, referencePhotoBase64, style, slideNumber, totalSlides) {
+async function generateImageWithReference(slideContent, referencePhotoBase64, style, slideNumber, totalSlides, format = 'portrait') {
   const ai = await initGenAI();
   if (!ai) throw new Error('Gemini не настроен');
 
   const styleConfig = STYLE_PROMPTS[style] || STYLE_PROMPTS.cartoon;
+  const aspectRatio = ASPECT_RATIOS[format] || ASPECT_RATIOS.portrait;
+  const aspectDescription = format === 'square' ? '1:1 square' : '4:5 portrait';
 
-  console.log(`🎨 Генерация изображения ${slideNumber}/${totalSlides} (стиль: ${styleConfig.name})...`);
+  console.log(`🎨 Генерация изображения ${slideNumber}/${totalSlides} (стиль: ${styleConfig.name}, формат: ${aspectDescription})...`);
 
   // Промпт фокусируется ТОЛЬКО на визуале, без упоминания текста слайда
-  const prompt = `Create a portrait image for Instagram (4:5 aspect ratio).
+  const prompt = `Create an image for Instagram (${aspectDescription} aspect ratio).
 
 VISUAL STYLE:
 ${styleConfig.prompt}
@@ -114,7 +123,7 @@ CRITICAL REQUIREMENTS:
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
         imageConfig: {
-          aspectRatio: '4:5',
+          aspectRatio: aspectRatio,
           imageSize: '2K'
         }
       }
@@ -138,7 +147,7 @@ CRITICAL REQUIREMENTS:
     // Если ошибка связана с моделью, попробуем fallback
     if (error.message.includes('not found') || error.message.includes('not supported')) {
       console.log(`🔄 Пробую fallback модель...`);
-      return await generateImageWithReferenceFallback(slideContent, referencePhotoBase64, style, slideNumber, totalSlides);
+      return await generateImageWithReferenceFallback(slideContent, referencePhotoBase64, style, slideNumber, totalSlides, format);
     }
     return null;
   }
@@ -146,17 +155,20 @@ CRITICAL REQUIREMENTS:
 
 /**
  * Fallback на старую модель если gemini-3-pro-image-preview недоступна
+ * @param {string} format - 'portrait' (4:5) или 'square' (1:1)
  */
-async function generateImageWithReferenceFallback(slideContent, referencePhotoBase64, style, slideNumber, totalSlides) {
+async function generateImageWithReferenceFallback(slideContent, referencePhotoBase64, style, slideNumber, totalSlides, format = 'portrait') {
   const ai = await initGenAI();
   if (!ai) return null;
 
   const styleConfig = STYLE_PROMPTS[style] || STYLE_PROMPTS.cartoon;
+  const aspectRatio = ASPECT_RATIOS[format] || ASPECT_RATIOS.portrait;
+  const aspectDescription = format === 'square' ? '1:1 square' : '4:5 portrait';
   const FALLBACK_MODEL = 'gemini-2.0-flash-exp-image-generation';
 
-  console.log(`🔄 Fallback: используем ${FALLBACK_MODEL}`);
+  console.log(`🔄 Fallback: используем ${FALLBACK_MODEL} (формат: ${aspectDescription})`);
 
-  const prompt = `Create a portrait image (4:5 ratio).
+  const prompt = `Create an image (${aspectDescription} ratio).
 Style: ${styleConfig.prompt}
 Transform the person from reference photo into this style.
 Keep face recognizable. Professional pose. Clean background.
@@ -172,7 +184,12 @@ Leave space at top and bottom for text overlay.
     const response = await ai.models.generateContent({
       model: FALLBACK_MODEL,
       contents: contents,
-      config: { responseModalities: ['TEXT', 'IMAGE'] }
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+        imageConfig: {
+          aspectRatio: aspectRatio
+        }
+      }
     });
 
     if (response.candidates && response.candidates[0]?.content?.parts) {
@@ -193,14 +210,17 @@ Leave space at top and bottom for text overlay.
 /**
  * Генерация изображения без reference (только по тексту)
  * Используется как fallback когда reference photo не сработало
+ * @param {string} format - 'portrait' (4:5) или 'square' (1:1)
  */
-async function generateImageFromText(themeDescription, style) {
+async function generateImageFromText(themeDescription, style, format = 'portrait') {
   const ai = await initGenAI();
   if (!ai) throw new Error('Gemini не настроен');
 
   const styleConfig = STYLE_PROMPTS[style] || STYLE_PROMPTS.cartoon;
+  const aspectRatio = ASPECT_RATIOS[format] || ASPECT_RATIOS.portrait;
+  const aspectDescription = format === 'square' ? '1:1 square' : '4:5 portrait';
 
-  const fullPrompt = `Create a portrait image for Instagram (4:5 aspect ratio).
+  const fullPrompt = `Create an image for Instagram (${aspectDescription} aspect ratio).
 
 VISUAL STYLE:
 ${styleConfig.prompt}
@@ -223,7 +243,7 @@ CRITICAL:
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
         imageConfig: {
-          aspectRatio: '4:5',
+          aspectRatio: aspectRatio,
           imageSize: '2K'
         }
       }
@@ -247,12 +267,15 @@ CRITICAL:
 /**
  * Генерация всех изображений для карусели
  * Использует Gemini 3 Pro Image для высокого качества
+ * @param {string} format - 'portrait' (4:5) или 'square' (1:1)
  */
-async function generateCarouselImages(carouselData, referencePhotoBase64, style) {
+async function generateCarouselImages(carouselData, referencePhotoBase64, style, format = 'portrait') {
   const totalSlides = carouselData.slides.length;
+  const aspectDescription = format === 'square' ? '1:1 квадрат' : '4:5 портрет';
 
   console.log(`🖼️ Начинаю генерацию ${totalSlides} изображений...`);
   console.log(`📸 Модель: ${IMAGE_MODEL} (2K качество)`);
+  console.log(`📐 Формат: ${aspectDescription}`);
   console.log(`💰 Примерная стоимость: $${(totalSlides * 0.04).toFixed(2)}`);
 
   const images = [];
@@ -267,7 +290,8 @@ async function generateCarouselImages(carouselData, referencePhotoBase64, style)
         referencePhotoBase64,
         style,
         i + 1,
-        totalSlides
+        totalSlides,
+        format
       );
 
       // Если всё ещё не получилось, пробуем без reference вообще
@@ -275,7 +299,8 @@ async function generateCarouselImages(carouselData, referencePhotoBase64, style)
         console.log(`🔄 Fallback: генерация абстрактного визуала для слайда ${i + 1}`);
         imageBase64 = await generateImageFromText(
           slide.title || 'professional creative visual',
-          style
+          style,
+          format
         );
       }
 
