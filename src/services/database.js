@@ -40,6 +40,13 @@ function init() {
   try {
     db.exec(`ALTER TABLE users ADD COLUMN subscription_expires_at TEXT`);
   } catch (e) { /* колонка уже существует */ }
+  // Реферальная система
+  try {
+    db.exec(`ALTER TABLE users ADD COLUMN referred_by INTEGER`);
+  } catch (e) { /* колонка уже существует */ }
+  try {
+    db.exec(`ALTER TABLE users ADD COLUMN referral_count INTEGER DEFAULT 0`);
+  } catch (e) { /* колонка уже существует */ }
 
   // Создание таблицы генераций
   db.exec(`
@@ -368,6 +375,98 @@ function getUserStatus(userId) {
 }
 
 // ============================================
+// РЕФЕРАЛЬНАЯ СИСТЕМА
+// ============================================
+
+const REFERRAL_BONUS_INVITER = 5;  // Бонус пригласившему
+const REFERRAL_BONUS_INVITED = 3;  // Бонус приглашённому
+
+/**
+ * Обработка реферала при регистрации
+ * @returns {object|null} - информация о начислениях или null если реферал невалидный
+ */
+function processReferral(newUserId, referrerId) {
+  // Проверки
+  if (!referrerId || newUserId === referrerId) {
+    return null;
+  }
+
+  const referrer = getUser(referrerId);
+  if (!referrer) {
+    console.log(`⚠️ Реферер ${referrerId} не найден`);
+    return null;
+  }
+
+  const newUser = getUser(newUserId);
+  if (!newUser) {
+    console.log(`⚠️ Новый пользователь ${newUserId} не найден`);
+    return null;
+  }
+
+  // Проверяем, не был ли уже обработан реферал
+  if (newUser.referred_by) {
+    console.log(`⚠️ Пользователь ${newUserId} уже имеет реферера`);
+    return null;
+  }
+
+  // Записываем реферера
+  const updateNewUser = db.prepare(`
+    UPDATE users SET referred_by = ? WHERE user_id = ?
+  `);
+  updateNewUser.run(referrerId, newUserId);
+
+  // Увеличиваем счётчик рефералов у пригласившего
+  const updateReferrer = db.prepare(`
+    UPDATE users SET referral_count = referral_count + 1 WHERE user_id = ?
+  `);
+  updateReferrer.run(referrerId);
+
+  // Начисляем бонусы
+  addPhotoSlides(referrerId, REFERRAL_BONUS_INVITER);
+  addPhotoSlides(newUserId, REFERRAL_BONUS_INVITED);
+
+  console.log(`🎁 Реферал обработан: ${referrerId} пригласил ${newUserId}`);
+  console.log(`   → ${referrerId}: +${REFERRAL_BONUS_INVITER} слайдов`);
+  console.log(`   → ${newUserId}: +${REFERRAL_BONUS_INVITED} слайдов`);
+
+  return {
+    inviterBonus: REFERRAL_BONUS_INVITER,
+    invitedBonus: REFERRAL_BONUS_INVITED,
+    referrerId,
+    newUserId
+  };
+}
+
+/**
+ * Получение статистики рефералов пользователя
+ */
+function getReferralStats(userId) {
+  const user = getUser(userId);
+  if (!user) return null;
+
+  return {
+    referralCount: user.referral_count || 0,
+    totalEarned: (user.referral_count || 0) * REFERRAL_BONUS_INVITER,
+    bonusPerReferral: REFERRAL_BONUS_INVITER
+  };
+}
+
+/**
+ * Проверка, является ли пользователь новым (для реферальной системы)
+ */
+function isNewUser(userId) {
+  const user = getUser(userId);
+  // Считаем новым, если создан менее 5 минут назад и нет генераций
+  if (!user) return true;
+
+  const createdAt = new Date(user.created_at);
+  const now = new Date();
+  const fiveMinutes = 5 * 60 * 1000;
+
+  return (now - createdAt < fiveMinutes) && (user.generation_count || 0) === 0;
+}
+
+// ============================================
 // ПЛАТЕЖИ
 // ============================================
 
@@ -496,5 +595,11 @@ module.exports = {
   getPayment,
   getPendingPayments,
   completePayment,
-  processSuccessfulPayment
+  processSuccessfulPayment,
+  // Реферальная система
+  processReferral,
+  getReferralStats,
+  isNewUser,
+  REFERRAL_BONUS_INVITER,
+  REFERRAL_BONUS_INVITED
 };

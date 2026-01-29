@@ -53,6 +53,31 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
       return;
     }
 
+    // Проверяем реферальную ссылку
+    if (param && param.startsWith('ref_')) {
+      const referrerId = parseInt(param.replace('ref_', ''));
+      if (referrerId && referrerId !== userId && db.isNewUser(userId)) {
+        const result = db.processReferral(userId, referrerId);
+        if (result) {
+          // Уведомляем приглашённого
+          await bot.sendMessage(chatId, copy.referral.invitedBonus(result.invitedBonus), {
+            parse_mode: 'Markdown'
+          });
+
+          // Уведомляем пригласившего
+          try {
+            const referrerStatus = db.getUserStatus(referrerId);
+            await bot.sendMessage(referrerId, copy.referral.inviterBonus(
+              result.inviterBonus,
+              referrerStatus.photoSlidesBalance
+            ), { parse_mode: 'Markdown' });
+          } catch (e) {
+            console.log(`⚠️ Не удалось уведомить реферера ${referrerId}`);
+          }
+        }
+      }
+    }
+
     // Получаем статус пользователя
     const status = db.getUserStatus(userId);
 
@@ -74,6 +99,7 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
             { text: copy.start.buttons.demo, callback_data: 'demo_carousel' },
             { text: copy.start.buttons.howItWorks, callback_data: 'how_it_works' }
           ],
+          [{ text: copy.start.buttons.referral, callback_data: 'menu_referral' }],
           [{ text: copy.start.buttons.legal, callback_data: 'menu_legal' }]
         ]
       }
@@ -868,7 +894,30 @@ bot.on('callback_query', async (query) => {
                 { text: copy.start.buttons.demo, callback_data: 'demo_carousel' },
                 { text: copy.start.buttons.howItWorks, callback_data: 'how_it_works' }
               ],
+              [{ text: copy.start.buttons.referral, callback_data: 'menu_referral' }],
               [{ text: copy.start.buttons.legal, callback_data: 'menu_legal' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // ==================== REFERRAL PROGRAM ====================
+    if (data === 'menu_referral') {
+      const stats = db.getReferralStats(userId);
+      const botInfo = await bot.getMe();
+      const referralLink = `https://t.me/${botInfo.username}?start=ref_${userId}`;
+
+      await bot.editMessageText(
+        copy.referral.menu(stats, referralLink),
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.referral.buttons.back, callback_data: 'menu_main' }]
             ]
           }
         }
