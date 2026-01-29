@@ -5,7 +5,7 @@
 // Docs: https://yookassa.ru/developers/api
 
 const axios = require('axios');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 const YOOKASSA_API_URL = 'https://api.yookassa.ru/v3';
 
@@ -44,7 +44,7 @@ yooApi.interceptors.request.use((config) => {
  */
 async function createPayment({ amount, description, metadata, returnUrl }) {
   try {
-    const idempotenceKey = uuidv4();
+    const idempotenceKey = crypto.randomUUID();
 
     const response = await yooApi.post('/payments', {
       amount: {
