@@ -68,6 +68,13 @@ module.exports = {
     }
   },
 
+  // ==================== ПОШТУЧНАЯ ПОКУПКА СЛАЙДОВ ====================
+  // Цена выше пакетов (33₽ минимум), но позволяет докупить недостающие
+  perSlidePricing: {
+    free: 49,   // 49₽/слайд для FREE (маржа 72%)
+    pro: 39     // 39₽/слайд для PRO (маржа 65%, скидка 20%)
+  },
+
   // ==================== ПАКЕТЫ СЛАЙДОВ (опционально) ====================
   // Предоплаченные пакеты Photo Mode слайдов
   slidePacks: {
@@ -157,5 +164,35 @@ module.exports = {
    */
   formatPrice(price) {
     return `${price.toLocaleString('ru-RU')}₽`;
+  },
+
+  /**
+   * Получить цену за 1 слайд (поштучная покупка)
+   * @param {string} subscriptionTier - тариф пользователя ('free' | 'pro')
+   * @returns {number} цена за 1 слайд в рублях
+   */
+  getPerSlidePrice(subscriptionTier = 'free') {
+    return subscriptionTier === 'pro'
+      ? this.perSlidePricing.pro
+      : this.perSlidePricing.free;
+  },
+
+  /**
+   * Рассчитать стоимость докупки недостающих слайдов
+   * @param {number} needed - сколько слайдов нужно
+   * @param {number} balance - текущий баланс
+   * @param {string} subscriptionTier - тариф пользователя
+   * @returns {object} { slidesToBuy, totalPrice, pricePerSlide }
+   */
+  calculateTopUp(needed, balance, subscriptionTier = 'free') {
+    const slidesToBuy = Math.max(0, needed - balance);
+    const pricePerSlide = this.getPerSlidePrice(subscriptionTier);
+    const totalPrice = slidesToBuy * pricePerSlide;
+
+    return {
+      slidesToBuy,
+      totalPrice,
+      pricePerSlide
+    };
   }
 };

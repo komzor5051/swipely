@@ -145,6 +145,20 @@ async function handlePaymentReturn(chatId, userId, paymentId) {
               ]
             }
           });
+        } else if (result.product_type === 'topup_slides') {
+          // Докупка слайдов поштучно
+          await bot.sendMessage(chatId,
+            copy.pricing.success.slidesTopUp(result.product_data.slides, status.photoSlidesBalance),
+            {
+              parse_mode: 'Markdown',
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: '📸 Продолжить Photo Mode', callback_data: 'mode_photo' }],
+                  [{ text: '← Главное меню', callback_data: 'menu_main' }]
+                ]
+              }
+            }
+          );
         } else {
           // Пакет слайдов
           await bot.sendMessage(chatId,
@@ -791,6 +805,57 @@ bot.on('callback_query', async (query) => {
       return;
     }
 
+    // Покупка недостающих слайдов поштучно
+    if (data.startsWith('topup_')) {
+      const slidesToBuy = parseInt(data.replace('topup_', ''));
+      const tier = db.getActiveSubscription(userId);
+      const pricePerSlide = pricing.getPerSlidePrice(tier);
+      const totalPrice = slidesToBuy * pricePerSlide;
+
+      // Создаём платёж в ЮКассе
+      await bot.sendMessage(chatId, '⏳ Создаю ссылку на оплату...');
+
+      const botInfo = await bot.getMe();
+
+      const payment = await yookassa.createPayment({
+        amount: totalPrice,
+        description: `Swipely: ${slidesToBuy} слайдов`,
+        metadata: {
+          user_id: userId,
+          product_type: 'topup_slides',
+          slides: slidesToBuy
+        },
+        returnUrl: yookassa.getTelegramReturnUrl(botInfo.username, 'temp')
+      });
+
+      if (!payment.success) {
+        await bot.sendMessage(chatId, `❌ Ошибка создания платежа: ${payment.error}\n\nПопробуй позже.`);
+        return;
+      }
+
+      // Сохраняем платёж в БД
+      db.createPayment(payment.paymentId, userId, totalPrice, 'topup_slides', { slides: slidesToBuy });
+
+      await bot.sendMessage(chatId,
+        `💳 **Докупка слайдов**\n\n` +
+        `📦 Слайдов: ${slidesToBuy} шт.\n` +
+        `💰 Цена: ${pricePerSlide}₽/шт.\n` +
+        `💵 Итого: ${pricing.formatPrice(totalPrice)}${tier === 'pro' ? ' (PRO цена)' : ''}\n\n` +
+        `👇 Нажми кнопку для оплаты:`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: `💳 Оплатить ${totalPrice}₽`, url: payment.confirmationUrl }],
+              [{ text: '🔄 Я оплатил, проверить', callback_data: `check_payment_${payment.paymentId}` }],
+              [{ text: '← Назад', callback_data: 'menu_create' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
     // noop для разделителей
     if (data === 'noop') {
       return;
@@ -1265,13 +1330,45 @@ bot.on('callback_query', async (query) => {
       if (!photoCheck.canGenerate) {
         // Нужна оплата
         const tier = db.getActiveSubscription(userId);
+        const balance = photoCheck.balance || 0;
+
+        // Если есть частичный баланс - предлагаем докупить недостающие
+        if (balance > 0) {
+          const topUp = pricing.calculateTopUp(slideCount, balance, tier);
+
+          await bot.editMessageText(
+            copy.pricing.photoTopUp({
+              slideCount,
+              balance,
+              slidesToBuy: topUp.slidesToBuy,
+              pricePerSlide: topUp.pricePerSlide,
+              topUpPrice: topUp.totalPrice,
+              tier
+            }),
+            {
+              chat_id: chatId,
+              message_id: messageId,
+              parse_mode: 'Markdown',
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: copy.pricing.buttons.buyPerSlide(topUp.slidesToBuy, topUp.totalPrice), callback_data: `topup_${topUp.slidesToBuy}` }],
+                  [{ text: copy.pricing.buttons.viewPacks, callback_data: 'view_packs' }],
+                  [{ text: '🎨 Standard (бесплатно)', callback_data: 'mode_standard' }]
+                ]
+              }
+            }
+          );
+          return;
+        }
+
+        // Баланс = 0, показываем полную стоимость
         const price = pricing.getPhotoModePrice(slideCount, tier);
 
         await bot.editMessageText(
           copy.pricing.photoNeedPayment({
             slideCount,
             price,
-            balance: photoCheck.balance,
+            balance: 0,
             tier
           }),
           {

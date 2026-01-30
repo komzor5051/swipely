@@ -552,6 +552,11 @@ function processSuccessfulPayment(paymentId) {
       addPhotoSlides(user_id, product_data.slides);
       break;
 
+    case 'topup_slides':
+      addPhotoSlides(user_id, product_data.slides);
+      console.log(`🛒 Докуплено ${product_data.slides} слайдов для ${user_id}`);
+      break;
+
     case 'pro_month':
       activateProSubscription(user_id, 1);
       break;
