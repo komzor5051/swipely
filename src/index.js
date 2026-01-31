@@ -1345,7 +1345,8 @@ bot.on('callback_query', async (query) => {
           ? recentPayments.map(p => {
               const emoji = p.payment_method === 'telegram_stars' ? '⭐' : '💳';
               const date = new Date(p.created_at).toLocaleDateString('ru-RU');
-              return `${emoji} ${p.product_type} — ${p.amount}${p.payment_method === 'telegram_stars' ? '⭐' : '₽'} (${date})`;
+              const productType = (p.product_type || '').replace(/_/g, '\\_'); // Экранируем _ для Markdown
+              return `${emoji} ${productType} — ${p.amount}${p.payment_method === 'telegram_stars' ? '⭐' : '₽'} (${date})`;
             }).join('\n')
           : 'Нет платежей';
 
