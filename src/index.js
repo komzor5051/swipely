@@ -28,8 +28,13 @@ const pricing = require('./config/pricing');
 const yookassa = require('./services/yookassa');
 
 // Инициализация бота
+// ВАЖНО: allowed_updates включает pre_checkout_query для работы Stars платежей!
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
-  polling: true
+  polling: {
+    params: {
+      allowed_updates: ['message', 'callback_query', 'pre_checkout_query', 'shipping_query']
+    }
+  }
 });
 
 // Simple in-memory session storage
