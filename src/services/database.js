@@ -31,32 +31,56 @@ async function init() {
 
 /**
  * Создание или обновление пользователя
+ * НЕ сбрасывает балансы при обновлении!
  */
 async function createUser(userId, username) {
   try {
-    const { data, error } = await supabase
+    // Сначала проверяем существует ли пользователь
+    const { data: existing } = await supabase
       .from('profiles')
-      .upsert({
-        telegram_id: userId,
-        telegram_username: username,
-        subscription_tier: 'free',
-        photo_slides_balance: 0,
-        standard_count_month: 0,
-        generation_count: 0
-      }, {
-        onConflict: 'telegram_id',
-        ignoreDuplicates: false
-      })
-      .select()
+      .select('id')
+      .eq('telegram_id', userId)
       .single();
 
-    if (error) {
-      console.error('❌ Ошибка создания пользователя:', error);
-      return null;
-    }
+    if (existing) {
+      // Пользователь существует - обновляем только username
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ telegram_username: username })
+        .eq('telegram_id', userId)
+        .select()
+        .single();
 
-    console.log(`✅ Пользователь создан/обновлён: ${username || userId}`);
-    return data;
+      if (error) {
+        console.error('❌ Ошибка обновления пользователя:', error);
+        return null;
+      }
+
+      console.log(`✅ Пользователь обновлён: ${username || userId}`);
+      return data;
+    } else {
+      // Новый пользователь - создаём с дефолтными значениями
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert({
+          telegram_id: userId,
+          telegram_username: username,
+          subscription_tier: 'free',
+          photo_slides_balance: 0,
+          standard_count_month: 0,
+          generation_count: 0
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Ошибка создания пользователя:', error);
+        return null;
+      }
+
+      console.log(`✅ Пользователь создан: ${username || userId}`);
+      return data;
+    }
   } catch (err) {
     console.error('❌ Критическая ошибка createUser:', err);
     return null;
