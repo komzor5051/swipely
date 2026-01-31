@@ -295,13 +295,20 @@ After generating the image concept, validate that (1) the space allocation for f
  * @param {string} format - 'portrait' (4:5) или 'square' (1:1)
  */
 async function generateCarouselImages(carouselData, referencePhotoBase64, style, format = 'portrait') {
+  const startTime = Date.now();
   const totalSlides = carouselData.slides.length;
   const aspectDescription = format === 'square' ? '1:1 квадрат' : '4:5 портрет';
+  const photoSizeKB = Math.round(referencePhotoBase64.length * 0.75 / 1024);
 
-  console.log(`🖼️ Начинаю генерацию ${totalSlides} изображений...`);
+  console.log(`🖼️ ═══════════════════════════════════════`);
+  console.log(`🖼️ ГЕНЕРАЦИЯ AI-ИЗОБРАЖЕНИЙ`);
+  console.log(`🖼️ ═══════════════════════════════════════`);
   console.log(`📸 Модель: ${IMAGE_MODEL} (2K качество)`);
   console.log(`📐 Формат: ${aspectDescription}`);
-  console.log(`💰 Примерная стоимость: $${(totalSlides * 0.04).toFixed(2)}`);
+  console.log(`🎨 Стиль: ${style}`);
+  console.log(`📊 Слайдов: ${totalSlides}`);
+  console.log(`📷 Фото пользователя: ${photoSizeKB} KB`);
+  console.log(`💰 Примерная стоимость: $${(totalSlides * 0.04).toFixed(2)} (~${Math.round(totalSlides * 0.04 * 90)}₽)`);
 
   const images = [];
 
@@ -343,7 +350,17 @@ async function generateCarouselImages(carouselData, referencePhotoBase64, style,
   }
 
   const successCount = images.filter(img => img !== null).length;
-  console.log(`✅ Сгенерировано ${successCount}/${totalSlides} изображений`);
+  const failedCount = totalSlides - successCount;
+  const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+  const totalSizeKB = images.filter(img => img).reduce((sum, img) => sum + img.length * 0.75 / 1024, 0);
+
+  console.log(`🖼️ ═══════════════════════════════════════`);
+  console.log(`✅ ГЕНЕРАЦИЯ ЗАВЕРШЕНА`);
+  console.log(`📊 Успешно: ${successCount}/${totalSlides} изображений`);
+  if (failedCount > 0) console.log(`⚠️ Ошибок: ${failedCount}`);
+  console.log(`⏱️ Время: ${duration}с (${(duration / totalSlides).toFixed(1)}с/слайд)`);
+  console.log(`📦 Размер: ${Math.round(totalSizeKB)} KB`);
+  console.log(`🖼️ ═══════════════════════════════════════`);
 
   return images;
 }

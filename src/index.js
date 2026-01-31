@@ -559,7 +559,10 @@ async function startPhotoModeGeneration(chatId, userId) {
     await bot.sendMediaGroup(chatId, mediaGroup);
 
     // 5. Списываем Photo слайды
-    db.deductPhotoSlides(userId, slideCount);
+    const deductResult = db.deductPhotoSlides(userId, slideCount);
+    if (!deductResult.success) {
+      console.error(`⚠️ Не удалось списать слайды для ${userId}: ${deductResult.error}`);
+    }
 
     // 6. Логирование
     logGeneration(userId, `photo_${imageStyle}`, slideCount);
@@ -1792,7 +1795,10 @@ bot.on('callback_query', async (query) => {
       await bot.sendMediaGroup(chatId, mediaGroup);
 
       // Списываем лимит Standard
-      db.deductStandard(userId);
+      const deductResult = db.deductStandard(userId);
+      if (!deductResult.success) {
+        console.error(`⚠️ Не удалось списать Standard генерацию для ${userId}`);
+      }
 
       // Логируем генерацию
       logGeneration(userId, styleKey, slideCount);

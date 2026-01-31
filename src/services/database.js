@@ -273,9 +273,18 @@ function canGeneratePhoto(userId, slideCount) {
 
 /**
  * Списание Standard генерации
+ * @returns {object} { success, usedBefore, usedAfter, remaining }
  */
 function deductStandard(userId) {
   resetMonthlyLimitsIfNeeded(userId);
+
+  const user = getUser(userId);
+  if (!user) {
+    console.error(`❌ deductStandard: пользователь ${userId} не найден`);
+    return { success: false };
+  }
+
+  const usedBefore = user.standard_count_month || 0;
 
   const stmt = db.prepare(`
     UPDATE users
@@ -285,13 +294,37 @@ function deductStandard(userId) {
     WHERE user_id = ?
   `);
   stmt.run(userId);
-  console.log(`📉 Списана Standard генерация для ${userId}`);
+
+  const userAfter = getUser(userId);
+  const usedAfter = userAfter.standard_count_month;
+  const tier = getActiveSubscription(userId);
+  const limit = pricing.subscriptions[tier]?.features.standardLimit;
+  const remaining = limit === -1 ? '∞' : Math.max(0, limit - usedAfter);
+
+  console.log(`📉 Списана Standard генерация для ${userId} (использовано: ${usedBefore} → ${usedAfter}, осталось: ${remaining})`);
+
+  return { success: true, usedBefore, usedAfter, remaining };
 }
 
 /**
  * Списание Photo Mode слайдов
+ * @returns {object} { success, balanceBefore, balanceAfter } или { success: false, error }
  */
 function deductPhotoSlides(userId, slideCount) {
+  const user = getUser(userId);
+  if (!user) {
+    console.error(`❌ deductPhotoSlides: пользователь ${userId} не найден`);
+    return { success: false, error: 'user_not_found' };
+  }
+
+  const balanceBefore = user.photo_slides_balance || 0;
+
+  // Проверка баланса перед списанием
+  if (balanceBefore < slideCount) {
+    console.error(`❌ deductPhotoSlides: недостаточно слайдов у ${userId} (есть ${balanceBefore}, нужно ${slideCount})`);
+    return { success: false, error: 'insufficient_balance', balanceBefore };
+  }
+
   const stmt = db.prepare(`
     UPDATE users
     SET photo_slides_balance = photo_slides_balance - ?,
@@ -300,28 +333,62 @@ function deductPhotoSlides(userId, slideCount) {
     WHERE user_id = ?
   `);
   stmt.run(slideCount, userId);
-  console.log(`📉 Списано ${slideCount} Photo слайдов для ${userId}`);
+
+  const balanceAfter = getUser(userId).photo_slides_balance;
+  console.log(`📉 Списано ${slideCount} Photo слайдов для ${userId} (было: ${balanceBefore}, стало: ${balanceAfter})`);
+
+  return { success: true, balanceBefore, balanceAfter };
 }
 
 /**
  * Начисление Photo Mode слайдов (после оплаты)
+ * @returns {object} { success, balanceBefore, balanceAfter }
  */
 function addPhotoSlides(userId, slideCount) {
+  const user = getUser(userId);
+  if (!user) {
+    console.error(`❌ addPhotoSlides: пользователь ${userId} не найден`);
+    return { success: false, balanceAfter: 0 };
+  }
+
+  const balanceBefore = user.photo_slides_balance || 0;
+
   const stmt = db.prepare(`
     UPDATE users
     SET photo_slides_balance = photo_slides_balance + ?
     WHERE user_id = ?
   `);
   stmt.run(slideCount, userId);
-  console.log(`📈 Начислено ${slideCount} Photo слайдов для ${userId}`);
-  return getUser(userId).photo_slides_balance;
+
+  const balanceAfter = getUser(userId).photo_slides_balance;
+  console.log(`📈 Начислено ${slideCount} Photo слайдов для ${userId} (было: ${balanceBefore}, стало: ${balanceAfter})`);
+
+  return { success: true, balanceBefore, balanceAfter };
 }
 
 /**
- * Активация PRO подписки
+ * Активация или продление PRO подписки
+ * Если подписка уже активна — продлевает от текущей даты окончания
  */
 function activateProSubscription(userId, months = 1) {
-  const expiresAt = new Date();
+  const user = getUser(userId);
+  if (!user) {
+    console.error(`❌ activateProSubscription: пользователь ${userId} не найден`);
+    return null;
+  }
+
+  let startDate = new Date();
+
+  // Если уже есть активная подписка — продлеваем от её окончания
+  if (user.subscription_tier === 'pro' && user.subscription_expires_at) {
+    const currentExpires = new Date(user.subscription_expires_at);
+    if (currentExpires > startDate) {
+      startDate = currentExpires;
+      console.log(`📅 Продление PRO от ${startDate.toLocaleDateString('ru-RU')}`);
+    }
+  }
+
+  const expiresAt = new Date(startDate);
   expiresAt.setMonth(expiresAt.getMonth() + months);
 
   const stmt = db.prepare(`
@@ -331,7 +398,11 @@ function activateProSubscription(userId, months = 1) {
     WHERE user_id = ?
   `);
   stmt.run(expiresAt.toISOString(), userId);
-  console.log(`🎉 PRO подписка активирована для ${userId} до ${expiresAt.toLocaleDateString('ru-RU')}`);
+
+  const action = user.subscription_tier === 'pro' ? 'продлена' : 'активирована';
+  console.log(`🎉 PRO подписка ${action} для ${userId} до ${expiresAt.toLocaleDateString('ru-RU')}`);
+
+  return expiresAt;
 }
 
 /**
@@ -551,31 +622,40 @@ function processSuccessfulPayment(paymentId) {
     return payment;
   }
 
-  const { user_id, product_type, product_data } = payment;
+  const { user_id, product_type, product_data, payment_method } = payment;
+  const methodEmoji = payment_method === 'telegram_stars' ? '⭐' : '💳';
+
+  console.log(`${methodEmoji} Обработка платежа ${paymentId}: user=${user_id}, type=${product_type}, data=${JSON.stringify(product_data)}`);
+
+  let result;
 
   // Начисляем товар в зависимости от типа
   switch (product_type) {
     case 'pack_small':
     case 'pack_medium':
     case 'pack_large':
-      addPhotoSlides(user_id, product_data.slides);
+      result = addPhotoSlides(user_id, product_data.slides);
+      console.log(`${methodEmoji} Пакет ${product_type}: +${product_data.slides} слайдов → баланс: ${result.balanceAfter}`);
       break;
 
     case 'photo_slides':
-      addPhotoSlides(user_id, product_data.slides);
+      result = addPhotoSlides(user_id, product_data.slides);
+      console.log(`${methodEmoji} Photo slides: +${product_data.slides} слайдов → баланс: ${result.balanceAfter}`);
       break;
 
     case 'topup_slides':
-      addPhotoSlides(user_id, product_data.slides);
-      console.log(`🛒 Докуплено ${product_data.slides} слайдов для ${user_id}`);
+      result = addPhotoSlides(user_id, product_data.slides);
+      console.log(`${methodEmoji} Докупка: +${product_data.slides} слайдов → баланс: ${result.balanceAfter}`);
       break;
 
     case 'pro_month':
-      activateProSubscription(user_id, 1);
+      const expiresMonth = activateProSubscription(user_id, 1);
+      console.log(`${methodEmoji} PRO месяц активирован до: ${expiresMonth?.toLocaleDateString('ru-RU')}`);
       break;
 
     case 'pro_year':
-      activateProSubscription(user_id, 12);
+      const expiresYear = activateProSubscription(user_id, 12);
+      console.log(`${methodEmoji} PRO год активирован до: ${expiresYear?.toLocaleDateString('ru-RU')}`);
       break;
 
     default:

@@ -70,7 +70,8 @@ async function generateViaGemini(prompt, systemPrompt) {
  * Генерация контента карусели
  */
 async function generateCarouselContent(userText, stylePreset, slideCount = 5, toneGuidelines = null) {
-  console.log(`🤖 Генерация (стиль: ${stylePreset}, слайдов: ${slideCount})...`);
+  const startTime = Date.now();
+  console.log(`🤖 Генерация контента (стиль: ${stylePreset}, слайдов: ${slideCount}, входной текст: ${userText.length} символов)...`);
 
   const designConfig = getDesignConfig(stylePreset);
   const systemPrompt = buildSystemPrompt(designConfig, slideCount, toneGuidelines);
@@ -137,7 +138,8 @@ async function generateCarouselContent(userText, stylePreset, slideCount = 5, to
     }));
   }
 
-  console.log(`✅ Сгенерировано ${carouselData.slides?.length || 0} слайдов`);
+  const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+  console.log(`✅ Контент сгенерирован: ${carouselData.slides?.length || 0} слайдов за ${duration}с`);
 
   return carouselData;
 }

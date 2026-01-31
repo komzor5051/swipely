@@ -25,11 +25,19 @@ const FORMAT_SIZES = {
  * @param {string} options.username - юзернейм для отображения в углу
  */
 async function renderSlides(carouselData, stylePreset, options = {}) {
+  const startTime = Date.now();
   const format = options.format || 'portrait';
   const username = options.username || null;
   const { width, height } = FORMAT_SIZES[format] || FORMAT_SIZES.portrait;
+  const slideCount = carouselData.slides?.length || 0;
 
-  console.log(`🎨 Рендеринг ${carouselData.slides?.length || 0} слайдов (стиль: ${stylePreset}, формат: ${format}, username: ${username || 'нет'})...`);
+  console.log(`🎨 ═══════════════════════════════════════`);
+  console.log(`🎨 РЕНДЕРИНГ HTML-СЛАЙДОВ`);
+  console.log(`🎨 ═══════════════════════════════════════`);
+  console.log(`📐 Формат: ${format} (${width}x${height})`);
+  console.log(`🎭 Стиль: ${stylePreset}`);
+  console.log(`📊 Слайдов: ${slideCount}`);
+  console.log(`👤 Username: ${username || 'не задан'}`);
 
   if (!carouselData.slides || carouselData.slides.length === 0) {
     throw new Error('Нет слайдов для рендеринга');
@@ -79,15 +87,25 @@ async function renderSlides(carouselData, stylePreset, options = {}) {
 
       imagePaths.push(imagePath);
 
-      console.log(`✅ Слайд ${slideNumber} сохранён: ${imagePath}`);
+      const fileSizeKB = Math.round(fs.statSync(imagePath).size / 1024);
+      console.log(`✅ Слайд ${slideNumber} сохранён (${fileSizeKB} KB)`);
     }
 
-    console.log(`✅ Все слайды отрендерены: ${imagePaths.length} файлов`);
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+    const totalSizeKB = imagePaths.reduce((sum, p) => sum + fs.statSync(p).size / 1024, 0);
+
+    console.log(`🎨 ═══════════════════════════════════════`);
+    console.log(`✅ РЕНДЕРИНГ ЗАВЕРШЁН`);
+    console.log(`📊 Файлов: ${imagePaths.length}`);
+    console.log(`⏱️ Время: ${duration}с`);
+    console.log(`📦 Общий размер: ${Math.round(totalSizeKB)} KB`);
+    console.log(`🎨 ═══════════════════════════════════════`);
 
     return imagePaths;
 
   } catch (error) {
-    console.error('❌ Ошибка рендеринга:', error);
+    console.error('❌ Ошибка рендеринга:', error.message);
+    console.error('Stack:', error.stack);
     throw error;
   } finally {
     await browser.close();
@@ -368,11 +386,20 @@ function getDefaultTemplate(stylePreset) {
  * @param {string} options.username - юзернейм для отображения
  */
 async function renderSlidesWithImages(carouselData, imageBase64Array, options = {}) {
+  const startTime = Date.now();
   const format = options.format || 'portrait';
   const username = options.username || null;
   const { width, height } = FORMAT_SIZES[format] || FORMAT_SIZES.portrait;
+  const slideCount = carouselData.slides.length;
+  const validImages = imageBase64Array.filter(img => img !== null).length;
 
-  console.log(`🎨 Рендеринг ${carouselData.slides.length} слайдов с AI-изображениями (формат: ${format}, username: ${username || 'нет'})...`);
+  console.log(`🎨 ═══════════════════════════════════════`);
+  console.log(`🎨 РЕНДЕРИНГ PHOTO MODE`);
+  console.log(`🎨 ═══════════════════════════════════════`);
+  console.log(`📐 Формат: ${format} (${width}x${height})`);
+  console.log(`📊 Слайдов: ${slideCount}`);
+  console.log(`🖼️ AI-изображений: ${validImages}/${slideCount}`);
+  console.log(`👤 Username: ${username || 'не задан'}`);
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -414,14 +441,25 @@ async function renderSlidesWithImages(carouselData, imageBase64Array, options = 
       await page.close();
       imagePaths.push(imagePath);
 
-      console.log(`✅ Слайд с фото ${slideNumber} сохранён`);
+      const fileSizeKB = Math.round(fs.statSync(imagePath).size / 1024);
+      console.log(`✅ Слайд ${slideNumber} с фото сохранён (${fileSizeKB} KB)`);
     }
 
-    console.log(`✅ Все слайды с фото отрендерены: ${imagePaths.length} файлов`);
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+    const totalSizeKB = imagePaths.reduce((sum, p) => sum + fs.statSync(p).size / 1024, 0);
+
+    console.log(`🎨 ═══════════════════════════════════════`);
+    console.log(`✅ РЕНДЕРИНГ PHOTO MODE ЗАВЕРШЁН`);
+    console.log(`📊 Файлов: ${imagePaths.length}`);
+    console.log(`⏱️ Время: ${duration}с`);
+    console.log(`📦 Общий размер: ${Math.round(totalSizeKB)} KB`);
+    console.log(`🎨 ═══════════════════════════════════════`);
+
     return imagePaths;
 
   } catch (error) {
-    console.error('❌ Ошибка рендеринга слайдов с фото:', error);
+    console.error('❌ Ошибка рендеринга Photo Mode:', error.message);
+    console.error('Stack:', error.stack);
     throw error;
   } finally {
     await browser.close();
