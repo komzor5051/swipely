@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-coral: #FF6B6B;
+  --color-coral-dark: #EE5A6F;
+  --color-teal: #0D3B66;
+  --color-teal-light: #1A5F7A;
+  --color-butter: #FFD93D;
+  --color-charcoal: #2D3142;
+  --color-warm-white: #FAF8F6;
+  --color-cream: #F4F1EA;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--color-warm-white);
+  color: var(--color-charcoal);
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-coral);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-coral-dark);
+}
+
+/* Button styles */
+.btn-primary {
+  @apply px-6 py-3 bg-gradient-to-r from-coral to-coral-dark text-white font-semibold rounded-xl;
+  @apply shadow-lg shadow-coral/30 hover:shadow-xl hover:shadow-coral/40;
+  @apply transition-all duration-200 hover:scale-105;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 bg-cream text-teal font-medium rounded-xl;
+  @apply border border-teal/20 hover:bg-teal hover:text-white;
+  @apply transition-all duration-200;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-2xl border border-cream shadow-sm;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
