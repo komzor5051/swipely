@@ -139,6 +139,9 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
     case 'luxe':
       templatePath = path.join(TEMPLATES_DIR, 'luxe.html');
       break;
+    case 'backspace':
+      templatePath = path.join(TEMPLATES_DIR, 'backspace.html');
+      break;
     default:
       templatePath = path.join(TEMPLATES_DIR, 'minimal_pop.html');
   }
@@ -196,7 +199,8 @@ function injectUsernameOverlay(html, username, stylePreset) {
     editorial: { text: '#1A1A1A', bg: 'rgba(245,245,240,0.8)' },
     zen: { text: '#2D2D2D', bg: 'rgba(248,246,240,0.8)' },
     memphis: { text: '#2D2D2D', bg: 'rgba(255,230,109,0.8)' },
-    luxe: { text: '#D4AF37', bg: 'rgba(26,26,26,0.8)' }
+    luxe: { text: '#D4AF37', bg: 'rgba(26,26,26,0.8)' },
+    backspace: { text: '#2D2A26', bg: 'rgba(240,239,237,0.9)' }
   };
 
   const colors = styleColors[stylePreset] || { text: '#FFFFFF', bg: 'rgba(0,0,0,0.5)' };

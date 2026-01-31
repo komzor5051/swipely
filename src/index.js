@@ -1157,7 +1157,8 @@ bot.on('callback_query', async (query) => {
             [{ text: '📰 Editorial', callback_data: 'view_style_editorial' }],
             [{ text: '🍃 Zen', callback_data: 'view_style_zen' }],
             [{ text: '🎨 Memphis', callback_data: 'view_style_memphis' }],
-            [{ text: '💎 Luxe', callback_data: 'view_style_luxe' }]
+            [{ text: '💎 Luxe', callback_data: 'view_style_luxe' }],
+            [{ text: '🔲 Backspace', callback_data: 'view_style_backspace' }]
           ]
         }
       });
@@ -1306,7 +1307,8 @@ bot.on('callback_query', async (query) => {
                 { text: '🍃 Zen', callback_data: 'style_zen' },
                 { text: '🎨 Memphis', callback_data: 'style_memphis' }
               ],
-              [{ text: '💎 Luxe', callback_data: 'style_luxe' }]
+              [{ text: '💎 Luxe', callback_data: 'style_luxe' }],
+              [{ text: '🔲 Backspace', callback_data: 'style_backspace' }]
             ]
           }
         }
@@ -1441,7 +1443,8 @@ bot.on('callback_query', async (query) => {
         'editorial': 'Editorial',
         'zen': 'Zen',
         'memphis': 'Memphis',
-        'luxe': 'Luxe'
+        'luxe': 'Luxe',
+        'backspace': 'Backspace'
       };
 
       await bot.editMessageText(

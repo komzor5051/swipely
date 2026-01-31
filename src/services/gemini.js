@@ -215,6 +215,7 @@ function getDesignConfig(stylePreset) {
     zen: { name: 'Zen', max_words_per_slide: 35, tone: 'minimalist, japanese, calm' },
     memphis: { name: 'Memphis', max_words_per_slide: 40, tone: '80s retro, playful, vibrant' },
     luxe: { name: 'Luxe', max_words_per_slide: 40, tone: 'premium, luxury, elegant' },
+    backspace: { name: 'Backspace', max_words_per_slide: 40, tone: 'modern agency, bold typography, minimalist' },
     // Режим с AI-аватарами - короткие тексты для overlay поверх изображений
     photo_mode: { name: 'AI Photo', max_words_per_slide: 25, tone: 'impactful, concise, visual-first' }
   };
