@@ -377,7 +377,6 @@ async function handlePaymentReturn(chatId, userId, paymentId) {
             }
           );
         }
-      }
     } else if (paymentStatus.status === 'canceled') {
       await bot.sendMessage(chatId, copy.pricing.cancelled, {
         reply_markup: {
