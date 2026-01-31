@@ -458,7 +458,7 @@ async function savePayment(paymentData) {
   try {
     const { data, error } = await supabase
       .from('payments')
-      .insert({
+      .upsert({
         payment_id,
         telegram_id,
         amount,
@@ -467,7 +467,7 @@ async function savePayment(paymentData) {
         product_data,
         payment_method,
         status: status || 'pending'
-      })
+      }, { onConflict: 'payment_id' })
       .select()
       .single();
 
