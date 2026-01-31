@@ -7,7 +7,7 @@ const { transcribeVoice } = require('./services/whisper');
 const { generateCarouselContent } = require('./services/gemini');
 const { renderSlides, renderSlidesWithImages } = require('./services/renderer');
 const { downloadTelegramPhoto, generateCarouselImages, STYLE_PROMPTS } = require('./services/imageGenerator');
-const { upsertUser, saveCarouselGeneration, saveDisplayUsername, getDisplayUsername } = require('./services/supabaseService');
+const { supabase, upsertUser, saveCarouselGeneration, saveDisplayUsername, getDisplayUsername } = require('./services/supabaseService');
 const { logUser, logGeneration } = require('./services/userLogger');
 const { getPreviewPaths, STYLE_INFO } = require('./services/previewService');
 const { createEditSession } = require('./services/editorService');
@@ -1321,38 +1321,55 @@ ${recentText}`;
       return;
     }
 
-    // Статистика пользователей
+    // Статистика пользователей (из Supabase)
     if (data === 'admin_users') {
       try {
-        const totalUsers = db.db?.prepare(`SELECT COUNT(*) as count FROM users`).get()?.count || 0;
-        const proUsers = db.db?.prepare(`SELECT COUNT(*) as count FROM users WHERE subscription_tier = 'pro'`).get()?.count || 0;
+        // Получаем данные из Supabase profiles
+        const { count: totalUsers } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: proUsers } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('subscription_tier', 'pro');
+
+        // Получаем последних 5 пользователей из Supabase
+        const { data: recentUsers } = await supabase
+          .from('profiles')
+          .select('telegram_id, telegram_username, first_name, subscription_tier, created_at')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        // Получаем количество генераций из usage_tracking
+        const { count: totalGenerations } = await supabase
+          .from('usage_tracking')
+          .select('*', { count: 'exact', head: true })
+          .eq('generation_type', 'carousel');
+
+        // Данные о балансе из локальной БД (только там хранятся слайды)
         const usersWithBalance = db.db?.prepare(`SELECT COUNT(*) as count FROM users WHERE photo_slides_balance > 0`).get()?.count || 0;
-        const totalGenerations = db.db?.prepare(`SELECT SUM(generation_count) as total FROM users`).get()?.total || 0;
         const totalPhotoBalance = db.db?.prepare(`SELECT SUM(photo_slides_balance) as total FROM users`).get()?.total || 0;
 
-        // Последние 5 пользователей
-        const recentUsers = db.db?.prepare(`
-          SELECT user_id, username, subscription_tier, photo_slides_balance, generation_count, created_at
-          FROM users
-          ORDER BY created_at DESC
-          LIMIT 5
-        `).all() || [];
+        let recentText = (recentUsers && recentUsers.length > 0)
+          ? recentUsers.map(u => {
+              const tier = u.subscription_tier === 'pro' ? '⭐' : '👤';
+              const name = u.telegram_username || u.first_name || u.telegram_id;
+              const date = new Date(u.created_at).toLocaleDateString('ru-RU');
+              return `${tier} ${name} (${date})`;
+            }).join('\n')
+          : 'Нет пользователей';
 
-        let recentText = recentUsers.map(u => {
-          const tier = u.subscription_tier === 'pro' ? '⭐' : '👤';
-          return `${tier} ${u.username || u.user_id} — ${u.photo_slides_balance} сл., ${u.generation_count} ген.`;
-        }).join('\n') || 'Нет пользователей';
-
-        const text = `👥 **Пользователи**
+        const text = `👥 **Пользователи** _(Supabase)_
 
 **📊 Общее:**
-├ Всего: ${totalUsers}
-├ PRO: ${proUsers}
-├ С балансом: ${usersWithBalance}
-└ Общий баланс: ${totalPhotoBalance} слайдов
+├ Всего: ${totalUsers || 0}
+├ PRO: ${proUsers || 0}
+├ С балансом слайдов: ${usersWithBalance}
+└ Общий баланс: ${totalPhotoBalance || 0} слайдов
 
 **📈 Генерации:**
-└ Всего: ${totalGenerations}
+└ Всего: ${totalGenerations || 0}
 
 **🆕 Последние:**
 ${recentText}`;
@@ -1370,38 +1387,51 @@ ${recentText}`;
         });
       } catch (err) {
         console.error('Admin users error:', err);
-        await bot.sendMessage(chatId, '❌ Ошибка получения статистики');
+        await bot.sendMessage(chatId, '❌ Ошибка получения статистики: ' + err.message);
       }
       return;
     }
 
-    // Общая статистика
+    // Общая статистика (комбинированная Supabase + SQLite)
     if (data === 'admin_stats') {
       try {
-        const totalUsers = db.db?.prepare(`SELECT COUNT(*) as count FROM users`).get()?.count || 0;
+        // Пользователи из Supabase
+        const { count: totalUsers } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+
+        // Сегодняшние пользователи из Supabase
+        const today = new Date().toISOString().split('T')[0];
+        const { count: todayUsers } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', today);
+
+        // Генерации из Supabase
+        const { count: totalGenerations } = await supabase
+          .from('usage_tracking')
+          .select('*', { count: 'exact', head: true })
+          .eq('generation_type', 'carousel');
+
+        // Платежи из локальной SQLite (там точные данные)
         const totalPayments = db.db?.prepare(`SELECT COUNT(*) as count FROM payments WHERE status = 'succeeded'`).get()?.count || 0;
         const totalRevenue = db.db?.prepare(`SELECT SUM(amount) as total FROM payments WHERE status = 'succeeded' AND payment_method = 'yookassa'`).get()?.total || 0;
         const totalStars = db.db?.prepare(`SELECT SUM(amount) as total FROM payments WHERE status = 'succeeded' AND payment_method = 'telegram_stars'`).get()?.total || 0;
-        const totalGenerations = db.db?.prepare(`SELECT SUM(generation_count) as total FROM users`).get()?.total || 0;
-
-        // Сегодняшняя статистика
-        const today = new Date().toISOString().split('T')[0];
         const todayPayments = db.db?.prepare(`SELECT COUNT(*) as count FROM payments WHERE status = 'succeeded' AND date(created_at) = ?`).get(today)?.count || 0;
-        const todayUsers = db.db?.prepare(`SELECT COUNT(*) as count FROM users WHERE date(created_at) = ?`).get(today)?.count || 0;
 
         const text = `📊 **Общая статистика**
 
 **💰 Доход:**
-├ YooKassa: ${totalRevenue.toLocaleString('ru-RU')}₽
-├ Stars: ${totalStars}⭐ (~${Math.round(totalStars * 1.66)}₽)
+├ YooKassa: ${(totalRevenue || 0).toLocaleString('ru-RU')}₽
+├ Stars: ${totalStars || 0}⭐ (~${Math.round((totalStars || 0) * 1.66)}₽)
 └ Всего платежей: ${totalPayments}
 
-**👥 Пользователи:**
-├ Всего: ${totalUsers}
-└ Сегодня: +${todayUsers}
+**👥 Пользователи** _(Supabase)_**:**
+├ Всего: ${totalUsers || 0}
+└ Сегодня: +${todayUsers || 0}
 
 **📈 Активность:**
-├ Генераций всего: ${totalGenerations}
+├ Генераций всего: ${totalGenerations || 0}
 └ Платежей сегодня: ${todayPayments}`;
 
         await bot.editMessageText(text, {
@@ -1417,7 +1447,7 @@ ${recentText}`;
         });
       } catch (err) {
         console.error('Admin stats error:', err);
-        await bot.sendMessage(chatId, '❌ Ошибка получения статистики');
+        await bot.sendMessage(chatId, '❌ Ошибка получения статистики: ' + err.message);
       }
       return;
     }
