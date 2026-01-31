@@ -414,6 +414,36 @@ bot.onText(/\/(account|status|balance)/, async (msg) => {
 });
 
 // ============================================
+// КОМАНДА /admin - админская панель
+// ============================================
+const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID) || 0;
+
+bot.onText(/\/admin/, async (msg) => {
+  const userId = msg.from.id;
+  const chatId = msg.chat.id;
+
+  // Проверка доступа
+  if (userId !== ADMIN_USER_ID) {
+    return bot.sendMessage(chatId, '⛔ Доступ запрещён');
+  }
+
+  try {
+    await bot.sendMessage(chatId, '🔐 **Админ-панель**\n\nВыбери раздел:', {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '💳 Статистика оплат', callback_data: 'admin_payments' }],
+          [{ text: '👥 Пользователи', callback_data: 'admin_users' }],
+          [{ text: '📊 Общая статистика', callback_data: 'admin_stats' }]
+        ]
+      }
+    });
+  } catch (error) {
+    console.error('Ошибка /admin:', error);
+  }
+});
+
+// ============================================
 // КОМАНДА /buy - страница оплаты
 // ============================================
 bot.onText(/\/buy/, async (msg) => {
@@ -1218,6 +1248,194 @@ bot.on('callback_query', async (query) => {
           }
         }
       );
+      return;
+    }
+
+    // ==================== ADMIN CALLBACKS ====================
+
+    // Проверка админского доступа для admin_ callbacks
+    if (data.startsWith('admin_') && userId !== ADMIN_USER_ID) {
+      return bot.answerCallbackQuery(query.id, { text: '⛔ Доступ запрещён', show_alert: true });
+    }
+
+    // Статистика оплат
+    if (data === 'admin_payments') {
+      try {
+        // Получаем статистику из БД
+        const allPayments = db.db?.prepare(`
+          SELECT payment_method, COUNT(*) as count, SUM(amount) as total, status
+          FROM payments
+          GROUP BY payment_method, status
+        `).all() || [];
+
+        const starsSucceeded = allPayments.find(p => p.payment_method === 'telegram_stars' && p.status === 'succeeded') || { count: 0, total: 0 };
+        const yookassaSucceeded = allPayments.find(p => p.payment_method === 'yookassa' && p.status === 'succeeded') || { count: 0, total: 0 };
+        const starsPending = allPayments.find(p => p.payment_method === 'telegram_stars' && p.status === 'pending') || { count: 0 };
+        const yookassaPending = allPayments.find(p => p.payment_method === 'yookassa' && p.status === 'pending') || { count: 0 };
+
+        // Последние 5 успешных платежей
+        const recentPayments = db.db?.prepare(`
+          SELECT payment_id, user_id, amount, product_type, payment_method, created_at
+          FROM payments
+          WHERE status = 'succeeded'
+          ORDER BY created_at DESC
+          LIMIT 5
+        `).all() || [];
+
+        let recentText = recentPayments.length > 0
+          ? recentPayments.map(p => {
+              const emoji = p.payment_method === 'telegram_stars' ? '⭐' : '💳';
+              const date = new Date(p.created_at).toLocaleDateString('ru-RU');
+              return `${emoji} ${p.product_type} — ${p.amount}${p.payment_method === 'telegram_stars' ? '⭐' : '₽'} (${date})`;
+            }).join('\n')
+          : 'Нет платежей';
+
+        const text = `💳 **Статистика оплат**
+
+**⭐ Telegram Stars:**
+├ Успешных: ${starsSucceeded.count} (${starsSucceeded.total || 0}⭐)
+└ В ожидании: ${starsPending.count}
+
+**💳 YooKassa:**
+├ Успешных: ${yookassaSucceeded.count} (${yookassaSucceeded.total || 0}₽)
+└ В ожидании: ${yookassaPending.count}
+
+**📋 Последние платежи:**
+${recentText}`;
+
+        await bot.editMessageText(text, {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '🔄 Обновить', callback_data: 'admin_payments' }],
+              [{ text: '← Назад', callback_data: 'admin_back' }]
+            ]
+          }
+        });
+      } catch (err) {
+        console.error('Admin payments error:', err);
+        await bot.sendMessage(chatId, '❌ Ошибка получения статистики');
+      }
+      return;
+    }
+
+    // Статистика пользователей
+    if (data === 'admin_users') {
+      try {
+        const totalUsers = db.db?.prepare(`SELECT COUNT(*) as count FROM users`).get()?.count || 0;
+        const proUsers = db.db?.prepare(`SELECT COUNT(*) as count FROM users WHERE subscription_tier = 'pro'`).get()?.count || 0;
+        const usersWithBalance = db.db?.prepare(`SELECT COUNT(*) as count FROM users WHERE photo_slides_balance > 0`).get()?.count || 0;
+        const totalGenerations = db.db?.prepare(`SELECT SUM(generation_count) as total FROM users`).get()?.total || 0;
+        const totalPhotoBalance = db.db?.prepare(`SELECT SUM(photo_slides_balance) as total FROM users`).get()?.total || 0;
+
+        // Последние 5 пользователей
+        const recentUsers = db.db?.prepare(`
+          SELECT user_id, username, subscription_tier, photo_slides_balance, generation_count, created_at
+          FROM users
+          ORDER BY created_at DESC
+          LIMIT 5
+        `).all() || [];
+
+        let recentText = recentUsers.map(u => {
+          const tier = u.subscription_tier === 'pro' ? '⭐' : '👤';
+          return `${tier} ${u.username || u.user_id} — ${u.photo_slides_balance} сл., ${u.generation_count} ген.`;
+        }).join('\n') || 'Нет пользователей';
+
+        const text = `👥 **Пользователи**
+
+**📊 Общее:**
+├ Всего: ${totalUsers}
+├ PRO: ${proUsers}
+├ С балансом: ${usersWithBalance}
+└ Общий баланс: ${totalPhotoBalance} слайдов
+
+**📈 Генерации:**
+└ Всего: ${totalGenerations}
+
+**🆕 Последние:**
+${recentText}`;
+
+        await bot.editMessageText(text, {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '🔄 Обновить', callback_data: 'admin_users' }],
+              [{ text: '← Назад', callback_data: 'admin_back' }]
+            ]
+          }
+        });
+      } catch (err) {
+        console.error('Admin users error:', err);
+        await bot.sendMessage(chatId, '❌ Ошибка получения статистики');
+      }
+      return;
+    }
+
+    // Общая статистика
+    if (data === 'admin_stats') {
+      try {
+        const totalUsers = db.db?.prepare(`SELECT COUNT(*) as count FROM users`).get()?.count || 0;
+        const totalPayments = db.db?.prepare(`SELECT COUNT(*) as count FROM payments WHERE status = 'succeeded'`).get()?.count || 0;
+        const totalRevenue = db.db?.prepare(`SELECT SUM(amount) as total FROM payments WHERE status = 'succeeded' AND payment_method = 'yookassa'`).get()?.total || 0;
+        const totalStars = db.db?.prepare(`SELECT SUM(amount) as total FROM payments WHERE status = 'succeeded' AND payment_method = 'telegram_stars'`).get()?.total || 0;
+        const totalGenerations = db.db?.prepare(`SELECT SUM(generation_count) as total FROM users`).get()?.total || 0;
+
+        // Сегодняшняя статистика
+        const today = new Date().toISOString().split('T')[0];
+        const todayPayments = db.db?.prepare(`SELECT COUNT(*) as count FROM payments WHERE status = 'succeeded' AND date(created_at) = ?`).get(today)?.count || 0;
+        const todayUsers = db.db?.prepare(`SELECT COUNT(*) as count FROM users WHERE date(created_at) = ?`).get(today)?.count || 0;
+
+        const text = `📊 **Общая статистика**
+
+**💰 Доход:**
+├ YooKassa: ${totalRevenue.toLocaleString('ru-RU')}₽
+├ Stars: ${totalStars}⭐ (~${Math.round(totalStars * 1.66)}₽)
+└ Всего платежей: ${totalPayments}
+
+**👥 Пользователи:**
+├ Всего: ${totalUsers}
+└ Сегодня: +${todayUsers}
+
+**📈 Активность:**
+├ Генераций всего: ${totalGenerations}
+└ Платежей сегодня: ${todayPayments}`;
+
+        await bot.editMessageText(text, {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '🔄 Обновить', callback_data: 'admin_stats' }],
+              [{ text: '← Назад', callback_data: 'admin_back' }]
+            ]
+          }
+        });
+      } catch (err) {
+        console.error('Admin stats error:', err);
+        await bot.sendMessage(chatId, '❌ Ошибка получения статистики');
+      }
+      return;
+    }
+
+    // Назад в админку
+    if (data === 'admin_back') {
+      await bot.editMessageText('🔐 **Админ-панель**\n\nВыбери раздел:', {
+        chat_id: chatId,
+        message_id: messageId,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '💳 Статистика оплат', callback_data: 'admin_payments' }],
+            [{ text: '👥 Пользователи', callback_data: 'admin_users' }],
+            [{ text: '📊 Общая статистика', callback_data: 'admin_stats' }]
+          ]
+        }
+      });
       return;
     }
 

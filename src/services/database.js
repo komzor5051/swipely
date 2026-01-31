@@ -699,5 +699,7 @@ module.exports = {
   getReferralStats,
   isNewUser,
   REFERRAL_BONUS_INVITER,
-  REFERRAL_BONUS_INVITED
+  REFERRAL_BONUS_INVITED,
+  // Прямой доступ к БД (для админки)
+  get db() { return db; }
 };
