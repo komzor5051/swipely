@@ -1,12 +1,13 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY! // Use service role for API
+  process.env.SUPABASE_SERVICE_KEY!
 );
 
 const BOT_SECRET = process.env.EDITOR_BOT_SECRET;
-const EDITOR_URL = process.env.EDITOR_URL || 'https://edit.swipely.ai';
+const EDITOR_URL = process.env.EDITOR_URL || 'https://swipely-19h3.vercel.app';
 
 // Generate 12-character token
 function generateToken(): string {
@@ -18,44 +19,32 @@ function generateToken(): string {
   return token;
 }
 
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return res.status(204).end();
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   // Verify bot authorization
-  const authHeader = req.headers.get('Authorization');
+  const authHeader = req.headers.authorization;
   if (!authHeader || authHeader !== `Bearer ${BOT_SECRET}`) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   try {
-    const body = await req.json();
-    const { userId, carouselData, stylePreset, format, username } = body;
+    const { userId, carouselData, stylePreset, format, username } = req.body;
 
     // Validate required fields
     if (!userId || !carouselData || !stylePreset) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
     // Generate unique token
@@ -78,32 +67,16 @@ export default async function handler(req: Request) {
 
     if (error) {
       console.error('Supabase insert error:', error);
-      return new Response(JSON.stringify({ error: 'Failed to create session' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
+      return res.status(500).json({ error: 'Failed to create session' });
     }
 
-    return new Response(
-      JSON.stringify({
-        token,
-        editUrl: `${EDITOR_URL}/${token}`,
-        expiresAt: expiresAt.toISOString(),
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
+    return res.status(200).json({
+      token,
+      editUrl: `${EDITOR_URL}/${token}`,
+      expiresAt: expiresAt.toISOString(),
+    });
   } catch (error) {
     console.error('API error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
-
-export const config = {
-  runtime: 'edge',
-};

@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -5,28 +6,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY!
 );
 
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Extract token from URL
-  const url = new URL(req.url);
-  const pathParts = url.pathname.split('/');
-  const token = pathParts[pathParts.length - 1];
+  const { token } = req.query;
 
   // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return res.status(204).end();
   }
 
-  if (!token) {
-    return new Response(JSON.stringify({ error: 'Token required' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+  if (!token || typeof token !== 'string') {
+    return res.status(400).json({ error: 'Token required' });
   }
 
   // GET - Retrieve session
@@ -40,45 +34,29 @@ export default async function handler(req: Request) {
         .single();
 
       if (error || !data) {
-        return new Response(JSON.stringify({ error: 'Session not found or expired' }), {
-          status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
+        return res.status(404).json({ error: 'Session not found or expired' });
       }
 
-      return new Response(
-        JSON.stringify({
-          carouselData: data.carousel_data,
-          stylePreset: data.style_preset,
-          format: data.format,
-          username: data.username,
-          expiresAt: data.expires_at,
-        }),
-        {
-          status: 200,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        }
-      );
+      return res.status(200).json({
+        carouselData: data.carousel_data,
+        stylePreset: data.style_preset,
+        format: data.format,
+        username: data.username,
+        expiresAt: data.expires_at,
+      });
     } catch (error) {
       console.error('GET error:', error);
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 
   // PUT - Update session
   if (req.method === 'PUT') {
     try {
-      const body = await req.json();
-      const { carouselData } = body;
+      const { carouselData } = req.body;
 
       if (!carouselData) {
-        return new Response(JSON.stringify({ error: 'carouselData required' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
+        return res.status(400).json({ error: 'carouselData required' });
       }
 
       const { error } = await supabase
@@ -89,31 +67,15 @@ export default async function handler(req: Request) {
 
       if (error) {
         console.error('Update error:', error);
-        return new Response(JSON.stringify({ error: 'Failed to update session' }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
+        return res.status(500).json({ error: 'Failed to update session' });
       }
 
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
+      return res.status(200).json({ success: true });
     } catch (error) {
       console.error('PUT error:', error);
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 
-  return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-    status: 405,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders },
-  });
+  return res.status(405).json({ error: 'Method not allowed' });
 }
-
-export const config = {
-  runtime: 'edge',
-};
