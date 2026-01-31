@@ -457,12 +457,22 @@ async function startPhotoModeGeneration(chatId, userId) {
       { mode: 'photo', imageStyle: imageStyle }
     );
 
-    // 7. Результат
+    // 7. Создаём сессию редактирования (для Photo Mode используем шаблон photo_overlay)
+    const editSession = await createEditSession(userId, carouselData, 'photo_overlay', format, username);
+
+    // 8. Результат с кнопками
+    const resultButtons = [
+      [{ text: copy.mainFlow.resultButtons.createNew, callback_data: 'create_now' }]
+    ];
+
+    // Добавляем кнопку редактирования, если сессия создана
+    if (editSession && editSession.editUrl) {
+      resultButtons.unshift([{ text: copy.mainFlow.resultButtons.editText, url: editSession.editUrl }]);
+    }
+
     await bot.sendMessage(chatId, copy.photoMode.result, {
       reply_markup: {
-        inline_keyboard: [
-          [{ text: copy.mainFlow.resultButtons.createNew, callback_data: 'create_now' }]
-        ]
+        inline_keyboard: resultButtons
       }
     });
 
