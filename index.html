@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swipely.ai — AI-Powered Instagram Carousels</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M8 16L20 16M20 16L17 13M20 16L17 19' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.3'/%3E%3Cpath d='M11 16L24 16M24 16L21 13M24 16L21 19' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='32' y2='32'%3E%3Cstop stop-color='%23FF6B6B'/%3E%3Cstop offset='1' stop-color='%23EE5A6F'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Primary Brand Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Carousel Editor Fonts (existing) -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Caveat:wght@400;700&family=Crimson+Text:wght@400;700&family=Dancing+Script:wght@400;700&family=Fira+Code:wght@400;700&family=Inter:wght@400;500;600;700&family=Lato:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;700&family=Merriweather:wght@300;400;700&family=Montserrat:wght@400;500;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;500;700&family=Pacifico&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&family=Raleway:wght@400;700&family=Righteous&family=Roboto:wght@400;700&family=Rubik+Mono+One&family=Space+Grotesk:wght@400;700&family=Work+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+      :root {
+        /* Brand Colors - Digital Atelier Theme */
+        --color-coral: #FF6B6B;
+        --color-coral-dark: #EE5A6F;
+        --color-teal: #0D3B66;
+        --color-teal-light: #1A5F7A;
+        --color-butter: #FFD93D;
+        --color-charcoal: #2D3142;
+        --color-warm-white: #FAF8F6;
+        --color-cream: #F4F1EA;
+
+        /* Typography */
+        --font-display: 'DM Serif Display', serif;
+        --font-body: 'Outfit', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+      }
+
+      body {
+        font-family: var(--font-body);
+        background: var(--color-warm-white);
+      }
+      .font-display {
+        font-family: var(--font-display);
+      }
+      .font-mono {
+        font-family: var(--font-mono);
+      }
+      /* Legacy fonts for carousel editor */
+      .font-oswald { font-family: 'Oswald', sans-serif; }
+      .font-merriweather { font-family: 'Merriweather', serif; }
+      
+      /* Grain Texture Overlay */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 9999;
+        mix-blend-mode: overlay;
+      }
+
+      /* Custom Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: var(--color-cream);
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: var(--color-coral);
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--color-coral-dark);
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes slideDown {
+        from { transform: translateY(-30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes zoomIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+        40% {transform: translateY(-10px);}
+        60% {transform: translateY(-5px);}
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+      }
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(255, 107, 107, 0.5); }
+      }
+
+      .anim-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+      .anim-slide-up {
+        animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .anim-slide-down {
+        animation: slideDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .anim-zoom-in {
+        animation: zoomIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .anim-bounce { animation: bounce 1s ease; }
+      .anim-float { animation: float 6s ease-in-out infinite; }
+
+      /* Staggered Animations */
+      .stagger-1 { animation-delay: 0.1s; }
+      .stagger-2 { animation-delay: 0.2s; }
+      .stagger-3 { animation-delay: 0.3s; }
+      .stagger-4 { animation-delay: 0.4s; }
+      .stagger-5 { animation-delay: 0.5s; }
+
+      /* Decorative Blob Shapes */
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.15;
+        pointer-events: none;
+      }
+      .blob-coral {
+        background: radial-gradient(circle, var(--color-coral) 0%, transparent 70%);
+      }
+      .blob-teal {
+        background: radial-gradient(circle, var(--color-teal-light) 0%, transparent 70%);
+      }
+      .blob-butter {
+        background: radial-gradient(circle, var(--color-butter) 0%, transparent 70%);
+      }
+
+      /* Logo Arrow Animation */
+      @keyframes swipe-motion {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(2px); }
+      }
+
+      /* Sparkle Animation */
+      @keyframes sparkle {
+        0%, 100% {
+          opacity: 1;
+          transform: scale(1) rotate(0deg);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(0.8) rotate(180deg);
+        }
+      }
+      .anim-sparkle {
+        animation: sparkle 2s ease-in-out infinite;
+      }
+
+      /* ============================================
+         RESPONSIVE DESIGN SYSTEM
+         Breakpoints: mobile(320-767), tablet(768-1023), desktop(1024+)
+         ============================================ */
+
+      /* Fluid Typography - scales smoothly */
+      :root {
+        --text-xs: clamp(0.625rem, 0.5rem + 0.5vw, 0.75rem);      /* 10-12px */
+        --text-sm: clamp(0.75rem, 0.6rem + 0.6vw, 0.875rem);       /* 12-14px */
+        --text-base: clamp(0.875rem, 0.75rem + 0.625vw, 1rem);     /* 14-16px */
+        --text-lg: clamp(1rem, 0.875rem + 0.75vw, 1.25rem);        /* 16-20px */
+        --text-xl: clamp(1.125rem, 0.95rem + 1vw, 1.5rem);         /* 18-24px */
+        --text-2xl: clamp(1.25rem, 1rem + 1.5vw, 1.875rem);        /* 20-30px */
+        --text-3xl: clamp(1.5rem, 1.2rem + 2vw, 2.25rem);          /* 24-36px */
+        --text-4xl: clamp(1.875rem, 1.5rem + 2.5vw, 3rem);         /* 30-48px */
+        --text-5xl: clamp(2.25rem, 1.75rem + 3vw, 3.75rem);        /* 36-60px */
+        --text-6xl: clamp(2.75rem, 2rem + 4vw, 4.5rem);            /* 44-72px */
+        --text-7xl: clamp(3rem, 2.25rem + 5vw, 6rem);              /* 48-96px */
+
+        /* Spacing Scale */
+        --space-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);       /* 4-8px */
+        --space-sm: clamp(0.5rem, 0.4rem + 0.5vw, 1rem);           /* 8-16px */
+        --space-md: clamp(1rem, 0.75rem + 1vw, 1.5rem);            /* 16-24px */
+        --space-lg: clamp(1.5rem, 1rem + 2vw, 2.5rem);             /* 24-40px */
+        --space-xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);             /* 32-48px */
+        --space-2xl: clamp(3rem, 2rem + 4vw, 4rem);                /* 48-64px */
+        --space-3xl: clamp(4rem, 3rem + 5vw, 6rem);                /* 64-96px */
+      }
+
+      /* Mobile-first responsive utilities */
+      .responsive-container {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 var(--space-md);
+      }
+
+      /* Responsive grid */
+      .responsive-grid {
+        display: grid;
+        gap: var(--space-md);
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      }
+
+      /* Responsive flex with wrapping */
+      .responsive-flex {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+      }
+
+      /* Mobile: Stack vertically */
+      @media (max-width: 767px) {
+        .mobile-stack {
+          flex-direction: column !important;
+        }
+        .mobile-full-width {
+          width: 100% !important;
+        }
+        .mobile-hide {
+          display: none !important;
+        }
+        .mobile-text-center {
+          text-align: center !important;
+        }
+        /* Reduce padding on mobile */
+        .responsive-container {
+          padding: 0 var(--space-sm);
+        }
+      }
+
+      /* Tablet: Moderate adjustments */
+      @media (min-width: 768px) and (max-width: 1023px) {
+        .tablet-stack {
+          flex-direction: column !important;
+        }
+        .tablet-half-width {
+          width: 50% !important;
+        }
+      }
+
+      /* Desktop: Full experience */
+      @media (min-width: 1024px) {
+        .desktop-show {
+          display: block !important;
+        }
+      }
+
+      /* Prevent horizontal overflow */
+      * {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100vw;
+      }
+
+      /* Responsive canvas container */
+      .canvas-container {
+        width: 100%;
+        max-width: 540px;
+        aspect-ratio: 1;
+        margin: 0 auto;
+      }
+
+      /* Smooth transitions for resize */
+      .smooth-resize {
+        transition: width 0.3s ease, height 0.3s ease, transform 0.3s ease;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="overflow-hidden selection:bg-[#FFD93D]/30 selection:text-[#0D3B66]" style="background: var(--color-warm-white); color: var(--color-charcoal);">
+    <div id="root"></div>
+  <script type="module" src="/src/index.tsx"></script>
+</body>
+</html>

@@ -4,7 +4,11 @@
   "framework": "vite",
   "rewrites": [
     {
+<<<<<<< HEAD
+      "source": "/:token((?!api|assets|_next)[a-zA-Z0-9]{12})",
+=======
       "source": "/((?!api).*)",
+>>>>>>> 83d5edb2578f017a5ef51ca6701b564f94c2e80b
       "destination": "/index.html"
     }
   ],
