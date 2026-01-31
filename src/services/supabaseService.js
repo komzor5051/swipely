@@ -8,27 +8,64 @@ const supabase = createClient(
 
 /**
  * Создание или обновление пользователя в таблице profiles
+ * НЕ сбрасывает балансы и другие важные данные!
  */
 async function upsertUser(telegramUser) {
   const { id: telegramId, username, first_name, last_name } = telegramUser;
 
   try {
-    // Вызываем SQL функцию для upsert профиля
-    const { data, error } = await supabase
-      .rpc('upsert_telegram_profile', {
-        p_telegram_id: telegramId,
-        p_telegram_username: username || null,
-        p_first_name: first_name || null,
-        p_last_name: last_name || null
-      });
+    // Сначала проверяем существует ли пользователь
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('telegram_id', telegramId)
+      .single();
 
-    if (error) {
-      console.error('❌ Ошибка upsert пользователя:', error);
-      return null;
+    if (existing) {
+      // Пользователь существует - обновляем только контактные данные
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          telegram_username: username || null,
+          first_name: first_name || null,
+          last_name: last_name || null
+        })
+        .eq('telegram_id', telegramId)
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('❌ Ошибка обновления пользователя:', error);
+        return null;
+      }
+
+      console.log(`✅ Пользователь сохранен: ${username || telegramId} (profile_id: ${data.id})`);
+      return { profile_id: data.id, telegram_id: telegramId };
+    } else {
+      // Новый пользователь - создаём с дефолтными значениями
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert({
+          telegram_id: telegramId,
+          telegram_username: username || null,
+          first_name: first_name || null,
+          last_name: last_name || null,
+          subscription_tier: 'free',
+          photo_slides_balance: 0,
+          standard_count_month: 0,
+          generation_count: 0
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('❌ Ошибка создания пользователя:', error);
+        return null;
+      }
+
+      console.log(`✅ Пользователь создан: ${username || telegramId} (profile_id: ${data.id})`);
+      return { profile_id: data.id, telegram_id: telegramId };
     }
-
-    console.log(`✅ Пользователь сохранен: ${username || telegramId} (profile_id: ${data})`);
-    return { profile_id: data, telegram_id: telegramId };
   } catch (err) {
     console.error('❌ Критическая ошибка upsert:', err);
     return null;
