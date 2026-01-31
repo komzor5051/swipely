@@ -7,7 +7,7 @@ const supabase = createClient(
 );
 
 const BOT_SECRET = process.env.EDITOR_BOT_SECRET;
-const EDITOR_URL = process.env.EDITOR_URL || 'https://swipely-19h3.vercel.app';
+const EDITOR_URL = process.env.EDITOR_URL || 'https://swipely-six.vercel.app';
 
 // Generate 12-character token
 function generateToken(): string {
