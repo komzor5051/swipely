@@ -35,8 +35,10 @@ const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
 // Simple in-memory session storage
 const sessions = {};
 
-// Инициализация базы данных
-db.init();
+// Инициализация базы данных (async)
+(async () => {
+  await db.init();
+})();
 
 console.log('🤖 Swipely Bot запускается...');
 
@@ -73,7 +75,7 @@ bot.on('successful_payment', async (msg) => {
     const paymentId = `stars_${Date.now()}_${userId}`;
 
     // Создаём запись в локальной БД
-    db.createPayment(
+    await db.createPayment(
       paymentId,
       userId,
       payment.total_amount,
@@ -83,7 +85,7 @@ bot.on('successful_payment', async (msg) => {
     );
 
     // Обрабатываем платёж (начисляем слайды/PRO)
-    db.processSuccessfulPayment(paymentId);
+    await db.processSuccessfulPayment(paymentId);
 
     // Сохраняем платёж в Supabase
     await savePayment({
@@ -98,7 +100,7 @@ bot.on('successful_payment', async (msg) => {
     });
 
     // Получаем обновлённый статус
-    const status = db.getUserStatus(userId);
+    const status = await db.getUserStatus(userId);
 
     // Уведомляем пользователя
     if (product_type === 'photo_slides' || product_type === 'topup_slides') {
@@ -208,7 +210,7 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
 
   try {
     // Регистрируем пользователя в локальной БД
-    db.createUser(userId, msg.from.username || msg.from.first_name);
+    await db.createUser(userId, msg.from.username || msg.from.first_name);
 
     // Логируем пользователя в файл
     logUser(msg.from);
@@ -226,8 +228,8 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
     // Проверяем реферальную ссылку
     if (param && param.startsWith('ref_')) {
       const referrerId = parseInt(param.replace('ref_', ''));
-      if (referrerId && referrerId !== userId && db.isNewUser(userId)) {
-        const result = db.processReferral(userId, referrerId);
+      if (referrerId && referrerId !== userId && await db.isNewUser(userId)) {
+        const result = await db.processReferral(userId, referrerId);
         if (result) {
           // Уведомляем приглашённого
           await bot.sendMessage(chatId, copy.referral.invitedBonus(result.invitedBonus), {
@@ -236,7 +238,7 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
 
           // Уведомляем пригласившего
           try {
-            const referrerStatus = db.getUserStatus(referrerId);
+            const referrerStatus = await db.getUserStatus(referrerId);
             await bot.sendMessage(referrerId, copy.referral.inviterBonus(
               result.inviterBonus,
               referrerStatus.photoSlidesBalance
@@ -249,7 +251,7 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
     }
 
     // Получаем статус пользователя
-    const status = db.getUserStatus(userId);
+    const status = await db.getUserStatus(userId);
 
     // Показываем главное меню
     const welcomeText = status
@@ -298,7 +300,7 @@ async function handlePaymentReturn(chatId, userId, paymentId) {
 
     if (paymentStatus.status === 'succeeded') {
       // Обрабатываем успешный платёж
-      const result = db.processSuccessfulPayment(paymentId);
+      const result = await db.processSuccessfulPayment(paymentId);
 
       if (!result) {
         // Платёж не найден в локальной БД (возможно бот перезапустился)
@@ -312,7 +314,7 @@ async function handlePaymentReturn(chatId, userId, paymentId) {
         return;
       }
 
-      const status = db.getUserStatus(userId);
+      const status = await db.getUserStatus(userId);
 
       // Обновляем статус платежа в Supabase (pending → succeeded)
       await updatePaymentStatus(paymentId, 'succeeded');
@@ -415,7 +417,7 @@ bot.onText(/\/(account|status|balance)/, async (msg) => {
   const chatId = msg.chat.id;
 
   try {
-    const status = db.getUserStatus(userId);
+    const status = await db.getUserStatus(userId);
 
     if (!status) {
       return bot.sendMessage(chatId, 'Сначала отправь /start');
@@ -675,7 +677,7 @@ async function startPhotoModeGeneration(chatId, userId) {
     await bot.sendMediaGroup(chatId, mediaGroup);
 
     // 5. Списываем Photo слайды
-    const deductResult = db.deductPhotoSlides(userId, slideCount);
+    const deductResult = await db.deductPhotoSlides(userId, slideCount);
     if (!deductResult.success) {
       console.error(`⚠️ Не удалось списать слайды для ${userId}: ${deductResult.error}`);
     }
@@ -811,7 +813,7 @@ bot.on('callback_query', async (query) => {
   }
 
   // Убеждаемся что пользователь существует в локальной БД
-  db.createUser(userId, query.from.username || query.from.first_name);
+  await db.createUser(userId, query.from.username || query.from.first_name);
 
   try {
     // ==================== PRICING & PAYMENT CALLBACKS ====================
@@ -855,7 +857,7 @@ bot.on('callback_query', async (query) => {
 
     // Назад к статусу (личный кабинет)
     if (data === 'back_to_status') {
-      const status = db.getUserStatus(userId);
+      const status = await db.getUserStatus(userId);
       let expiresFormatted = '';
       if (status?.subscriptionExpiresAt) {
         expiresFormatted = new Date(status.subscriptionExpiresAt).toLocaleDateString('ru-RU');
@@ -967,7 +969,7 @@ bot.on('callback_query', async (query) => {
       }
 
       // Сохраняем платёж в локальную БД и Supabase
-      db.createPayment(payment.paymentId, userId, pack.price, `pack_${packId}`, { slides: pack.slides });
+      await db.createPayment(payment.paymentId, userId, pack.price, `pack_${packId}`, { slides: pack.slides });
       await savePayment({
         payment_id: payment.paymentId,
         telegram_id: userId,
@@ -1088,7 +1090,7 @@ bot.on('callback_query', async (query) => {
       }
 
       // Сохраняем платёж в локальную БД и Supabase
-      db.createPayment(payment.paymentId, userId, price, productType, { months });
+      await db.createPayment(payment.paymentId, userId, price, productType, { months });
       await savePayment({
         payment_id: payment.paymentId,
         telegram_id: userId,
@@ -1125,7 +1127,7 @@ bot.on('callback_query', async (query) => {
     // Оплата Photo Mode перед генерацией - выбор способа оплаты
     if (data.startsWith('pay_photo_')) {
       const slideCount = parseInt(data.replace('pay_photo_', ''));
-      const tier = db.getActiveSubscription(userId);
+      const tier = await db.getActiveSubscription(userId);
       const price = pricing.getPhotoModePrice(slideCount, tier);
       const starsPrice = pricing.getPhotoModeStarsPrice(slideCount);
 
@@ -1166,7 +1168,7 @@ bot.on('callback_query', async (query) => {
     // Оплата Photo Mode через YooKassa (рубли)
     if (data.startsWith('rub_photo_')) {
       const slideCount = parseInt(data.replace('rub_photo_', ''));
-      const tier = db.getActiveSubscription(userId);
+      const tier = await db.getActiveSubscription(userId);
       const price = pricing.getPhotoModePrice(slideCount, tier);
 
       // Создаём платёж в ЮКассе
@@ -1191,7 +1193,7 @@ bot.on('callback_query', async (query) => {
       }
 
       // Сохраняем платёж в локальную БД и Supabase
-      db.createPayment(payment.paymentId, userId, price, 'photo_slides', { slides: slideCount });
+      await db.createPayment(payment.paymentId, userId, price, 'photo_slides', { slides: slideCount });
       await savePayment({
         payment_id: payment.paymentId,
         telegram_id: userId,
@@ -1224,7 +1226,7 @@ bot.on('callback_query', async (query) => {
     // Покупка недостающих слайдов поштучно - выбор способа оплаты
     if (data.startsWith('topup_')) {
       const slidesToBuy = parseInt(data.replace('topup_', ''));
-      const tier = db.getActiveSubscription(userId);
+      const tier = await db.getActiveSubscription(userId);
       const pricePerSlide = pricing.getPerSlidePrice(tier);
       const totalPrice = slidesToBuy * pricePerSlide;
       const starsPrice = pricing.getStarsPrice(totalPrice);
@@ -1249,7 +1251,7 @@ bot.on('callback_query', async (query) => {
     // Докупка слайдов через Stars
     if (data.startsWith('stars_topup_')) {
       const slidesToBuy = parseInt(data.replace('stars_topup_', ''));
-      const tier = db.getActiveSubscription(userId);
+      const tier = await db.getActiveSubscription(userId);
       const pricePerSlide = pricing.getPerSlidePrice(tier);
       const totalPrice = slidesToBuy * pricePerSlide;
       const starsPrice = pricing.getStarsPrice(totalPrice);
@@ -1269,7 +1271,7 @@ bot.on('callback_query', async (query) => {
     // Докупка слайдов через YooKassa (рубли)
     if (data.startsWith('rub_topup_')) {
       const slidesToBuy = parseInt(data.replace('rub_topup_', ''));
-      const tier = db.getActiveSubscription(userId);
+      const tier = await db.getActiveSubscription(userId);
       const pricePerSlide = pricing.getPerSlidePrice(tier);
       const totalPrice = slidesToBuy * pricePerSlide;
 
@@ -1295,7 +1297,7 @@ bot.on('callback_query', async (query) => {
       }
 
       // Сохраняем платёж в локальную БД и Supabase
-      db.createPayment(payment.paymentId, userId, totalPrice, 'topup_slides', { slides: slidesToBuy });
+      await db.createPayment(payment.paymentId, userId, totalPrice, 'topup_slides', { slides: slidesToBuy });
       await savePayment({
         payment_id: payment.paymentId,
         telegram_id: userId,
@@ -1407,9 +1409,17 @@ ${recentText}`;
           .select('*', { count: 'exact', head: true })
           .eq('generation_type', 'carousel');
 
-        // Данные о балансе из локальной БД (только там хранятся слайды)
-        const usersWithBalance = db.db?.prepare(`SELECT COUNT(*) as count FROM users WHERE photo_slides_balance > 0`).get()?.count || 0;
-        const totalPhotoBalance = db.db?.prepare(`SELECT SUM(photo_slides_balance) as total FROM users`).get()?.total || 0;
+        // Данные о балансе из Supabase
+        const { count: usersWithBalance } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .gt('photo_slides_balance', 0);
+
+        const { data: balanceData } = await supabase
+          .from('profiles')
+          .select('photo_slides_balance');
+
+        const totalPhotoBalance = balanceData?.reduce((sum, u) => sum + (u.photo_slides_balance || 0), 0) || 0;
 
         let recentText = (recentUsers && recentUsers.length > 0)
           ? recentUsers.map(u => {
@@ -1575,7 +1585,7 @@ ${recentText}`;
 
     // Личный кабинет
     if (data === 'menu_account') {
-      const status = db.getUserStatus(userId);
+      const status = await db.getUserStatus(userId);
 
       if (!status) {
         return bot.sendMessage(chatId, 'Сначала отправь /start');
@@ -1606,7 +1616,7 @@ ${recentText}`;
 
     // Главное меню (возврат)
     if (data === 'menu_main') {
-      const status = db.getUserStatus(userId);
+      const status = await db.getUserStatus(userId);
 
       const welcomeText = status
         ? copy.start.welcome(status)
@@ -1640,7 +1650,7 @@ ${recentText}`;
 
     // ==================== REFERRAL PROGRAM ====================
     if (data === 'menu_referral') {
-      const stats = db.getReferralStats(userId) || { referralCount: 0, totalEarned: 0 };
+      const stats = await db.getReferralStats(userId) || { referralCount: 0, totalEarned: 0 };
       const botInfo = await bot.getMe();
       const referralLink = `https://t.me/${botInfo.username}?start=ref_${userId}`;
 
@@ -1904,7 +1914,7 @@ ${recentText}`;
     // ==================== РЕЖИМ: ОБЫЧНЫЙ (HTML шаблоны) ====================
     if (data === 'mode_standard') {
       // Проверяем лимит Standard генераций
-      const standardCheck = db.canGenerateStandard(userId);
+      const standardCheck = await db.canGenerateStandard(userId);
 
       if (!standardCheck.canGenerate) {
         await bot.editMessageText(
@@ -1997,11 +2007,11 @@ ${recentText}`;
       const slideCount = sessions[userId]?.slideCount || 5;
 
       // Проверяем баланс Photo Mode слайдов
-      const photoCheck = db.canGeneratePhoto(userId, slideCount);
+      const photoCheck = await db.canGeneratePhoto(userId, slideCount);
 
       if (!photoCheck.canGenerate) {
         // Нужна оплата
-        const tier = db.getActiveSubscription(userId);
+        const tier = await db.getActiveSubscription(userId);
         const balance = photoCheck.balance || 0;
 
         // Если есть частичный баланс - предлагаем докупить недостающие
@@ -2150,7 +2160,7 @@ ${recentText}`;
       await bot.sendMediaGroup(chatId, mediaGroup);
 
       // Списываем лимит Standard
-      const deductResult = db.deductStandard(userId);
+      const deductResult = await db.deductStandard(userId);
       if (!deductResult.success) {
         console.error(`⚠️ Не удалось списать Standard генерацию для ${userId}`);
       }

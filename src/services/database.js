@@ -1,116 +1,118 @@
-const Database = require('better-sqlite3');
-const path = require('path');
+// ============================================
+// DATABASE SERVICE (SUPABASE)
+// ============================================
+// Миграция с SQLite на Supabase для персистентности на Railway
+// Все функции асинхронные
 
-const dbPath = process.env.DATABASE_PATH || './data/swipely.db';
-let db;
+const { createClient } = require('@supabase/supabase-js');
+const pricing = require('../config/pricing');
+
+// Инициализация Supabase клиента
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+// Реферальные бонусы
+const REFERRAL_BONUS_INVITER = 5;  // Бонус пригласившему
+const REFERRAL_BONUS_INVITED = 3;  // Бонус приглашённому
 
 /**
- * Инициализация базы данных
+ * Инициализация базы данных (для совместимости)
+ * Supabase не требует локальной инициализации
  */
-function init() {
-  db = new Database(dbPath);
-
-  // Создание таблицы пользователей
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      user_id INTEGER PRIMARY KEY,
-      username TEXT,
-      subscription_tier TEXT DEFAULT 'free',
-      generation_count INTEGER DEFAULT 0,
-      standard_count_month INTEGER DEFAULT 0,
-      photo_slides_balance INTEGER DEFAULT 0,
-      last_generation_date TEXT,
-      last_month_reset TEXT,
-      subscription_expires_at TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      tone_guidelines TEXT
-    )
-  `);
-
-  // Миграция: добавляем новые колонки если их нет
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN standard_count_month INTEGER DEFAULT 0`);
-  } catch (e) { /* колонка уже существует */ }
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN photo_slides_balance INTEGER DEFAULT 0`);
-  } catch (e) { /* колонка уже существует */ }
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN last_month_reset TEXT`);
-  } catch (e) { /* колонка уже существует */ }
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN subscription_expires_at TEXT`);
-  } catch (e) { /* колонка уже существует */ }
-  // Реферальная система
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN referred_by INTEGER`);
-  } catch (e) { /* колонка уже существует */ }
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN referral_count INTEGER DEFAULT 0`);
-  } catch (e) { /* колонка уже существует */ }
-
-  // Создание таблицы генераций
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS generations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
-      style_preset TEXT,
-      input_text TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(user_id)
-    )
-  `);
-
-  // Создание таблицы платежей
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS payments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      payment_id TEXT UNIQUE,
-      user_id INTEGER,
-      amount REAL,
-      product_type TEXT,
-      product_data TEXT,
-      status TEXT DEFAULT 'pending',
-      payment_method TEXT DEFAULT 'yookassa',
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      completed_at TEXT,
-      FOREIGN KEY (user_id) REFERENCES users(user_id)
-    )
-  `);
-
-  // Миграция: добавляем колонку payment_method если её нет
-  try {
-    db.exec(`ALTER TABLE payments ADD COLUMN payment_method TEXT DEFAULT 'yookassa'`);
-  } catch (e) { /* колонка уже существует */ }
-
-  console.log('✅ База данных инициализирована');
+async function init() {
+  console.log('✅ Supabase database service initialized');
 }
+
+// ============================================
+// ПОЛЬЗОВАТЕЛИ
+// ============================================
 
 /**
  * Создание или обновление пользователя
  */
-function createUser(userId, username) {
-  const stmt = db.prepare(`
-    INSERT INTO users (user_id, username)
-    VALUES (?, ?)
-    ON CONFLICT(user_id) DO UPDATE SET username = ?
-  `);
+async function createUser(userId, username) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert({
+        telegram_id: userId,
+        telegram_username: username,
+        subscription_tier: 'free',
+        photo_slides_balance: 0,
+        standard_count_month: 0,
+        generation_count: 0
+      }, {
+        onConflict: 'telegram_id',
+        ignoreDuplicates: false
+      })
+      .select()
+      .single();
 
-  stmt.run(userId, username, username);
+    if (error) {
+      console.error('❌ Ошибка создания пользователя:', error);
+      return null;
+    }
+
+    console.log(`✅ Пользователь создан/обновлён: ${username || userId}`);
+    return data;
+  } catch (err) {
+    console.error('❌ Критическая ошибка createUser:', err);
+    return null;
+  }
 }
 
 /**
  * Получение данных пользователя
  */
-function getUser(userId) {
-  const stmt = db.prepare('SELECT * FROM users WHERE user_id = ?');
-  return stmt.get(userId);
+async function getUser(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('telegram_id', userId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Пользователь не найден
+        return null;
+      }
+      console.error('❌ Ошибка получения пользователя:', error);
+      return null;
+    }
+
+    // Преобразуем поля для совместимости со старым кодом
+    return {
+      user_id: data.telegram_id,
+      username: data.telegram_username,
+      subscription_tier: data.subscription_tier || 'free',
+      generation_count: data.generation_count || 0,
+      standard_count_month: data.standard_count_month || 0,
+      photo_slides_balance: data.photo_slides_balance || 0,
+      last_generation_date: data.last_generation_date,
+      last_month_reset: data.last_month_reset,
+      subscription_expires_at: data.subscription_expires_at,
+      created_at: data.created_at,
+      tone_guidelines: data.tone_guidelines,
+      referred_by: data.referred_by,
+      referral_count: data.referral_count || 0,
+      // Дополнительные поля из Supabase
+      id: data.id,
+      display_username: data.display_username
+    };
+  } catch (err) {
+    console.error('❌ Критическая ошибка getUser:', err);
+    return null;
+  }
 }
 
 /**
- * Проверка возможности генерации
+ * Проверка возможности генерации (старая логика для совместимости)
  */
-function canGenerate(userId) {
-  const user = getUser(userId);
+async function canGenerate(userId) {
+  const user = await getUser(userId);
 
   if (!user) return false;
 
@@ -127,8 +129,10 @@ function canGenerate(userId) {
 
   if (lastGenDate && (now - lastGenDate > oneWeek)) {
     // Сбросить счетчик
-    const resetStmt = db.prepare('UPDATE users SET generation_count = 0 WHERE user_id = ?');
-    resetStmt.run(userId);
+    await supabase
+      .from('profiles')
+      .update({ generation_count: 0 })
+      .eq('telegram_id', userId);
     return true;
   }
 
@@ -138,95 +142,163 @@ function canGenerate(userId) {
 /**
  * Инкремент счетчика генераций
  */
-function incrementGenerations(userId) {
-  const stmt = db.prepare(`
-    UPDATE users
-    SET generation_count = generation_count + 1,
-        last_generation_date = CURRENT_TIMESTAMP
-    WHERE user_id = ?
-  `);
+async function incrementGenerations(userId) {
+  try {
+    const { error } = await supabase.rpc('increment_generation_count', {
+      p_telegram_id: userId
+    });
 
-  stmt.run(userId);
+    // Fallback если RPC не существует
+    if (error && error.code === '42883') {
+      const user = await getUser(userId);
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({
+            generation_count: (user.generation_count || 0) + 1,
+            last_generation_date: new Date().toISOString()
+          })
+          .eq('telegram_id', userId);
+      }
+    }
+  } catch (err) {
+    console.error('❌ Ошибка incrementGenerations:', err);
+  }
 }
 
 /**
  * Сохранение генерации в историю
  */
-function saveGeneration(userId, stylePreset, inputText) {
-  const stmt = db.prepare(`
-    INSERT INTO generations (user_id, style_preset, input_text)
-    VALUES (?, ?, ?)
-  `);
+async function saveGeneration(userId, stylePreset, inputText) {
+  try {
+    // Получаем profile_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('telegram_id', userId)
+      .single();
 
-  stmt.run(userId, stylePreset, inputText);
+    if (!profile) {
+      console.error('❌ Профиль не найден для сохранения генерации');
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('generations')
+      .insert({
+        profile_id: profile.id,
+        telegram_id: userId,
+        style_preset: stylePreset,
+        input_text: inputText
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Ошибка сохранения генерации:', error);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('❌ Критическая ошибка saveGeneration:', err);
+    return null;
+  }
 }
 
 /**
  * Обновление подписки пользователя
  */
-function upgradeUser(userId, tier = 'pro') {
-  const stmt = db.prepare('UPDATE users SET subscription_tier = ? WHERE user_id = ?');
-  stmt.run(tier, userId);
+async function upgradeUser(userId, tier = 'pro') {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ subscription_tier: tier })
+      .eq('telegram_id', userId);
+
+    if (error) {
+      console.error('❌ Ошибка upgradeUser:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка upgradeUser:', err);
+    return false;
+  }
 }
 
 /**
  * Сохранение tone guidelines пользователя
  */
-function saveToneGuidelines(userId, toneData) {
-  const stmt = db.prepare('UPDATE users SET tone_guidelines = ? WHERE user_id = ?');
-  stmt.run(JSON.stringify(toneData), userId);
+async function saveToneGuidelines(userId, toneData) {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ tone_guidelines: toneData })
+      .eq('telegram_id', userId);
+
+    if (error) {
+      console.error('❌ Ошибка saveToneGuidelines:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка saveToneGuidelines:', err);
+    return false;
+  }
 }
 
 /**
  * Получение tone guidelines пользователя
  */
-function getToneGuidelines(userId) {
-  const user = getUser(userId);
+async function getToneGuidelines(userId) {
+  const user = await getUser(userId);
   if (!user || !user.tone_guidelines) return null;
-
-  try {
-    return JSON.parse(user.tone_guidelines);
-  } catch (error) {
-    return null;
-  }
+  return user.tone_guidelines;
 }
 
 // ============================================
 // НОВАЯ ЭКОНОМИКА: ЛИМИТЫ И БАЛАНС
 // ============================================
 
-const pricing = require('../config/pricing');
-
 /**
  * Сброс месячных лимитов если нужно
  */
-function resetMonthlyLimitsIfNeeded(userId) {
-  const user = getUser(userId);
+async function resetMonthlyLimitsIfNeeded(userId) {
+  const user = await getUser(userId);
   if (!user) return;
 
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
 
   if (user.last_month_reset !== currentMonth) {
-    const stmt = db.prepare(`
-      UPDATE users
-      SET standard_count_month = 0, last_month_reset = ?
-      WHERE user_id = ?
-    `);
-    stmt.run(currentMonth, userId);
-    console.log(`🔄 Месячные лимиты сброшены для пользователя ${userId}`);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          standard_count_month: 0,
+          last_month_reset: currentMonth
+        })
+        .eq('telegram_id', userId);
+
+      if (!error) {
+        console.log(`🔄 Месячные лимиты сброшены для пользователя ${userId}`);
+      }
+    } catch (err) {
+      console.error('❌ Ошибка resetMonthlyLimitsIfNeeded:', err);
+    }
   }
 }
 
 /**
  * Проверка возможности генерации Standard
  */
-function canGenerateStandard(userId) {
-  resetMonthlyLimitsIfNeeded(userId);
-  const user = getUser(userId);
+async function canGenerateStandard(userId) {
+  await resetMonthlyLimitsIfNeeded(userId);
+  const user = await getUser(userId);
   if (!user) return { canGenerate: false, reason: 'user_not_found' };
 
-  const tier = getActiveSubscription(userId);
+  const tier = await getActiveSubscription(userId);
   const limit = pricing.subscriptions[tier]?.features.standardLimit;
 
   // Безлимит для PRO
@@ -246,8 +318,8 @@ function canGenerateStandard(userId) {
 /**
  * Проверка баланса Photo Mode слайдов
  */
-function canGeneratePhoto(userId, slideCount) {
-  const user = getUser(userId);
+async function canGeneratePhoto(userId, slideCount) {
+  const user = await getUser(userId);
   if (!user) return { canGenerate: false, reason: 'user_not_found' };
 
   const balance = user.photo_slides_balance || 0;
@@ -257,7 +329,7 @@ function canGeneratePhoto(userId, slideCount) {
   }
 
   // Нужна оплата
-  const tier = getActiveSubscription(userId);
+  const tier = await getActiveSubscription(userId);
   const price = pricing.getPhotoModePrice(slideCount, tier);
 
   return {
@@ -273,12 +345,11 @@ function canGeneratePhoto(userId, slideCount) {
 
 /**
  * Списание Standard генерации
- * @returns {object} { success, usedBefore, usedAfter, remaining }
  */
-function deductStandard(userId) {
-  resetMonthlyLimitsIfNeeded(userId);
+async function deductStandard(userId) {
+  await resetMonthlyLimitsIfNeeded(userId);
 
-  const user = getUser(userId);
+  const user = await getUser(userId);
   if (!user) {
     console.error(`❌ deductStandard: пользователь ${userId} не найден`);
     return { success: false };
@@ -286,32 +357,40 @@ function deductStandard(userId) {
 
   const usedBefore = user.standard_count_month || 0;
 
-  const stmt = db.prepare(`
-    UPDATE users
-    SET standard_count_month = standard_count_month + 1,
-        generation_count = generation_count + 1,
-        last_generation_date = CURRENT_TIMESTAMP
-    WHERE user_id = ?
-  `);
-  stmt.run(userId);
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        standard_count_month: usedBefore + 1,
+        generation_count: (user.generation_count || 0) + 1,
+        last_generation_date: new Date().toISOString()
+      })
+      .eq('telegram_id', userId);
 
-  const userAfter = getUser(userId);
-  const usedAfter = userAfter.standard_count_month;
-  const tier = getActiveSubscription(userId);
-  const limit = pricing.subscriptions[tier]?.features.standardLimit;
-  const remaining = limit === -1 ? '∞' : Math.max(0, limit - usedAfter);
+    if (error) {
+      console.error('❌ Ошибка deductStandard:', error);
+      return { success: false };
+    }
 
-  console.log(`📉 Списана Standard генерация для ${userId} (использовано: ${usedBefore} → ${usedAfter}, осталось: ${remaining})`);
+    const usedAfter = usedBefore + 1;
+    const tier = await getActiveSubscription(userId);
+    const limit = pricing.subscriptions[tier]?.features.standardLimit;
+    const remaining = limit === -1 ? '∞' : Math.max(0, limit - usedAfter);
 
-  return { success: true, usedBefore, usedAfter, remaining };
+    console.log(`📉 Списана Standard генерация для ${userId} (использовано: ${usedBefore} → ${usedAfter}, осталось: ${remaining})`);
+
+    return { success: true, usedBefore, usedAfter, remaining };
+  } catch (err) {
+    console.error('❌ Критическая ошибка deductStandard:', err);
+    return { success: false };
+  }
 }
 
 /**
  * Списание Photo Mode слайдов
- * @returns {object} { success, balanceBefore, balanceAfter } или { success: false, error }
  */
-function deductPhotoSlides(userId, slideCount) {
-  const user = getUser(userId);
+async function deductPhotoSlides(userId, slideCount) {
+  const user = await getUser(userId);
   if (!user) {
     console.error(`❌ deductPhotoSlides: пользователь ${userId} не найден`);
     return { success: false, error: 'user_not_found' };
@@ -325,27 +404,36 @@ function deductPhotoSlides(userId, slideCount) {
     return { success: false, error: 'insufficient_balance', balanceBefore };
   }
 
-  const stmt = db.prepare(`
-    UPDATE users
-    SET photo_slides_balance = photo_slides_balance - ?,
-        generation_count = generation_count + 1,
-        last_generation_date = CURRENT_TIMESTAMP
-    WHERE user_id = ?
-  `);
-  stmt.run(slideCount, userId);
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        photo_slides_balance: balanceBefore - slideCount,
+        generation_count: (user.generation_count || 0) + 1,
+        last_generation_date: new Date().toISOString()
+      })
+      .eq('telegram_id', userId);
 
-  const balanceAfter = getUser(userId).photo_slides_balance;
-  console.log(`📉 Списано ${slideCount} Photo слайдов для ${userId} (было: ${balanceBefore}, стало: ${balanceAfter})`);
+    if (error) {
+      console.error('❌ Ошибка deductPhotoSlides:', error);
+      return { success: false, error: 'db_error' };
+    }
 
-  return { success: true, balanceBefore, balanceAfter };
+    const balanceAfter = balanceBefore - slideCount;
+    console.log(`📉 Списано ${slideCount} Photo слайдов для ${userId} (было: ${balanceBefore}, стало: ${balanceAfter})`);
+
+    return { success: true, balanceBefore, balanceAfter };
+  } catch (err) {
+    console.error('❌ Критическая ошибка deductPhotoSlides:', err);
+    return { success: false, error: 'exception' };
+  }
 }
 
 /**
  * Начисление Photo Mode слайдов (после оплаты)
- * @returns {object} { success, balanceBefore, balanceAfter }
  */
-function addPhotoSlides(userId, slideCount) {
-  const user = getUser(userId);
+async function addPhotoSlides(userId, slideCount) {
+  const user = await getUser(userId);
   if (!user) {
     console.error(`❌ addPhotoSlides: пользователь ${userId} не найден`);
     return { success: false, balanceAfter: 0 };
@@ -353,25 +441,34 @@ function addPhotoSlides(userId, slideCount) {
 
   const balanceBefore = user.photo_slides_balance || 0;
 
-  const stmt = db.prepare(`
-    UPDATE users
-    SET photo_slides_balance = photo_slides_balance + ?
-    WHERE user_id = ?
-  `);
-  stmt.run(slideCount, userId);
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        photo_slides_balance: balanceBefore + slideCount
+      })
+      .eq('telegram_id', userId);
 
-  const balanceAfter = getUser(userId).photo_slides_balance;
-  console.log(`📈 Начислено ${slideCount} Photo слайдов для ${userId} (было: ${balanceBefore}, стало: ${balanceAfter})`);
+    if (error) {
+      console.error('❌ Ошибка addPhotoSlides:', error);
+      return { success: false, balanceAfter: balanceBefore };
+    }
 
-  return { success: true, balanceBefore, balanceAfter };
+    const balanceAfter = balanceBefore + slideCount;
+    console.log(`📈 Начислено ${slideCount} Photo слайдов для ${userId} (было: ${balanceBefore}, стало: ${balanceAfter})`);
+
+    return { success: true, balanceBefore, balanceAfter };
+  } catch (err) {
+    console.error('❌ Критическая ошибка addPhotoSlides:', err);
+    return { success: false, balanceAfter: 0 };
+  }
 }
 
 /**
  * Активация или продление PRO подписки
- * Если подписка уже активна — продлевает от текущей даты окончания
  */
-function activateProSubscription(userId, months = 1) {
-  const user = getUser(userId);
+async function activateProSubscription(userId, months = 1) {
+  const user = await getUser(userId);
   if (!user) {
     console.error(`❌ activateProSubscription: пользователь ${userId} не найден`);
     return null;
@@ -391,25 +488,35 @@ function activateProSubscription(userId, months = 1) {
   const expiresAt = new Date(startDate);
   expiresAt.setMonth(expiresAt.getMonth() + months);
 
-  const stmt = db.prepare(`
-    UPDATE users
-    SET subscription_tier = 'pro',
-        subscription_expires_at = ?
-    WHERE user_id = ?
-  `);
-  stmt.run(expiresAt.toISOString(), userId);
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        subscription_tier: 'pro',
+        subscription_expires_at: expiresAt.toISOString()
+      })
+      .eq('telegram_id', userId);
 
-  const action = user.subscription_tier === 'pro' ? 'продлена' : 'активирована';
-  console.log(`🎉 PRO подписка ${action} для ${userId} до ${expiresAt.toLocaleDateString('ru-RU')}`);
+    if (error) {
+      console.error('❌ Ошибка activateProSubscription:', error);
+      return null;
+    }
 
-  return expiresAt;
+    const action = user.subscription_tier === 'pro' ? 'продлена' : 'активирована';
+    console.log(`🎉 PRO подписка ${action} для ${userId} до ${expiresAt.toLocaleDateString('ru-RU')}`);
+
+    return expiresAt;
+  } catch (err) {
+    console.error('❌ Критическая ошибка activateProSubscription:', err);
+    return null;
+  }
 }
 
 /**
  * Получение активного тарифа (с проверкой срока)
  */
-function getActiveSubscription(userId) {
-  const user = getUser(userId);
+async function getActiveSubscription(userId) {
+  const user = await getUser(userId);
   if (!user) return 'free';
 
   if (user.subscription_tier === 'pro') {
@@ -418,8 +525,10 @@ function getActiveSubscription(userId) {
       const expires = new Date(user.subscription_expires_at);
       if (expires < new Date()) {
         // Подписка истекла
-        const stmt = db.prepare(`UPDATE users SET subscription_tier = 'free' WHERE user_id = ?`);
-        stmt.run(userId);
+        await supabase
+          .from('profiles')
+          .update({ subscription_tier: 'free' })
+          .eq('telegram_id', userId);
         console.log(`⚠️ PRO подписка истекла для ${userId}`);
         return 'free';
       }
@@ -433,13 +542,13 @@ function getActiveSubscription(userId) {
 /**
  * Получение статуса пользователя для UI
  */
-function getUserStatus(userId) {
-  resetMonthlyLimitsIfNeeded(userId);
-  const user = getUser(userId);
+async function getUserStatus(userId) {
+  await resetMonthlyLimitsIfNeeded(userId);
+  const user = await getUser(userId);
   if (!user) return null;
 
-  const tier = getActiveSubscription(userId);
-  const standardCheck = canGenerateStandard(userId);
+  const tier = await getActiveSubscription(userId);
+  const standardCheck = await canGenerateStandard(userId);
 
   return {
     tier,
@@ -455,26 +564,22 @@ function getUserStatus(userId) {
 // РЕФЕРАЛЬНАЯ СИСТЕМА
 // ============================================
 
-const REFERRAL_BONUS_INVITER = 5;  // Бонус пригласившему
-const REFERRAL_BONUS_INVITED = 3;  // Бонус приглашённому
-
 /**
  * Обработка реферала при регистрации
- * @returns {object|null} - информация о начислениях или null если реферал невалидный
  */
-function processReferral(newUserId, referrerId) {
+async function processReferral(newUserId, referrerId) {
   // Проверки
   if (!referrerId || newUserId === referrerId) {
     return null;
   }
 
-  const referrer = getUser(referrerId);
+  const referrer = await getUser(referrerId);
   if (!referrer) {
     console.log(`⚠️ Реферер ${referrerId} не найден`);
     return null;
   }
 
-  const newUser = getUser(newUserId);
+  const newUser = await getUser(newUserId);
   if (!newUser) {
     console.log(`⚠️ Новый пользователь ${newUserId} не найден`);
     return null;
@@ -486,39 +591,44 @@ function processReferral(newUserId, referrerId) {
     return null;
   }
 
-  // Записываем реферера
-  const updateNewUser = db.prepare(`
-    UPDATE users SET referred_by = ? WHERE user_id = ?
-  `);
-  updateNewUser.run(referrerId, newUserId);
+  try {
+    // Записываем реферера
+    await supabase
+      .from('profiles')
+      .update({ referred_by: referrerId })
+      .eq('telegram_id', newUserId);
 
-  // Увеличиваем счётчик рефералов у пригласившего
-  const updateReferrer = db.prepare(`
-    UPDATE users SET referral_count = referral_count + 1 WHERE user_id = ?
-  `);
-  updateReferrer.run(referrerId);
+    // Увеличиваем счётчик рефералов у пригласившего
+    await supabase
+      .from('profiles')
+      .update({ referral_count: (referrer.referral_count || 0) + 1 })
+      .eq('telegram_id', referrerId);
 
-  // Начисляем бонусы
-  addPhotoSlides(referrerId, REFERRAL_BONUS_INVITER);
-  addPhotoSlides(newUserId, REFERRAL_BONUS_INVITED);
+    // Начисляем бонусы
+    await addPhotoSlides(referrerId, REFERRAL_BONUS_INVITER);
+    await addPhotoSlides(newUserId, REFERRAL_BONUS_INVITED);
 
-  console.log(`🎁 Реферал обработан: ${referrerId} пригласил ${newUserId}`);
-  console.log(`   → ${referrerId}: +${REFERRAL_BONUS_INVITER} слайдов`);
-  console.log(`   → ${newUserId}: +${REFERRAL_BONUS_INVITED} слайдов`);
+    console.log(`🎁 Реферал обработан: ${referrerId} пригласил ${newUserId}`);
+    console.log(`   → ${referrerId}: +${REFERRAL_BONUS_INVITER} слайдов`);
+    console.log(`   → ${newUserId}: +${REFERRAL_BONUS_INVITED} слайдов`);
 
-  return {
-    inviterBonus: REFERRAL_BONUS_INVITER,
-    invitedBonus: REFERRAL_BONUS_INVITED,
-    referrerId,
-    newUserId
-  };
+    return {
+      inviterBonus: REFERRAL_BONUS_INVITER,
+      invitedBonus: REFERRAL_BONUS_INVITED,
+      referrerId,
+      newUserId
+    };
+  } catch (err) {
+    console.error('❌ Ошибка processReferral:', err);
+    return null;
+  }
 }
 
 /**
  * Получение статистики рефералов пользователя
  */
-function getReferralStats(userId) {
-  const user = getUser(userId);
+async function getReferralStats(userId) {
+  const user = await getUser(userId);
   if (!user) return null;
 
   return {
@@ -531,8 +641,8 @@ function getReferralStats(userId) {
 /**
  * Проверка, является ли пользователь новым (для реферальной системы)
  */
-function isNewUser(userId) {
-  const user = getUser(userId);
+async function isNewUser(userId) {
+  const user = await getUser(userId);
   // Считаем новым, если создан менее 5 минут назад и нет генераций
   if (!user) return true;
 
@@ -549,68 +659,141 @@ function isNewUser(userId) {
 
 /**
  * Создание записи о платеже
- * @param {string} paymentId - ID платежа
- * @param {number} userId - ID пользователя
- * @param {number} amount - сумма (рубли или Stars)
- * @param {string} productType - тип продукта
- * @param {object} productData - данные продукта
- * @param {string} paymentMethod - способ оплаты ('yookassa' | 'telegram_stars')
  */
-function createPayment(paymentId, userId, amount, productType, productData, paymentMethod = 'yookassa') {
-  const stmt = db.prepare(`
-    INSERT INTO payments (payment_id, user_id, amount, product_type, product_data, status, payment_method)
-    VALUES (?, ?, ?, ?, ?, 'pending', ?)
-  `);
-  stmt.run(paymentId, userId, amount, productType, JSON.stringify(productData), paymentMethod);
-  const emoji = paymentMethod === 'telegram_stars' ? '⭐' : '💳';
-  console.log(`${emoji} Создана запись платежа ${paymentId} для ${userId} (${paymentMethod})`);
+async function createPayment(paymentId, userId, amount, productType, productData, paymentMethod = 'yookassa') {
+  try {
+    const { data, error } = await supabase
+      .from('payments')
+      .insert({
+        payment_id: paymentId,
+        telegram_id: userId,
+        amount: amount,
+        currency: paymentMethod === 'telegram_stars' ? 'XTR' : 'RUB',
+        product_type: productType,
+        product_data: productData,
+        payment_method: paymentMethod,
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Ошибка createPayment:', error);
+      return null;
+    }
+
+    const emoji = paymentMethod === 'telegram_stars' ? '⭐' : '💳';
+    console.log(`${emoji} Создана запись платежа ${paymentId} для ${userId} (${paymentMethod})`);
+    return data;
+  } catch (err) {
+    console.error('❌ Критическая ошибка createPayment:', err);
+    return null;
+  }
 }
 
 /**
  * Получение платежа по ID
  */
-function getPayment(paymentId) {
-  const stmt = db.prepare('SELECT * FROM payments WHERE payment_id = ?');
-  const payment = stmt.get(paymentId);
-  if (payment && payment.product_data) {
-    payment.product_data = JSON.parse(payment.product_data);
+async function getPayment(paymentId) {
+  try {
+    const { data, error } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('payment_id', paymentId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // Не найден
+      }
+      console.error('❌ Ошибка getPayment:', error);
+      return null;
+    }
+
+    // Преобразуем для совместимости
+    return {
+      id: data.id,
+      payment_id: data.payment_id,
+      user_id: data.telegram_id,
+      amount: data.amount,
+      product_type: data.product_type,
+      product_data: data.product_data,
+      status: data.status,
+      payment_method: data.payment_method,
+      created_at: data.created_at,
+      completed_at: data.updated_at
+    };
+  } catch (err) {
+    console.error('❌ Критическая ошибка getPayment:', err);
+    return null;
   }
-  return payment;
 }
 
 /**
  * Получение pending платежей пользователя
  */
-function getPendingPayments(userId) {
-  const stmt = db.prepare(`
-    SELECT * FROM payments
-    WHERE user_id = ? AND status = 'pending'
-    ORDER BY created_at DESC
-  `);
-  return stmt.all(userId).map(p => ({
-    ...p,
-    product_data: p.product_data ? JSON.parse(p.product_data) : null
-  }));
+async function getPendingPayments(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('telegram_id', userId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Ошибка getPendingPayments:', error);
+      return [];
+    }
+
+    return data.map(p => ({
+      id: p.id,
+      payment_id: p.payment_id,
+      user_id: p.telegram_id,
+      amount: p.amount,
+      product_type: p.product_type,
+      product_data: p.product_data,
+      status: p.status,
+      payment_method: p.payment_method,
+      created_at: p.created_at
+    }));
+  } catch (err) {
+    console.error('❌ Критическая ошибка getPendingPayments:', err);
+    return [];
+  }
 }
 
 /**
  * Завершение платежа
  */
-function completePayment(paymentId, status = 'succeeded') {
-  const stmt = db.prepare(`
-    UPDATE payments
-    SET status = ?, completed_at = CURRENT_TIMESTAMP
-    WHERE payment_id = ?
-  `);
-  stmt.run(status, paymentId);
-  console.log(`✅ Платёж ${paymentId} завершён со статусом ${status}`);
+async function completePayment(paymentId, status = 'succeeded') {
+  try {
+    const { error } = await supabase
+      .from('payments')
+      .update({
+        status: status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('payment_id', paymentId);
+
+    if (error) {
+      console.error('❌ Ошибка completePayment:', error);
+      return false;
+    }
+
+    console.log(`✅ Платёж ${paymentId} завершён со статусом ${status}`);
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка completePayment:', err);
+    return false;
+  }
 }
 
 /**
  * Обработка успешного платежа - начисление товара
  */
-function processSuccessfulPayment(paymentId) {
-  const payment = getPayment(paymentId);
+async function processSuccessfulPayment(paymentId) {
+  const payment = await getPayment(paymentId);
 
   if (!payment) {
     console.error(`❌ Платёж ${paymentId} не найден`);
@@ -634,27 +817,27 @@ function processSuccessfulPayment(paymentId) {
     case 'pack_small':
     case 'pack_medium':
     case 'pack_large':
-      result = addPhotoSlides(user_id, product_data.slides);
+      result = await addPhotoSlides(user_id, product_data.slides);
       console.log(`${methodEmoji} Пакет ${product_type}: +${product_data.slides} слайдов → баланс: ${result.balanceAfter}`);
       break;
 
     case 'photo_slides':
-      result = addPhotoSlides(user_id, product_data.slides);
+      result = await addPhotoSlides(user_id, product_data.slides);
       console.log(`${methodEmoji} Photo slides: +${product_data.slides} слайдов → баланс: ${result.balanceAfter}`);
       break;
 
     case 'topup_slides':
-      result = addPhotoSlides(user_id, product_data.slides);
+      result = await addPhotoSlides(user_id, product_data.slides);
       console.log(`${methodEmoji} Докупка: +${product_data.slides} слайдов → баланс: ${result.balanceAfter}`);
       break;
 
     case 'pro_month':
-      const expiresMonth = activateProSubscription(user_id, 1);
+      const expiresMonth = await activateProSubscription(user_id, 1);
       console.log(`${methodEmoji} PRO месяц активирован до: ${expiresMonth?.toLocaleDateString('ru-RU')}`);
       break;
 
     case 'pro_year':
-      const expiresYear = activateProSubscription(user_id, 12);
+      const expiresYear = await activateProSubscription(user_id, 12);
       console.log(`${methodEmoji} PRO год активирован до: ${expiresYear?.toLocaleDateString('ru-RU')}`);
       break;
 
@@ -663,7 +846,7 @@ function processSuccessfulPayment(paymentId) {
   }
 
   // Отмечаем платёж как завершённый
-  completePayment(paymentId, 'succeeded');
+  await completePayment(paymentId, 'succeeded');
 
   return { ...payment, status: 'succeeded' };
 }
@@ -700,6 +883,6 @@ module.exports = {
   isNewUser,
   REFERRAL_BONUS_INVITER,
   REFERRAL_BONUS_INVITED,
-  // Прямой доступ к БД (для админки)
-  get db() { return db; }
+  // Прямой доступ к Supabase клиенту (для админки)
+  get supabase() { return supabase; }
 };
