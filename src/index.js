@@ -78,7 +78,38 @@ bot.on('successful_payment', async (msg) => {
     const status = db.getUserStatus(userId);
 
     // Уведомляем пользователя
-    if (product_type.startsWith('pack_') || product_type === 'photo_slides' || product_type === 'topup_slides') {
+    if (product_type === 'photo_slides' || product_type === 'topup_slides') {
+      // Проверяем, есть ли активная сессия с текстом
+      const session = sessions[userId];
+      if (session && session.transcription) {
+        // Есть сессия — предлагаем продолжить генерацию
+        await bot.sendMessage(chatId,
+          copy.pricing.stars.successSlides(slides, status.photoSlidesBalance) +
+          '\n\n📸 Выбери стиль изображения:',
+          {
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: copy.photoMode.styleSelection.buttons.cartoon, callback_data: 'imgstyle_cartoon' }],
+                [{ text: copy.photoMode.styleSelection.buttons.realistic, callback_data: 'imgstyle_realistic' }]
+              ]
+            }
+          }
+        );
+      } else {
+        // Нет сессии — стандартное сообщение
+        await bot.sendMessage(chatId, copy.pricing.stars.successSlides(slides, status.photoSlidesBalance), {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '✨ Создать карусель', callback_data: 'menu_create' }],
+              [{ text: '← Главное меню', callback_data: 'menu_main' }]
+            ]
+          }
+        });
+      }
+    } else if (product_type.startsWith('pack_')) {
+      // Пакет слайдов — стандартное сообщение
       await bot.sendMessage(chatId, copy.pricing.stars.successSlides(slides, status.photoSlidesBalance), {
         parse_mode: 'Markdown',
         reply_markup: {
@@ -261,20 +292,39 @@ async function handlePaymentReturn(chatId, userId, paymentId) {
               ]
             }
           });
-        } else if (result.product_type === 'topup_slides') {
-          // Докупка слайдов поштучно
-          await bot.sendMessage(chatId,
-            copy.pricing.success.slidesTopUp(result.product_data.slides, status.photoSlidesBalance),
-            {
+        } else if (result.product_type === 'topup_slides' || result.product_type === 'photo_slides') {
+          // Докупка слайдов или покупка Photo Mode
+          const session = sessions[userId];
+          const successText = result.product_type === 'topup_slides'
+            ? copy.pricing.success.slidesTopUp(result.product_data.slides, status.photoSlidesBalance)
+            : copy.pricing.success.slides(result.product_data.slides, status.photoSlidesBalance);
+
+          if (session && session.transcription) {
+            // Есть сессия — предлагаем выбор стиля
+            await bot.sendMessage(chatId,
+              successText + '\n\n📸 Выбери стиль изображения:',
+              {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: copy.photoMode.styleSelection.buttons.cartoon, callback_data: 'imgstyle_cartoon' }],
+                    [{ text: copy.photoMode.styleSelection.buttons.realistic, callback_data: 'imgstyle_realistic' }]
+                  ]
+                }
+              }
+            );
+          } else {
+            // Нет сессии
+            await bot.sendMessage(chatId, successText, {
               parse_mode: 'Markdown',
               reply_markup: {
                 inline_keyboard: [
-                  [{ text: '📸 Продолжить Photo Mode', callback_data: 'mode_photo' }],
+                  [{ text: '✨ Создать карусель', callback_data: 'menu_create' }],
                   [{ text: '← Главное меню', callback_data: 'menu_main' }]
                 ]
               }
-            }
-          );
+            });
+          }
         } else {
           // Пакет слайдов
           await bot.sendMessage(chatId,
