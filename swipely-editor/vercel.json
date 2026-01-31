@@ -4,14 +4,6 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/sessions",
-      "destination": "/api/sessions/index"
-    },
-    {
-      "source": "/api/sessions/:token",
-      "destination": "/api/sessions/[token]"
-    },
-    {
       "source": "/((?!api).*)",
       "destination": "/index.html"
     }
