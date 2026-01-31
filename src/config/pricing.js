@@ -166,6 +166,47 @@ module.exports = {
     return `${price.toLocaleString('ru-RU')}₽`;
   },
 
+  // ==================== TELEGRAM STARS ====================
+  // Курс: 1 Star ≈ 1.66₽ (при покупке пользователем)
+  // Наценка +15% для компенсации комиссий Apple/Google (30%)
+  // Конверсия: RUB × 1.15 / 1.66 ≈ RUB × 0.693
+  starsMultiplier: 0.693,
+
+  starsPricing: {
+    photoMode: {
+      3: 103,   // 149₽ → 103⭐
+      5: 173,   // 249₽ → 173⭐
+      7: 242    // 349₽ → 242⭐
+    },
+    slidePacks: {
+      small: 340,   // 490₽ → 340⭐
+      medium: 1033, // 1490₽ → 1033⭐
+      large: 2765   // 3990₽ → 2765⭐
+    },
+    pro: {
+      month: 686,   // 990₽ → 686⭐
+      year: 6861    // 9900₽ → 6861⭐
+    }
+  },
+
+  /**
+   * Получить цену в Stars для Photo Mode
+   * @param {number} slideCount - количество слайдов (3, 5, 7)
+   * @returns {number} цена в Stars
+   */
+  getPhotoModeStarsPrice(slideCount) {
+    return this.starsPricing.photoMode[slideCount] || this.starsPricing.photoMode[5];
+  },
+
+  /**
+   * Конвертировать рубли в Stars с наценкой
+   * @param {number} rubPrice - цена в рублях
+   * @returns {number} цена в Stars (округлённая вверх)
+   */
+  getStarsPrice(rubPrice) {
+    return Math.ceil(rubPrice * this.starsMultiplier);
+  },
+
   /**
    * Получить цену за 1 слайд (поштучная покупка)
    * @param {string} subscriptionTier - тариф пользователя ('free' | 'pro')

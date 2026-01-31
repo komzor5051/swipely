@@ -70,11 +70,17 @@ function init() {
       product_type TEXT,
       product_data TEXT,
       status TEXT DEFAULT 'pending',
+      payment_method TEXT DEFAULT 'yookassa',
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       completed_at TEXT,
       FOREIGN KEY (user_id) REFERENCES users(user_id)
     )
   `);
+
+  // Миграция: добавляем колонку payment_method если её нет
+  try {
+    db.exec(`ALTER TABLE payments ADD COLUMN payment_method TEXT DEFAULT 'yookassa'`);
+  } catch (e) { /* колонка уже существует */ }
 
   console.log('✅ База данных инициализирована');
 }
@@ -472,14 +478,21 @@ function isNewUser(userId) {
 
 /**
  * Создание записи о платеже
+ * @param {string} paymentId - ID платежа
+ * @param {number} userId - ID пользователя
+ * @param {number} amount - сумма (рубли или Stars)
+ * @param {string} productType - тип продукта
+ * @param {object} productData - данные продукта
+ * @param {string} paymentMethod - способ оплаты ('yookassa' | 'telegram_stars')
  */
-function createPayment(paymentId, userId, amount, productType, productData) {
+function createPayment(paymentId, userId, amount, productType, productData, paymentMethod = 'yookassa') {
   const stmt = db.prepare(`
-    INSERT INTO payments (payment_id, user_id, amount, product_type, product_data, status)
-    VALUES (?, ?, ?, ?, ?, 'pending')
+    INSERT INTO payments (payment_id, user_id, amount, product_type, product_data, status, payment_method)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?)
   `);
-  stmt.run(paymentId, userId, amount, productType, JSON.stringify(productData));
-  console.log(`💳 Создана запись платежа ${paymentId} для ${userId}`);
+  stmt.run(paymentId, userId, amount, productType, JSON.stringify(productData), paymentMethod);
+  const emoji = paymentMethod === 'telegram_stars' ? '⭐' : '💳';
+  console.log(`${emoji} Создана запись платежа ${paymentId} для ${userId} (${paymentMethod})`);
 }
 
 /**

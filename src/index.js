@@ -30,6 +30,121 @@ db.init();
 console.log('🤖 Swipely Bot запускается...');
 
 // ============================================
+// TELEGRAM STARS PAYMENTS
+// ============================================
+
+// Подтверждение pre_checkout_query (обязательно для Stars!)
+bot.on('pre_checkout_query', async (query) => {
+  try {
+    await bot.answerPreCheckoutQuery(query.id, true);
+    console.log(`⭐ Pre-checkout approved for user ${query.from.id}`);
+  } catch (err) {
+    console.error('❌ Pre-checkout error:', err.message);
+    try {
+      await bot.answerPreCheckoutQuery(query.id, false, { error_message: 'Ошибка обработки платежа' });
+    } catch (e) {
+      // Игнорируем ошибки повторного ответа
+    }
+  }
+});
+
+// Обработка успешного платежа Stars
+bot.on('successful_payment', async (msg) => {
+  const userId = msg.from.id;
+  const chatId = msg.chat.id;
+  const payment = msg.successful_payment;
+
+  try {
+    const payload = JSON.parse(payment.invoice_payload);
+    const { product_type, slides, months } = payload;
+
+    // Генерируем уникальный ID для БД
+    const paymentId = `stars_${Date.now()}_${userId}`;
+
+    // Создаём запись в БД
+    db.createPayment(
+      paymentId,
+      userId,
+      payment.total_amount,
+      product_type,
+      { slides, months, telegram_charge_id: payment.telegram_payment_charge_id },
+      'telegram_stars'
+    );
+
+    // Обрабатываем платёж (начисляем слайды/PRO)
+    db.processSuccessfulPayment(paymentId);
+
+    // Получаем обновлённый статус
+    const status = db.getUserStatus(userId);
+
+    // Уведомляем пользователя
+    if (product_type.startsWith('pack_') || product_type === 'photo_slides' || product_type === 'topup_slides') {
+      await bot.sendMessage(chatId, copy.pricing.stars.successSlides(slides, status.photoSlidesBalance), {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '✨ Создать карусель', callback_data: 'menu_create' }],
+            [{ text: '← Главное меню', callback_data: 'menu_main' }]
+          ]
+        }
+      });
+    } else if (product_type === 'pro_month' || product_type === 'pro_year') {
+      const expiresAt = new Date(status.subscriptionExpiresAt).toLocaleDateString('ru-RU');
+      await bot.sendMessage(chatId, copy.pricing.stars.successPro(expiresAt), {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '✨ Создать карусель', callback_data: 'menu_create' }],
+            [{ text: '← Главное меню', callback_data: 'menu_main' }]
+          ]
+        }
+      });
+    }
+
+    console.log(`⭐ Stars payment SUCCESS: user=${userId}, type=${product_type}, amount=${payment.total_amount}⭐`);
+
+  } catch (err) {
+    console.error('❌ Stars payment processing error:', err);
+    await bot.sendMessage(chatId, '❌ Ошибка обработки платежа. Напиши в поддержку.');
+  }
+});
+
+/**
+ * Отправка invoice для оплаты Stars
+ * @param {number} chatId - ID чата
+ * @param {number} userId - ID пользователя
+ * @param {string} productType - тип продукта
+ * @param {string} title - заголовок
+ * @param {string} description - описание
+ * @param {number} starsAmount - сумма в Stars
+ * @param {object} productData - данные продукта (slides, months)
+ */
+async function sendStarsInvoice(chatId, userId, productType, title, description, starsAmount, productData) {
+  const payload = JSON.stringify({
+    product_type: productType,
+    user_id: userId,
+    ...productData
+  });
+
+  await bot.sendInvoice(
+    chatId,
+    title,
+    description,
+    payload,
+    '',           // provider_token (пустая строка для Stars!)
+    'XTR',        // currency = Telegram Stars
+    [{ label: title, amount: starsAmount }],
+    {
+      need_name: false,
+      need_phone_number: false,
+      need_email: false,
+      need_shipping_address: false,
+      is_flexible: false
+    }
+  );
+}
+
+// ============================================
 // КОМАНДА /START и /MENU - Главное меню
 // ============================================
 bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
@@ -642,9 +757,62 @@ bot.on('callback_query', async (query) => {
       return;
     }
 
-    // Покупка пакета слайдов
+    // Покупка пакета слайдов - показываем выбор способа оплаты
     if (data.startsWith('buy_pack_')) {
       const packId = data.replace('buy_pack_', '');
+      const pack = pricing.slidePacks[packId];
+
+      if (!pack) {
+        return bot.sendMessage(chatId, '❌ Пакет не найден');
+      }
+
+      const starsPrice = pricing.starsPricing.slidePacks[packId];
+
+      await bot.editMessageText(
+        `📦 **${pack.name}**\n\n` +
+        `${copy.pricing.stars.chooseMethod}`,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.pricing.stars.starsOption(starsPrice), callback_data: `stars_pack_${packId}` }],
+              [{ text: copy.pricing.stars.rubOption(pack.price), callback_data: `rub_pack_${packId}` }],
+              [{ text: '← Назад', callback_data: 'view_packs' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Оплата пакета через Stars
+    if (data.startsWith('stars_pack_')) {
+      const packId = data.replace('stars_pack_', '');
+      const pack = pricing.slidePacks[packId];
+
+      if (!pack) {
+        return bot.sendMessage(chatId, '❌ Пакет не найден');
+      }
+
+      const starsPrice = pricing.starsPricing.slidePacks[packId];
+
+      await sendStarsInvoice(
+        chatId,
+        userId,
+        `pack_${packId}`,
+        `Swipely: ${pack.name}`,
+        `${pack.slides} слайдов для Photo Mode`,
+        starsPrice,
+        { slides: pack.slides }
+      );
+      return;
+    }
+
+    // Оплата пакета через YooKassa (рубли)
+    if (data.startsWith('rub_pack_')) {
+      const packId = data.replace('rub_pack_', '');
       const pack = pricing.slidePacks[packId];
 
       if (!pack) {
@@ -680,7 +848,7 @@ bot.on('callback_query', async (query) => {
       }
 
       // Сохраняем платёж в БД
-      db.createPayment(payment.paymentId, userId, pack.price, packId, { slides: pack.slides });
+      db.createPayment(payment.paymentId, userId, pack.price, `pack_${packId}`, { slides: pack.slides });
 
       // Обновляем return URL с реальным ID платежа
       const realReturnUrl = yookassa.getTelegramReturnUrl(botInfo.username, payment.paymentId);
@@ -713,11 +881,55 @@ bot.on('callback_query', async (query) => {
       return;
     }
 
-    // Покупка PRO подписки
+    // Покупка PRO подписки - показываем выбор способа оплаты
     if (data === 'buy_pro_month' || data === 'buy_pro_year') {
       const months = data === 'buy_pro_year' ? 12 : 1;
       const price = data === 'buy_pro_year' ? 9900 : 990;
       const productType = data === 'buy_pro_year' ? 'pro_year' : 'pro_month';
+      const starsPrice = months === 12 ? pricing.starsPricing.pro.year : pricing.starsPricing.pro.month;
+
+      await bot.editMessageText(
+        `🚀 **PRO на ${months === 12 ? 'год' : 'месяц'}**\n\n` +
+        `${copy.pricing.stars.chooseMethod}`,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.pricing.stars.starsOption(starsPrice), callback_data: `stars_${productType}` }],
+              [{ text: copy.pricing.stars.rubOption(price), callback_data: `rub_${productType}` }],
+              [{ text: '← Назад', callback_data: 'view_pro' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Оплата PRO через Stars
+    if (data === 'stars_pro_month' || data === 'stars_pro_year') {
+      const months = data === 'stars_pro_year' ? 12 : 1;
+      const productType = data === 'stars_pro_year' ? 'pro_year' : 'pro_month';
+      const starsPrice = months === 12 ? pricing.starsPricing.pro.year : pricing.starsPricing.pro.month;
+
+      await sendStarsInvoice(
+        chatId,
+        userId,
+        productType,
+        `Swipely PRO ${months === 12 ? '(год)' : '(месяц)'}`,
+        `Безлимит Standard + скидка 20% на Photo Mode`,
+        starsPrice,
+        { months }
+      );
+      return;
+    }
+
+    // Оплата PRO через YooKassa (рубли)
+    if (data === 'rub_pro_month' || data === 'rub_pro_year') {
+      const months = data === 'rub_pro_year' ? 12 : 1;
+      const price = data === 'rub_pro_year' ? 9900 : 990;
+      const productType = data === 'rub_pro_year' ? 'pro_year' : 'pro_month';
 
       // Создаём платёж в ЮКассе
       await bot.editMessageText('⏳ Создаю ссылку на оплату...', {
@@ -771,9 +983,50 @@ bot.on('callback_query', async (query) => {
       return;
     }
 
-    // Оплата Photo Mode перед генерацией
+    // Оплата Photo Mode перед генерацией - выбор способа оплаты
     if (data.startsWith('pay_photo_')) {
       const slideCount = parseInt(data.replace('pay_photo_', ''));
+      const tier = db.getActiveSubscription(userId);
+      const price = pricing.getPhotoModePrice(slideCount, tier);
+      const starsPrice = pricing.getPhotoModeStarsPrice(slideCount);
+
+      await bot.sendMessage(chatId,
+        `🎨 **AI-карусель: ${slideCount} слайдов**\n\n` +
+        `${copy.pricing.stars.chooseMethod}`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.pricing.stars.starsOption(starsPrice), callback_data: `stars_photo_${slideCount}` }],
+              [{ text: copy.pricing.stars.rubOption(price), callback_data: `rub_photo_${slideCount}` }],
+              [{ text: '← Назад', callback_data: 'mode_photo' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Оплата Photo Mode через Stars
+    if (data.startsWith('stars_photo_')) {
+      const slideCount = parseInt(data.replace('stars_photo_', ''));
+      const starsPrice = pricing.getPhotoModeStarsPrice(slideCount);
+
+      await sendStarsInvoice(
+        chatId,
+        userId,
+        'photo_slides',
+        `AI-карусель: ${slideCount} слайдов`,
+        `Photo Mode — изображения с AI`,
+        starsPrice,
+        { slides: slideCount }
+      );
+      return;
+    }
+
+    // Оплата Photo Mode через YooKassa (рубли)
+    if (data.startsWith('rub_photo_')) {
+      const slideCount = parseInt(data.replace('rub_photo_', ''));
       const tier = db.getActiveSubscription(userId);
       const price = pricing.getPhotoModePrice(slideCount, tier);
 
@@ -819,9 +1072,54 @@ bot.on('callback_query', async (query) => {
       return;
     }
 
-    // Покупка недостающих слайдов поштучно
+    // Покупка недостающих слайдов поштучно - выбор способа оплаты
     if (data.startsWith('topup_')) {
       const slidesToBuy = parseInt(data.replace('topup_', ''));
+      const tier = db.getActiveSubscription(userId);
+      const pricePerSlide = pricing.getPerSlidePrice(tier);
+      const totalPrice = slidesToBuy * pricePerSlide;
+      const starsPrice = pricing.getStarsPrice(totalPrice);
+
+      await bot.sendMessage(chatId,
+        `🛒 **Докупка: ${slidesToBuy} слайдов**\n\n` +
+        `${copy.pricing.stars.chooseMethod}`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.pricing.stars.starsOption(starsPrice), callback_data: `stars_topup_${slidesToBuy}` }],
+              [{ text: copy.pricing.stars.rubOption(totalPrice), callback_data: `rub_topup_${slidesToBuy}` }],
+              [{ text: '← Назад', callback_data: 'mode_photo' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Докупка слайдов через Stars
+    if (data.startsWith('stars_topup_')) {
+      const slidesToBuy = parseInt(data.replace('stars_topup_', ''));
+      const tier = db.getActiveSubscription(userId);
+      const pricePerSlide = pricing.getPerSlidePrice(tier);
+      const totalPrice = slidesToBuy * pricePerSlide;
+      const starsPrice = pricing.getStarsPrice(totalPrice);
+
+      await sendStarsInvoice(
+        chatId,
+        userId,
+        'topup_slides',
+        `Докупка: ${slidesToBuy} слайдов`,
+        `Photo Mode слайды`,
+        starsPrice,
+        { slides: slidesToBuy }
+      );
+      return;
+    }
+
+    // Докупка слайдов через YooKassa (рубли)
+    if (data.startsWith('rub_topup_')) {
+      const slidesToBuy = parseInt(data.replace('rub_topup_', ''));
       const tier = db.getActiveSubscription(userId);
       const pricePerSlide = pricing.getPerSlidePrice(tier);
       const totalPrice = slidesToBuy * pricePerSlide;
