@@ -1205,6 +1205,107 @@ export const templates: Record<string, string> = {
 </body>
 </html>`,
 
+  photo_overlay: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      font-family: 'Manrope', sans-serif;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    .gradient-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.0) 30%, rgba(0,0,0,0.0) 55%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.92) 100%);
+    }
+    .content-wrapper {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 70px 65px;
+    }
+    .top-section { flex: 0 0 auto; padding-top: 10px; }
+    .headline {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 72px;
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 1.05;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      max-width: 95%;
+      text-shadow: 0 0 40px rgba(0,0,0,0.95), 0 4px 8px rgba(0,0,0,0.9), 0 8px 30px rgba(0,0,0,0.7);
+    }
+    .bottom-section { flex: 0 0 auto; padding-bottom: 15px; }
+    .content-glass {
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 28px 32px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .content {
+      font-family: 'Manrope', sans-serif;
+      font-size: 36px;
+      font-weight: 600;
+      color: #FFFFFF;
+      line-height: 1.5;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+    .slide-counter {
+      position: absolute;
+      top: 65px;
+      right: 65px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #FFFFFF;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+      padding: 12px 22px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .photo-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="gradient-overlay"></div>
+  <div class="photo-hint">📸 AI-изображение будет здесь</div>
+  <div class="content-wrapper">
+    <div class="top-section">
+      <h1 class="headline">{{TITLE}}</h1>
+    </div>
+    <div class="bottom-section">
+      <div class="content-glass">
+        <p class="content">{{CONTENT}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+</body>
+</html>`,
+
   backspace: `<!DOCTYPE html>
 <html lang="ru">
 <head>
