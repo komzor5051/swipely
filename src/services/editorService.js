@@ -3,7 +3,7 @@
  * Создает временные сессии для редактирования через edit.swipely.ai
  */
 
-const EDITOR_API_URL = process.env.EDITOR_API_URL || 'https://edit.swipely.ai';
+const EDITOR_API_URL = process.env.EDITOR_API_URL || 'https://swipely-19h3.vercel.app';
 const EDITOR_BOT_SECRET = process.env.EDITOR_BOT_SECRET;
 
 /**
