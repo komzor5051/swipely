@@ -56,6 +56,11 @@ const STYLE_INFO = {
     name: 'Luxe',
     emoji: '💎',
     description: 'Премиум'
+  },
+  backspace: {
+    name: 'Backspace',
+    emoji: '🔲',
+    description: 'Агентский'
   }
 };
 
@@ -69,7 +74,8 @@ const STYLE_ORDER = [
   'editorial',
   'zen',
   'memphis',
-  'luxe'
+  'luxe',
+  'backspace'
 ];
 
 /**
@@ -125,7 +131,8 @@ function getPreviewTemplate(styleKey) {
     editorial: { bg: '#F5F5F0', text: '#1A1A1A', accent: '#D4AF37' },
     zen: { bg: '#F8F6F0', text: '#2D2D2D', accent: '#7C9885' },
     memphis: { bg: '#FFE66D', text: '#2D2D2D', accent: '#FF6B6B' },
-    luxe: { bg: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', text: '#D4AF37', accent: '#D4AF37' }
+    luxe: { bg: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', text: '#D4AF37', accent: '#D4AF37' },
+    backspace: { bg: '#F0EFED', text: '#2D2A26', accent: '#5B5FE8' }
   };
 
   const colors = styleColors[styleKey] || { bg: '#FFFFFF', text: '#000000', accent: '#FF0000' };
@@ -360,6 +367,37 @@ function getPreviewTemplate(styleKey) {
       }
     ` : ''}
 
+    ${styleKey === 'backspace' ? `
+      body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        opacity: 0.08;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .dot-backspace {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #5B5FE8;
+        border-radius: 50%;
+      }
+      .dot-1 { top: 120px; left: 50px; }
+      .dot-2 { bottom: 150px; right: 80px; }
+      .connector-backspace {
+        position: absolute;
+        width: 3px;
+        height: 60px;
+        background: #5B5FE8;
+      }
+      .conn-1 { top: 140px; left: 58px; }
+    ` : ''}
+
     .content {
       position: relative;
       z-index: 10;
@@ -374,6 +412,7 @@ function getPreviewTemplate(styleKey) {
   ${styleKey === 'notebook' ? '<div class="margin-line"></div>' : ''}
   ${styleKey === 'memphis' ? '<div class="circle"></div><div class="triangle"></div><div class="squiggle"></div>' : ''}
   ${styleKey === 'zen' ? '<div class="circle-zen"></div>' : ''}
+  ${styleKey === 'backspace' ? '<div class="dot-backspace dot-1"></div><div class="connector-backspace conn-1"></div><div class="dot-backspace dot-2"></div>' : ''}
 
   <div class="content">
     <div class="emoji">${info.emoji}</div>
