@@ -1204,6 +1204,161 @@ export const templates: Record<string, string> = {
   <div class="tagline">Excellence in Every Detail</div>
 </body>
 </html>`,
+
+  backspace: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F0EFED;
+      --ink: #2D2A26;
+      --accent: #5B5FE8;
+      --highlight-bg: #C5C7F7;
+      --white: #FFFFFF;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Space Grotesk', 'Manrope', sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .slide-counter {
+      position: absolute;
+      top: 70px;
+      right: 80px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--ink);
+      opacity: 0.6;
+      letter-spacing: 2px;
+      z-index: 10;
+    }
+    .dot {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 50%;
+      z-index: 5;
+    }
+    .dot-1 { top: 45%; left: 60px; }
+    .dot-2 { bottom: 32%; right: 140px; }
+    .connector {
+      position: absolute;
+      background: var(--accent);
+      z-index: 4;
+    }
+    .connector-1 {
+      width: 3px;
+      height: 100px;
+      top: calc(45% + 28px);
+      left: 72px;
+    }
+    .connector-2 {
+      width: 3px;
+      height: 80px;
+      bottom: calc(32% + 28px);
+      right: 152px;
+    }
+    .content-wrapper {
+      position: relative;
+      z-index: 5;
+      padding: 120px 100px;
+      padding-left: 120px;
+    }
+    .headline {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 88px;
+      font-weight: 700;
+      line-height: 1.0;
+      color: var(--ink);
+      letter-spacing: -3px;
+      margin-bottom: 55px;
+      max-width: 880px;
+    }
+    .content {
+      font-family: 'Manrope', sans-serif;
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1.55;
+      color: var(--ink);
+      max-width: 780px;
+      margin-bottom: 60px;
+    }
+    .accent {
+      display: inline;
+      background: var(--highlight-bg);
+      padding: 4px 10px;
+      margin: 0 2px;
+      position: relative;
+    }
+    .accent::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border: 2px solid var(--accent);
+      pointer-events: none;
+    }
+    .brand-mark {
+      position: absolute;
+      bottom: 70px;
+      left: 100px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+      opacity: 0.4;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+    .grid-pattern {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 300px;
+      height: 300px;
+      background-image:
+        linear-gradient(rgba(93, 95, 232, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(93, 95, 232, 0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide-counter">{{SLIDE_NUMBER}} / {{TOTAL_SLIDES}}</div>
+  <div class="dot dot-1"></div>
+  <div class="connector connector-1"></div>
+  <div class="dot dot-2"></div>
+  <div class="connector connector-2"></div>
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+  <div class="brand-mark">Swipely</div>
+  <div class="grid-pattern"></div>
+</body>
+</html>`,
 };
 
 export function getTemplate(name: string): string | null {
