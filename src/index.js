@@ -566,6 +566,9 @@ bot.on('callback_query', async (query) => {
     }
   }
 
+  // Убеждаемся что пользователь существует в локальной БД
+  db.createUser(userId, query.from.username || query.from.first_name);
+
   try {
     // ==================== PRICING & PAYMENT CALLBACKS ====================
 
@@ -971,7 +974,7 @@ bot.on('callback_query', async (query) => {
 
     // ==================== REFERRAL PROGRAM ====================
     if (data === 'menu_referral') {
-      const stats = db.getReferralStats(userId);
+      const stats = db.getReferralStats(userId) || { referralCount: 0, totalEarned: 0 };
       const botInfo = await bot.getMe();
       const referralLink = `https://t.me/${botInfo.username}?start=ref_${userId}`;
 
