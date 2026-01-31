@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getSession, updateSession } from './services/api';
 import SlideCanvas from './components/SlideCanvas';
 import SlideNavigator from './components/SlideNavigator';
 import ExportButton from './components/ExportButton';
-import type { SessionResponse, Slide, CarouselData } from './types';
+import TextEditPanel from './components/TextEditPanel';
+import type { SessionResponse, Slide, CarouselData, TextPosition, TextStyles } from './types';
+
+type ElementType = 'title' | 'content';
 
 function App() {
   const { token } = useParams<{ token: string }>();
@@ -14,6 +17,7 @@ function App() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [selectedElement, setSelectedElement] = useState<ElementType>('title');
 
   useEffect(() => {
     if (!token) {
@@ -39,7 +43,7 @@ function App() {
     setLoading(false);
   }
 
-  async function handleSlideUpdate(index: number, updatedSlide: Slide) {
+  const handleSlideUpdate = useCallback(async (index: number, updatedSlide: Slide) => {
     if (!session || !token) return;
 
     const newCarouselData: CarouselData = {
@@ -58,7 +62,37 @@ function App() {
     if (success) {
       setLastSaved(new Date());
     }
-  }
+  }, [session, token]);
+
+  const handleStyleChange = useCallback((element: ElementType, styles: TextStyles) => {
+    if (!session) return;
+
+    const currentSlide = session.carouselData.slides[currentSlideIndex];
+    const updatedSlide: Slide = {
+      ...currentSlide,
+      ...(element === 'title'
+        ? { titleStyles: styles }
+        : { contentStyles: styles }
+      ),
+    };
+
+    handleSlideUpdate(currentSlideIndex, updatedSlide);
+  }, [session, currentSlideIndex, handleSlideUpdate]);
+
+  const handlePositionChange = useCallback((element: ElementType, position: TextPosition) => {
+    if (!session) return;
+
+    const currentSlide = session.carouselData.slides[currentSlideIndex];
+    const updatedSlide: Slide = {
+      ...currentSlide,
+      ...(element === 'title'
+        ? { titlePosition: position }
+        : { contentPosition: position }
+      ),
+    };
+
+    handleSlideUpdate(currentSlideIndex, updatedSlide);
+  }, [session, currentSlideIndex, handleSlideUpdate]);
 
   if (loading) {
     return (
@@ -146,51 +180,29 @@ function App() {
               stylePreset={session.stylePreset}
               format={session.format}
               username={session.username}
+              selectedElement={selectedElement}
+              onSelectElement={setSelectedElement}
               onUpdate={(updatedSlide) => handleSlideUpdate(currentSlideIndex, updatedSlide)}
+              onPositionChange={handlePositionChange}
             />
           </div>
 
           {/* Controls */}
-          <div className="w-64 flex-shrink-0">
-            <div className="card p-6 sticky top-8">
-              <h3 className="font-semibold text-charcoal mb-4">Редактирование</h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-teal-light mb-2">Слайд</label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
-                      disabled={currentSlideIndex === 0}
-                      className="btn-secondary px-3 py-2 disabled:opacity-50"
-                    >
-                      ←
-                    </button>
-                    <span className="flex-1 text-center font-medium">
-                      {currentSlideIndex + 1} / {totalSlides}
-                    </span>
-                    <button
-                      onClick={() => setCurrentSlideIndex(Math.min(totalSlides - 1, currentSlideIndex + 1))}
-                      disabled={currentSlideIndex === totalSlides - 1}
-                      className="btn-secondary px-3 py-2 disabled:opacity-50"
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-
-                <div className="border-t border-cream pt-4">
-                  <p className="text-sm text-teal-light">
-                    Кликните на текст на слайде чтобы отредактировать его
-                  </p>
-                </div>
-
-                <div className="border-t border-cream pt-4">
-                  <p className="text-xs text-teal-light/70">
-                    Формат: {session.format === 'portrait' ? '1080x1350' : '1080x1080'}
-                  </p>
-                </div>
-              </div>
+          <div className="w-72 flex-shrink-0">
+            <TextEditPanel
+              selectedElement={selectedElement}
+              onSelectElement={setSelectedElement}
+              titleStyles={currentSlide.titleStyles || {}}
+              contentStyles={currentSlide.contentStyles || {}}
+              onStyleChange={handleStyleChange}
+              currentSlideIndex={currentSlideIndex}
+              totalSlides={totalSlides}
+              onSlideChange={setCurrentSlideIndex}
+            />
+            <div className="card p-4 mt-4">
+              <p className="text-xs text-teal-light/70">
+                Формат: {session.format === 'portrait' ? '1080x1350' : '1080x1080'}
+              </p>
             </div>
           </div>
         </div>

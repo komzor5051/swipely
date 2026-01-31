@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { renderTemplate } from '../templates';
-import { FORMAT_SIZES, type Slide } from '../types';
+import { FORMAT_SIZES, type Slide, type TextStyles, type TextPosition } from '../types';
 
 declare global {
   interface Window {
@@ -87,7 +87,44 @@ export default function ExportButton({
         doc.close();
 
         // Wait for fonts and resources to load
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // Apply custom positions and styles
+        const headlineEl = doc.querySelector('.headline') as HTMLElement;
+        const contentEl = doc.querySelector('.content') as HTMLElement;
+
+        const applyStyles = (el: HTMLElement, styles: TextStyles | undefined) => {
+          if (!styles) return;
+          if (styles.fontSize) el.style.fontSize = `${styles.fontSize}px`;
+          if (styles.color) el.style.color = styles.color;
+          if (styles.textAlign) el.style.textAlign = styles.textAlign;
+        };
+
+        const applyPosition = (el: HTMLElement, position: TextPosition | undefined, defaultY: number) => {
+          el.style.position = 'absolute';
+          el.style.width = '90%';
+          el.style.boxSizing = 'border-box';
+          if (position) {
+            el.style.left = `${position.x}%`;
+            el.style.top = `${position.y}%`;
+          } else {
+            el.style.left = '50%';
+            el.style.top = `${defaultY}%`;
+          }
+          el.style.transform = 'translate(-50%, -50%)';
+        };
+
+        if (headlineEl) {
+          applyPosition(headlineEl, slide.titlePosition, 35);
+          applyStyles(headlineEl, slide.titleStyles);
+        }
+        if (contentEl) {
+          applyPosition(contentEl, slide.contentPosition, 60);
+          applyStyles(contentEl, slide.contentStyles);
+        }
+
+        // Wait a bit more for styles to apply
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Capture with html2canvas
         if (window.html2canvas && doc.body) {

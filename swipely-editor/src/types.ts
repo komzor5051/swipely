@@ -1,8 +1,23 @@
+export interface TextPosition {
+  x: number;  // % от ширины
+  y: number;  // % от высоты
+}
+
+export interface TextStyles {
+  fontSize?: number;    // px
+  color?: string;       // hex
+  textAlign?: 'left' | 'center' | 'right';
+}
+
 export interface Slide {
   type: 'hook' | 'content' | 'cta' | 'intro' | 'tip' | 'example' | 'story';
   title: string;
   content: string;
   emphasize?: string[];
+  titlePosition?: TextPosition;
+  contentPosition?: TextPosition;
+  titleStyles?: TextStyles;
+  contentStyles?: TextStyles;
 }
 
 export interface CarouselData {
