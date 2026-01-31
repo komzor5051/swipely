@@ -7,7 +7,7 @@ import type { SessionResponse, CarouselData } from '../types';
 export async function getSession(token: string): Promise<SessionResponse | null> {
   const { data, error } = await supabase
     .from('carousel_edit_sessions')
-    .select('carousel_data, style_preset, format, username, expires_at')
+    .select('carousel_data, style_preset, format, username, images, expires_at')
     .eq('token', token)
     .gt('expires_at', new Date().toISOString())
     .single();
@@ -22,6 +22,7 @@ export async function getSession(token: string): Promise<SessionResponse | null>
     stylePreset: data.style_preset,
     format: data.format as 'square' | 'portrait',
     username: data.username,
+    images: data.images as string[] | undefined,
     expiresAt: data.expires_at,
   };
 }

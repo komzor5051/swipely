@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const { data, error } = await supabase
         .from('carousel_edit_sessions')
-        .select('carousel_data, style_preset, format, username, expires_at')
+        .select('carousel_data, style_preset, format, username, images, expires_at')
         .eq('token', token)
         .gt('expires_at', new Date().toISOString())
         .single();
@@ -42,6 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         stylePreset: data.style_preset,
         format: data.format,
         username: data.username,
+        images: data.images,
         expiresAt: data.expires_at,
       });
     } catch (error) {

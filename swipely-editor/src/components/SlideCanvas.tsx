@@ -11,6 +11,7 @@ interface SlideCanvasProps {
   stylePreset: string;
   format: 'square' | 'portrait';
   username?: string;
+  image?: string;  // Base64 image for Photo Mode
   selectedElement: ElementType;
   onSelectElement: (element: ElementType) => void;
   onUpdate: (slide: Slide) => void;
@@ -23,6 +24,7 @@ export default function SlideCanvas({
   totalSlides,
   stylePreset,
   format,
+  image,
   selectedElement,
   onSelectElement,
   onUpdate,
@@ -99,7 +101,7 @@ export default function SlideCanvas({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const html = renderTemplate(stylePreset, {
+    let html = renderTemplate(stylePreset, {
       title: slide.title,
       content: slide.content,
       slideNumber: slideIndex + 1,
@@ -109,6 +111,20 @@ export default function SlideCanvas({
     });
 
     if (!html) return;
+
+    // If image is provided (Photo Mode), inject it as background
+    if (image) {
+      // Add background image style to body
+      const bgImageStyle = `
+        body {
+          background-image: url('data:image/png;base64,${image}');
+          background-size: cover;
+          background-position: center;
+        }
+        .photo-hint { display: none !important; }
+      `;
+      html = html.replace('</style>', `${bgImageStyle}</style>`);
+    }
 
     // Write HTML to iframe
     const doc = iframe.contentDocument;
@@ -270,7 +286,7 @@ export default function SlideCanvas({
         iframe.onload(new Event('load'));
       }
     }, 100);
-  }, [slide.title, slide.content, slideIndex, totalSlides, stylePreset, width, height, updateSlideContent, applyStyles, applyPosition, onSelectElement, onPositionChange, selectedElement, slide.titlePosition, slide.contentPosition, slide.titleStyles, slide.contentStyles]);
+  }, [slide.title, slide.content, slideIndex, totalSlides, stylePreset, width, height, image, updateSlideContent, applyStyles, applyPosition, onSelectElement, onPositionChange, selectedElement, slide.titlePosition, slide.contentPosition, slide.titleStyles, slide.contentStyles]);
 
   // Apply styles when they change (without re-rendering the whole iframe)
   useEffect(() => {

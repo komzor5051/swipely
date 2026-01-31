@@ -168,6 +168,7 @@ function App() {
               onSelect={setCurrentSlideIndex}
               stylePreset={session.stylePreset}
               format={session.format}
+              images={session.images}
             />
           </div>
 
@@ -180,6 +181,7 @@ function App() {
               stylePreset={session.stylePreset}
               format={session.format}
               username={session.username}
+              image={session.images?.[currentSlideIndex]}
               selectedElement={selectedElement}
               onSelectElement={setSelectedElement}
               onUpdate={(updatedSlide) => handleSlideUpdate(currentSlideIndex, updatedSlide)}

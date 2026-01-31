@@ -41,6 +41,7 @@ export interface SessionResponse {
   stylePreset: string;
   format: 'square' | 'portrait';
   username?: string;
+  images?: string[];  // Base64 images for Photo Mode
   expiresAt: string;
 }
 

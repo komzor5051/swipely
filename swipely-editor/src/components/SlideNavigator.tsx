@@ -8,6 +8,7 @@ interface SlideNavigatorProps {
   onSelect: (index: number) => void;
   stylePreset: string;
   format: 'square' | 'portrait';
+  images?: string[];
 }
 
 export default function SlideNavigator({
@@ -16,6 +17,7 @@ export default function SlideNavigator({
   onSelect,
   stylePreset,
   format,
+  images,
 }: SlideNavigatorProps) {
   return (
     <div className="space-y-3">
@@ -31,6 +33,7 @@ export default function SlideNavigator({
             isActive={index === currentIndex}
             stylePreset={stylePreset}
             format={format}
+            image={images?.[index]}
             onClick={() => onSelect(index)}
           />
         ))}
@@ -46,6 +49,7 @@ interface SlidePreviewProps {
   isActive: boolean;
   stylePreset: string;
   format: 'square' | 'portrait';
+  image?: string;
   onClick: () => void;
 }
 
@@ -56,6 +60,7 @@ function SlidePreview({
   isActive,
   stylePreset,
   format,
+  image,
   onClick,
 }: SlidePreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -70,7 +75,7 @@ function SlidePreview({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const html = renderTemplate(stylePreset, {
+    let html = renderTemplate(stylePreset, {
       title: slide.title,
       content: slide.content,
       slideNumber: slideIndex + 1,
@@ -81,13 +86,26 @@ function SlidePreview({
 
     if (!html) return;
 
+    // If image is provided (Photo Mode), inject it as background
+    if (image) {
+      const bgImageStyle = `
+        body {
+          background-image: url('data:image/png;base64,${image}');
+          background-size: cover;
+          background-position: center;
+        }
+        .photo-hint { display: none !important; }
+      `;
+      html = html.replace('</style>', `${bgImageStyle}</style>`);
+    }
+
     const doc = iframe.contentDocument;
     if (!doc) return;
 
     doc.open();
     doc.write(html);
     doc.close();
-  }, [slide, slideIndex, totalSlides, stylePreset, width, height]);
+  }, [slide, slideIndex, totalSlides, stylePreset, width, height, image]);
 
   return (
     <button
