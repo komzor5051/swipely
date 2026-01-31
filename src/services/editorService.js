@@ -23,6 +23,7 @@ async function createEditSession(userId, carouselData, stylePreset, format, user
 
   try {
     console.log('📝 Creating edit session for user:', userId);
+    console.log('🔗 Editor API URL:', EDITOR_API_URL);
 
     const response = await fetch(`${EDITOR_API_URL}/api/sessions`, {
       method: 'POST',
