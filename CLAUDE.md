@@ -41,6 +41,8 @@ YOOKASSA_SHOP_ID=<from YooKassa>
 YOOKASSA_SECRET_KEY=<from YooKassa>
 ```
 
+Optional: `OPENROUTER_API_KEY` for fallback content generation.
+
 ## Architecture
 
 ### Two Generation Modes
@@ -61,16 +63,17 @@ Max 7 slides, styles: cartoon (Pixar/Disney), realistic (professional photograph
 
 | File | Purpose |
 |------|---------|
-| `src/index.js` | Main bot logic, all Telegram handlers |
-| `src/services/gemini.js` | AI content generation with retry logic |
-| `src/services/imageGenerator.js` | AI image generation (Photo Mode) |
-| `src/services/renderer.js` | Puppeteer HTML→PNG pipeline |
-| `src/services/database.js` | SQLite database (better-sqlite3) |
+| `src/index.js` | Main bot logic, all Telegram handlers (~1500 lines) |
+| `src/services/gemini.js` | AI content generation with Gemini + OpenRouter fallback |
+| `src/services/imageGenerator.js` | AI image generation (Photo Mode) with 2K quality |
+| `src/services/renderer.js` | Puppeteer HTML→PNG pipeline with adaptive typography |
+| `src/services/database.js` | SQLite database with schema migrations |
 | `src/services/yookassa.js` | YooKassa payment integration |
 | `src/services/supabaseService.js` | Cloud backup and analytics |
-| `src/config/pricing.js` | Pricing configuration |
-| `src/utils/copy.js` | All UI text (Russian) |
-| `src/templates/*.html` | 9 design templates |
+| `src/config/pricing.js` | Pricing configuration with margin calculations |
+| `src/utils/copy.js` | All UI text (Russian) - single source of truth |
+| `src/templates/*.html` | 9 design templates with CSS-in-HTML |
+| `src/data/demoCarousel.js` | Static JSON for demo carousel |
 
 ### Session Management (In-Memory)
 
@@ -89,6 +92,28 @@ sessions[userId] = {
 
 Sessions are cleared after carousel generation.
 
+### Data Flow: Standard Mode
+
+1. User sends text → stored in `sessions[userId].transcription`
+2. User selects slide count → `sessions[userId].slideCount`
+3. User selects format (square/portrait) → `sessions[userId].format`
+4. User selects template style → triggers generation:
+   - `gemini.generateCarouselContent()` → returns JSON with slides array
+   - `renderer.renderSlides()` → Puppeteer renders each slide to PNG
+   - Bot sends media group to Telegram
+   - `db.deductStandard()` decrements monthly limit
+
+### Data Flow: Photo Mode
+
+1. Steps 1-3 same as Standard
+2. User selects Photo Mode → checks `db.canGeneratePhoto()` for balance
+3. User selects image style (cartoon/realistic)
+4. User sends photo → `imageGenerator.downloadTelegramPhoto()` converts to base64
+5. `gemini.generateCarouselContent()` with `photo_mode` preset (shorter text)
+6. `imageGenerator.generateCarouselImages()` → Gemini generates AI images
+7. `renderer.renderSlidesWithImages()` → overlays text on AI images
+8. `db.deductPhotoSlides()` decrements slide balance
+
 ## Pricing Model
 
 **Subscriptions:**
@@ -101,12 +126,12 @@ Sessions are cleared after carousel generation.
 - 7 slides: 349₽ (FREE) / 279₽ (PRO)
 
 **Per-Slide Top-Up:** 49₽/slide (FREE) / 39₽/slide (PRO)
-- For users with partial balance who need just a few more slides
-- More expensive than packs (33₽ min) but allows flexible top-ups
 
 **Slide Packs:** 15 slides (490₽), 50 slides (1490₽), 150 slides (3990₽)
 
 **Referral Program:** Inviter gets 5 Photo slides, invited gets 3 Photo slides
+
+**Cost structure:** ~13.5₽/Photo slide, ~0.5₽/Standard carousel. Target margin ≥66%.
 
 ## Important Code Patterns
 
@@ -159,6 +184,39 @@ Key database functions:
 - `db.canGenerateStandard(userId)` - Check monthly limit
 - `db.canGeneratePhoto(userId, slideCount)` - Check Photo Mode balance
 - `db.processSuccessfulPayment(paymentId)` - Handle YooKassa callback
+- `db.resetMonthlyLimitsIfNeeded(userId)` - Auto-resets on new month
+
+### 6. AI Content Generation with Fallback
+
+```javascript
+// gemini.js tries Gemini first, then OpenRouter as fallback
+try {
+  content = await generateViaGemini(prompt, systemPrompt);
+} catch (error) {
+  content = await generateViaOpenRouter(prompt, systemPrompt);
+}
+```
+
+### 7. AI Response Parsing
+
+Gemini responses may include markdown wrappers - always clean before parsing:
+
+```javascript
+let cleanedContent = content.trim();
+if (cleanedContent.startsWith('```json')) {
+  cleanedContent = cleanedContent.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
+}
+const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
+```
+
+### 8. Image Format Sizes
+
+```javascript
+const FORMAT_SIZES = {
+  square: { width: 1080, height: 1080 },
+  portrait: { width: 1080, height: 1350 }
+};
+```
 
 ## User Flow
 
@@ -173,6 +231,22 @@ Key database functions:
     └── /username → Set display username (shows in corner of slides)
 ```
 
+## Callback Data Prefixes
+
+| Prefix | Purpose |
+|--------|---------|
+| `menu_*` | Main menu navigation (create, buy, account, main, referral, legal) |
+| `slides_*` | Slide count selection (3, 5, 7, 10, 12) |
+| `format_*` | Format selection (square, portrait) |
+| `mode_*` | Generation mode (standard, photo) |
+| `style_*` | HTML template selection (minimal_pop, notebook, etc.) |
+| `imgstyle_*` | Photo Mode image style (cartoon, realistic) |
+| `buy_*` | Purchase actions (pack_small, pack_medium, pro_month, etc.) |
+| `view_*` | View details (packs, pro, styles) |
+| `check_payment_*` | Payment status check |
+| `pay_photo_*` | Direct Photo Mode payment |
+| `topup_*` | Per-slide top-up purchase |
+
 ## Common Issues
 
 ### Callback Query Timeout
@@ -185,11 +259,25 @@ Key database functions:
 
 ### Gemini API Errors
 - **429:** Quota exceeded, wait or upgrade
-- **503:** Server overloaded, retry logic handles this (3 attempts)
+- **503:** Server overloaded, retry logic handles this
 - **404:** Model name incorrect (content: `gemini-2.5-flash-lite`, images: `gemini-3-pro-image-preview`)
 
 ### Payment Issues
 Check YooKassa credentials in `.env`. Bot creates payment → user pays externally → returns via deep link `/start payment_<id>` → bot checks status.
+
+### Puppeteer on Linux
+Requires system dependencies:
+```bash
+sudo apt-get install -y chromium-browser
+```
+Bot uses `--no-sandbox --disable-setuid-sandbox` flags.
+
+## File Locations
+
+- **Database:** `./data/swipely.db` (SQLite, auto-created)
+- **Output images:** `./output/` (temporary PNGs, sent to Telegram)
+- **Temp files:** `./temp/` (voice messages)
+- **Legal docs:** `./docs/*.pdf` (privacy policy, offer)
 
 ## Prompts
 
