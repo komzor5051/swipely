@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Literata:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #FEF9E7;
+      --paper-dark: #F5EDD6;
+      --ink: #1A1A1A;
+      --red-ink: #C13C3C;
+      --blue-ink: #3D5A80;
+      --pencil: #6B6B6B;
+      --line: #E5D9C3;
+      --highlight: #FFF3B8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--paper);
+      font-family: 'Literata', serif;
+      display: flex;
+      flex-direction: column;
+      padding: 90px 100px 90px 130px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Notebook lines */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 54px,
+          var(--line) 54px,
+          var(--line) 56px
+        );
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Paper texture */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Red margin line */
+    .margin-line {
+      position: absolute;
+      left: 100px;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--red-ink);
+      opacity: 0.35;
+      z-index: 2;
+    }
+
+    /* Slide counter */
+    .slide-counter {
+      position: absolute;
+      top: 55px;
+      right: 80px;
+      font-family: 'Caveat', cursive;
+      font-size: 42px;
+      color: var(--pencil);
+      font-weight: 600;
+      z-index: 10;
+      transform: rotate(-3deg);
+    }
+
+    /* Main content wrapper */
+    .content-wrapper {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* HEADLINE — handwritten style, large */
+    .headline {
+      font-family: 'Caveat', cursive;
+      font-size: 100px;
+      font-weight: 700;
+      line-height: 1.0;
+      color: var(--ink);
+      margin-bottom: 55px;
+      position: relative;
+      max-width: 850px;
+      text-shadow: 1px 1px 0px rgba(0,0,0,0.03);
+    }
+
+    /* Handwritten underline */
+    .headline::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 320px;
+      height: 6px;
+      background: var(--red-ink);
+      border-radius: 3px;
+      opacity: 0.7;
+      transform: skewY(-1deg) rotate(-0.5deg);
+    }
+
+    /* CONTENT — readable serif */
+    .content {
+      font-family: 'Literata', serif;
+      font-size: 36px;
+      font-weight: 400;
+      line-height: 1.65;
+      color: var(--ink);
+      position: relative;
+      z-index: 2;
+      max-width: 820px;
+      letter-spacing: 0.2px;
+    }
+
+    /* List items — enhanced styling */
+    .list-item {
+      display: flex;
+      margin-bottom: 32px;
+      align-items: flex-start;
+    }
+
+    .list-number {
+      font-family: 'Caveat', cursive;
+      font-size: 72px;
+      font-weight: 700;
+      color: var(--red-ink);
+      min-width: 90px;
+      line-height: 0.9;
+      margin-top: -8px;
+      flex-shrink: 0;
+    }
+
+    .list-text {
+      flex: 1;
+      padding-top: 8px;
+      font-size: 34px;
+    }
+
+    /* Bold/accent text */
+    .bold {
+      font-weight: 700;
+      color: var(--red-ink);
+    }
+
+    .underline {
+      background: linear-gradient(120deg, rgba(255,243,184,0.8) 0%, rgba(255,243,184,0.95) 100%);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* Doodles */
+    .doodle {
+      position: absolute;
+      z-index: 1;
+      opacity: 0.2;
+      stroke: var(--blue-ink);
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .doodle-star {
+      bottom: 140px;
+      right: 120px;
+      width: 100px;
+      height: 100px;
+    }
+
+    .doodle-arrow {
+      top: 180px;
+      left: 40px;
+      width: 80px;
+      height: 50px;
+    }
+
+    /* Coffee stain */
+    .coffee-stain {
+      position: absolute;
+      bottom: 100px;
+      left: 60px;
+      width: 110px;
+      height: 110px;
+      background: radial-gradient(circle, rgba(140,100,60,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* Paper fold corner */
+    .paper-fold {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, transparent 50%, var(--paper-dark) 50%);
+      box-shadow: -3px -3px 8px rgba(0,0,0,0.05);
+      z-index: 10;
+    }
+
+    /* Tape decoration */
+    .tape {
+      position: absolute;
+      top: 60px;
+      left: 85px;
+      width: 120px;
+      height: 35px;
+      background: rgba(255,248,200,0.75);
+      transform: rotate(-5deg);
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="margin-line"></div>
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <div class="content" id="content">{{CONTENT}}</div>
+  </div>
+
+  <!-- Doodles -->
+  <svg class="doodle doodle-star" viewBox="0 0 100 100">
+    <path d="M50,10 L55,38 L85,42 L58,55 L62,85 L50,62 L38,85 L42,55 L15,42 L45,38 Z" stroke-linecap="round"/>
+  </svg>
+
+  <svg class="doodle doodle-arrow" viewBox="0 0 80 50">
+    <path d="M5,25 Q40,5 75,25 M75,25 L65,18 M75,25 L68,35" stroke-linecap="round"/>
+  </svg>
+
+  <div class="coffee-stain"></div>
+  <div class="paper-fold"></div>
+  <div class="tape"></div>
+
+  <script>
+    function formatContent() {
+      const contentEl = document.getElementById('content');
+      let text = contentEl.textContent.trim();
+
+      const isNumberedList = /^\d+[\.\)]\s/.test(text);
+
+      if (isNumberedList) {
+        const items = text.split(/\d+[\.\)]\s/).filter(item => item.trim());
+
+        let html = '';
+        items.forEach((item, index) => {
+          if (item.trim()) {
+            let formattedItem = item.trim();
+
+            if (formattedItem.includes(':')) {
+              const parts = formattedItem.split(':');
+              formattedItem = '<span class="bold">' + parts[0] + ':</span>' + parts.slice(1).join(':');
+            }
+
+            html += '<div class="list-item">' +
+              '<div class="list-number">' + (index + 1) + '</div>' +
+              '<div class="list-text">' + formattedItem + '</div>' +
+              '</div>';
+          }
+        });
+
+        contentEl.innerHTML = html;
+      } else {
+        text = text.replace(/"([^"]+)"/g, '<span class="underline">$1</span>');
+        text = text.replace(/—\s*([^—\.]+)/g, '— <span class="bold">$1</span>');
+        contentEl.innerHTML = text;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', formatContent);
+  </script>
+</body>
+</html>

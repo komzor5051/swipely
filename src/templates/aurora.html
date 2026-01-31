@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --aurora-1: #7F5AF0;
+      --aurora-2: #2CB67D;
+      --aurora-3: #72F2EB;
+      --aurora-4: #FF8E3C;
+      --dark: #12121A;
+      --light: #FFFFFE;
+      --muted: #94A1B2;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--dark);
+      font-family: 'Manrope', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 90px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Aurora gradient mesh background */
+    .aurora-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .aurora-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.7;
+    }
+
+    .blob-1 {
+      width: 800px;
+      height: 800px;
+      background: linear-gradient(135deg, var(--aurora-1) 0%, var(--aurora-3) 100%);
+      top: -250px;
+      right: -150px;
+    }
+
+    .blob-2 {
+      width: 600px;
+      height: 600px;
+      background: linear-gradient(225deg, var(--aurora-2) 0%, var(--aurora-3) 100%);
+      bottom: 50px;
+      left: -200px;
+    }
+
+    .blob-3 {
+      width: 450px;
+      height: 450px;
+      background: linear-gradient(180deg, var(--aurora-4) 0%, var(--aurora-1) 100%);
+      bottom: -150px;
+      right: 150px;
+      opacity: 0.5;
+    }
+
+    /* Grain overlay */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .slide-counter {
+      position: absolute;
+      top: 70px;
+      right: 90px;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--light);
+      letter-spacing: 4px;
+      z-index: 10;
+      opacity: 0.7;
+    }
+
+    .slide-counter .current {
+      font-size: 42px;
+      font-weight: 800;
+      opacity: 1;
+    }
+
+    .content-wrapper {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* HEADLINE — elegant serif, massive */
+    .headline {
+      font-family: 'Fraunces', serif;
+      font-size: 88px;
+      font-weight: 800;
+      line-height: 1.05;
+      color: var(--light);
+      margin-bottom: 55px;
+      letter-spacing: -2px;
+      max-width: 900px;
+    }
+
+    /* Gradient accent text */
+    .headline-accent {
+      background: linear-gradient(135deg, var(--aurora-3) 0%, var(--aurora-2) 50%, var(--aurora-1) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* CONTENT — readable, larger */
+    .content {
+      font-family: 'Manrope', sans-serif;
+      font-size: 36px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--light);
+      max-width: 850px;
+      opacity: 0.88;
+      letter-spacing: 0.2px;
+    }
+
+    /* Decorative rings */
+    .float-ring {
+      position: absolute;
+      border: 3px solid var(--aurora-3);
+      border-radius: 50%;
+      opacity: 0.35;
+    }
+
+    .ring-1 {
+      width: 250px;
+      height: 250px;
+      bottom: 100px;
+      right: 80px;
+    }
+
+    .ring-2 {
+      width: 150px;
+      height: 150px;
+      top: 180px;
+      left: 60px;
+      border-color: var(--aurora-1);
+    }
+
+    /* Dots */
+    .dot {
+      position: absolute;
+      background: var(--aurora-2);
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+
+    .dot-1 { top: 280px; right: 130px; width: 12px; height: 12px; }
+    .dot-2 { bottom: 220px; left: 130px; width: 10px; height: 10px; background: var(--aurora-1); }
+    .dot-3 { top: 420px; left: 180px; width: 8px; height: 8px; background: var(--aurora-3); }
+
+    /* Line accent */
+    .line-accent {
+      position: absolute;
+      bottom: 90px;
+      left: 90px;
+      width: 200px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--aurora-2), transparent);
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <!-- Aurora gradient blobs -->
+  <div class="aurora-bg">
+    <div class="aurora-blob blob-1"></div>
+    <div class="aurora-blob blob-2"></div>
+    <div class="aurora-blob blob-3"></div>
+  </div>
+
+  <div class="slide-counter">
+    <span class="current">{{SLIDE_NUMBER}}</span>/{{TOTAL_SLIDES}}
+  </div>
+
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+
+  <!-- Decorations -->
+  <div class="float-ring ring-1"></div>
+  <div class="float-ring ring-2"></div>
+  <div class="dot dot-1"></div>
+  <div class="dot dot-2"></div>
+  <div class="dot dot-3"></div>
+  <div class="line-accent"></div>
+</body>
+</html>

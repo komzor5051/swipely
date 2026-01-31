@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0C0C0C;
+      --gold: #C9A96E;
+      --gold-light: #E8D5B7;
+      --cream: #F5F0E8;
+      --gray: #6B6B6B;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 110px 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Marble texture */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 600 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Gold frame */
+    .gold-frame {
+      position: absolute;
+      top: 55px;
+      left: 55px;
+      right: 55px;
+      bottom: 55px;
+      border: 1px solid var(--gold);
+      opacity: 0.45;
+      z-index: 1;
+    }
+
+    .gold-frame::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      border: 1px solid var(--gold);
+      opacity: 0.65;
+    }
+
+    /* Corner ornaments */
+    .corner-ornament {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      z-index: 2;
+    }
+
+    .corner-ornament svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .corner-tl { top: 40px; left: 40px; }
+    .corner-tr { top: 40px; right: 40px; transform: rotate(90deg); }
+    .corner-bl { bottom: 40px; left: 40px; transform: rotate(-90deg); }
+    .corner-br { bottom: 40px; right: 40px; transform: rotate(180deg); }
+
+    .slide-counter {
+      position: absolute;
+      top: 80px;
+      right: 100px;
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: 10px;
+      z-index: 10;
+      text-transform: uppercase;
+    }
+
+    .content-wrapper {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* HEADLINE — elegant serif */
+    .headline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 92px;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--cream);
+      margin-bottom: 55px;
+      letter-spacing: 1px;
+      max-width: 880px;
+    }
+
+    /* Gold line */
+    .headline::after {
+      content: '';
+      display: block;
+      width: 150px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      margin-top: 40px;
+    }
+
+    /* CONTENT — elegant sans */
+    .content {
+      font-family: 'Outfit', sans-serif;
+      font-size: 34px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--cream);
+      max-width: 820px;
+      letter-spacing: 0.8px;
+      opacity: 0.85;
+    }
+
+    /* Gold accent */
+    .gold-accent {
+      position: absolute;
+      bottom: 160px;
+      right: 100px;
+      z-index: 5;
+    }
+
+    .gold-accent svg {
+      width: 180px;
+      height: 90px;
+    }
+
+    /* Vertical brand */
+    .brand-vertical {
+      position: absolute;
+      left: 80px;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      opacity: 0.55;
+      z-index: 5;
+    }
+
+    /* Diamonds */
+    .diamond {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: var(--gold);
+      transform: rotate(45deg);
+      opacity: 0.65;
+    }
+
+    .diamond-1 { bottom: 110px; left: 220px; }
+    .diamond-2 { top: 240px; right: 140px; width: 10px; height: 10px; opacity: 0.45; }
+
+    /* Central glow */
+    .glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(201, 169, 110, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Tagline */
+    .tagline {
+      position: absolute;
+      bottom: 75px;
+      left: 100px;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--gray);
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="gold-frame"></div>
+
+  <!-- Corner ornaments -->
+  <div class="corner-ornament corner-tl">
+    <svg viewBox="0 0 70 70">
+      <path d="M0,0 L35,0 L35,6 L6,6 L6,35 L0,35 Z" fill="#C9A96E" opacity="0.65"/>
+      <circle cx="18" cy="18" r="4" fill="#C9A96E" opacity="0.45"/>
+    </svg>
+  </div>
+  <div class="corner-ornament corner-tr">
+    <svg viewBox="0 0 70 70">
+      <path d="M0,0 L35,0 L35,6 L6,6 L6,35 L0,35 Z" fill="#C9A96E" opacity="0.65"/>
+      <circle cx="18" cy="18" r="4" fill="#C9A96E" opacity="0.45"/>
+    </svg>
+  </div>
+  <div class="corner-ornament corner-bl">
+    <svg viewBox="0 0 70 70">
+      <path d="M0,0 L35,0 L35,6 L6,6 L6,35 L0,35 Z" fill="#C9A96E" opacity="0.65"/>
+      <circle cx="18" cy="18" r="4" fill="#C9A96E" opacity="0.45"/>
+    </svg>
+  </div>
+  <div class="corner-ornament corner-br">
+    <svg viewBox="0 0 70 70">
+      <path d="M0,0 L35,0 L35,6 L6,6 L6,35 L0,35 Z" fill="#C9A96E" opacity="0.65"/>
+      <circle cx="18" cy="18" r="4" fill="#C9A96E" opacity="0.45"/>
+    </svg>
+  </div>
+
+  <div class="slide-counter">{{SLIDE_NUMBER}} — {{TOTAL_SLIDES}}</div>
+  <div class="brand-vertical">Swipely Luxe</div>
+
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+
+  <div class="gold-accent">
+    <svg viewBox="0 0 180 90">
+      <path d="M0,45 Q45,0 90,45 T180,45" stroke="#C9A96E" stroke-width="1.5" fill="none" opacity="0.55"/>
+      <path d="M25,45 Q55,18 90,45 T155,45" stroke="#C9A96E" stroke-width="1.5" fill="none" opacity="0.35"/>
+    </svg>
+  </div>
+
+  <div class="diamond diamond-1"></div>
+  <div class="diamond diamond-2"></div>
+
+  <div class="tagline">Excellence in Every Detail</div>
+</body>
+</html>

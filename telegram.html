@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Swipely — AI Карусели</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M8 16L20 16M20 16L17 13M20 16L17 19' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.3'/%3E%3Cpath d='M11 16L24 16M24 16L21 13M24 16L21 19' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='32' y2='32'%3E%3Cstop stop-color='%23FF6B6B'/%3E%3Cstop offset='1' stop-color='%23EE5A6F'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E" />
+
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Caveat:wght@400;700&family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;700&family=Oswald:wght@400;500;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+      :root {
+        /* Brand Colors */
+        --color-coral: #FF6B6B;
+        --color-coral-dark: #EE5A6F;
+        --color-teal: #0D3B66;
+        --color-teal-light: #1A5F7A;
+        --color-butter: #FFD93D;
+        --color-charcoal: #2D3142;
+        --color-warm-white: #FAF8F6;
+        --color-cream: #F4F1EA;
+
+        /* Typography */
+        --font-display: 'DM Serif Display', serif;
+        --font-body: 'Outfit', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+
+        /* Safe Areas for iOS */
+        --safe-area-top: env(safe-area-inset-top, 0px);
+        --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-area-left: env(safe-area-inset-left, 0px);
+        --safe-area-right: env(safe-area-inset-right, 0px);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      body {
+        font-family: var(--font-body);
+        background: var(--color-warm-white);
+        color: var(--color-charcoal);
+      }
+
+      #root {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      /* Safe Area Padding */
+      .safe-area-top {
+        padding-top: var(--safe-area-top);
+      }
+      .safe-area-bottom {
+        padding-bottom: var(--safe-area-bottom);
+      }
+
+      /* Font utilities */
+      .font-display { font-family: var(--font-display); }
+      .font-mono { font-family: var(--font-mono); }
+      .font-oswald { font-family: 'Oswald', sans-serif; }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-coral);
+        border-radius: 4px;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes slideInRight {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+      }
+
+      .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+      .animate-slide-up { animation: slideUp 0.4s ease-out; }
+      .animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
+
+      /* Touch feedback */
+      .active\:scale-98:active {
+        transform: scale(0.98);
+      }
+
+      /* Prevent pull-to-refresh */
+      body {
+        overscroll-behavior-y: contain;
+      }
+
+      /* Hide native scrollbars on mobile */
+      @media (max-width: 768px) {
+        ::-webkit-scrollbar {
+          display: none;
+        }
+        * {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main-telegram.tsx"></script>
+  </body>
+</html>

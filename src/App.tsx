@@ -425,7 +425,7 @@ export default function App() {
             style: selectedStyle,
             language: settings.language,
             slideCount: settings.slideCount,
-            includeOriginal: settings.includeOriginal,
+            includeOriginal: settings.includeOriginalText,
             visualStorytelling: settings.visualStorytellingEnabled,
             characterType: settings.characterImage,
             generatedSlides: newSlides.length
