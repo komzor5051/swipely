@@ -10,6 +10,7 @@ const { downloadTelegramPhoto, generateCarouselImages, STYLE_PROMPTS } = require
 const { upsertUser, saveCarouselGeneration, saveDisplayUsername, getDisplayUsername } = require('./services/supabaseService');
 const { logUser, logGeneration } = require('./services/userLogger');
 const { getPreviewPaths, STYLE_INFO } = require('./services/previewService');
+const { createEditSession } = require('./services/editorService');
 const copy = require('./utils/copy');
 const demoCarousel = require('./data/demoCarousel');
 const pricing = require('./config/pricing');
@@ -1484,12 +1485,22 @@ bot.on('callback_query', async (query) => {
       console.log(`📊 Сохраняю генерацию карусели для пользователя ${userId}...`);
       await saveCarouselGeneration(userId, userText, styleKey, slideCount, null);
 
+      // Создаем сессию редактирования
+      const editSession = await createEditSession(userId, carouselData, styleKey, format, username);
+
       // Результат с кнопками действий
+      const resultButtons = [
+        [{ text: copy.mainFlow.resultButtons.createNew, callback_data: 'create_now' }]
+      ];
+
+      // Добавляем кнопку редактирования, если сессия создана
+      if (editSession && editSession.editUrl) {
+        resultButtons.unshift([{ text: copy.mainFlow.resultButtons.editText, url: editSession.editUrl }]);
+      }
+
       await bot.sendMessage(chatId, copy.mainFlow.result, {
         reply_markup: {
-          inline_keyboard: [
-            [{ text: copy.mainFlow.resultButtons.createNew, callback_data: 'create_now' }]
-          ]
+          inline_keyboard: resultButtons
         }
       });
 
