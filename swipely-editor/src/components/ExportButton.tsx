@@ -95,7 +95,7 @@ export default function ExportButton({
             scale: 2, // 2x for retina quality
             useCORS: true,
             allowTaint: true,
-            backgroundColor: null,
+            backgroundColor: undefined,
           });
 
           // Download PNG
