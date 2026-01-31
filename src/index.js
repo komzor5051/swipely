@@ -300,22 +300,24 @@ async function handlePaymentReturn(chatId, userId, paymentId) {
       // Обрабатываем успешный платёж
       const result = db.processSuccessfulPayment(paymentId);
 
-      if (result) {
-        const status = db.getUserStatus(userId);
+      if (!result) {
+        // Платёж не найден в локальной БД (возможно бот перезапустился)
+        console.error(`❌ Платёж ${paymentId} не найден в локальной БД при проверке статуса`);
+        await bot.sendMessage(chatId,
+          '⚠️ Платёж прошёл, но произошла техническая ошибка.\n\n' +
+          'Напиши в поддержку с ID платежа:\n' +
+          `\`${paymentId}\``,
+          { parse_mode: 'Markdown' }
+        );
+        return;
+      }
 
-        // Сохраняем платёж в Supabase
-        await savePayment({
-          payment_id: paymentId,
-          telegram_id: userId,
-          amount: result.amount || 0,
-          currency: 'RUB',
-          product_type: result.product_type,
-          product_data: result.product_data || {},
-          payment_method: 'yookassa',
-          status: 'succeeded'
-        });
+      const status = db.getUserStatus(userId);
 
-        if (result.product_type.startsWith('pro_')) {
+      // Обновляем статус платежа в Supabase (pending → succeeded)
+      await updatePaymentStatus(paymentId, 'succeeded');
+
+      if (result.product_type.startsWith('pro_')) {
           // PRO подписка
           const expiresAt = new Date(status.subscriptionExpiresAt).toLocaleDateString('ru-RU');
           await bot.sendMessage(chatId, copy.pricing.success.pro(expiresAt), {
@@ -965,8 +967,18 @@ bot.on('callback_query', async (query) => {
         return;
       }
 
-      // Сохраняем платёж в БД
+      // Сохраняем платёж в локальную БД и Supabase
       db.createPayment(payment.paymentId, userId, pack.price, `pack_${packId}`, { slides: pack.slides });
+      await savePayment({
+        payment_id: payment.paymentId,
+        telegram_id: userId,
+        amount: pack.price,
+        currency: 'RUB',
+        product_type: `pack_${packId}`,
+        product_data: { slides: pack.slides },
+        payment_method: 'yookassa',
+        status: 'pending'
+      });
 
       // Обновляем return URL с реальным ID платежа
       const realReturnUrl = yookassa.getTelegramReturnUrl(botInfo.username, payment.paymentId);
@@ -1076,8 +1088,18 @@ bot.on('callback_query', async (query) => {
         return;
       }
 
-      // Сохраняем платёж в БД
+      // Сохраняем платёж в локальную БД и Supabase
       db.createPayment(payment.paymentId, userId, price, productType, { months });
+      await savePayment({
+        payment_id: payment.paymentId,
+        telegram_id: userId,
+        amount: price,
+        currency: 'RUB',
+        product_type: productType,
+        product_data: { months },
+        payment_method: 'yookassa',
+        status: 'pending'
+      });
 
       await bot.editMessageText(
         `💳 **PRO-подписка на ${months === 12 ? 'год' : 'месяц'}**\n\n` +
@@ -1169,8 +1191,18 @@ bot.on('callback_query', async (query) => {
         return;
       }
 
-      // Сохраняем платёж в БД
+      // Сохраняем платёж в локальную БД и Supabase
       db.createPayment(payment.paymentId, userId, price, 'photo_slides', { slides: slideCount });
+      await savePayment({
+        payment_id: payment.paymentId,
+        telegram_id: userId,
+        amount: price,
+        currency: 'RUB',
+        product_type: 'photo_slides',
+        product_data: { slides: slideCount },
+        payment_method: 'yookassa',
+        status: 'pending'
+      });
 
       await bot.sendMessage(chatId,
         `💳 **AI-карусель: ${slideCount} слайдов**\n\n` +
@@ -1263,8 +1295,18 @@ bot.on('callback_query', async (query) => {
         return;
       }
 
-      // Сохраняем платёж в БД
+      // Сохраняем платёж в локальную БД и Supabase
       db.createPayment(payment.paymentId, userId, totalPrice, 'topup_slides', { slides: slidesToBuy });
+      await savePayment({
+        payment_id: payment.paymentId,
+        telegram_id: userId,
+        amount: totalPrice,
+        currency: 'RUB',
+        product_type: 'topup_slides',
+        product_data: { slides: slidesToBuy },
+        payment_method: 'yookassa',
+        status: 'pending'
+      });
 
       await bot.sendMessage(chatId,
         `💳 **Докупка слайдов**\n\n` +
