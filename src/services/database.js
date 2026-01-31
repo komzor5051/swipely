@@ -855,6 +855,11 @@ async function processSuccessfulPayment(paymentId) {
       console.log(`${methodEmoji} Докупка: +${product_data.slides} слайдов → баланс: ${result.balanceAfter}`);
       break;
 
+    case 'custom_slides':
+      result = await addPhotoSlides(user_id, product_data.slides);
+      console.log(`${methodEmoji} Кастомная покупка: +${product_data.slides} слайдов → баланс: ${result.balanceAfter}`);
+      break;
+
     case 'pro_month':
       const expiresMonth = await activateProSubscription(user_id, 1);
       console.log(`${methodEmoji} PRO месяц активирован до: ${expiresMonth?.toLocaleDateString('ru-RU')}`);

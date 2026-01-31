@@ -496,6 +496,7 @@ bot.onText(/\/buy/, async (msg) => {
           [{ text: copy.pricing.buttons.buySlides(15, 490), callback_data: 'buy_pack_small' }],
           [{ text: copy.pricing.buttons.buySlides(50, 1490), callback_data: 'buy_pack_medium' }],
           [{ text: copy.pricing.buttons.buySlides(150, 3990), callback_data: 'buy_pack_large' }],
+          [{ text: copy.pricing.buttons.buyCustom, callback_data: 'buy_custom' }],
           [{ text: '───────────────', callback_data: 'noop' }],
           [{ text: copy.pricing.buttons.viewPro, callback_data: 'view_pro' }]
         ]
@@ -770,6 +771,47 @@ async function handleTextMessage(msg) {
       return;
     }
 
+    // Проверяем, ожидаем ли ввод количества слайдов для кастомной покупки
+    if (sessions[userId]?.awaitingCustomSlides) {
+      const slideCount = parseInt(text.trim());
+
+      // Валидация
+      if (isNaN(slideCount) || slideCount < 1) {
+        await bot.sendMessage(chatId, copy.pricing.customSlides.invalid);
+        return;
+      }
+
+      if (slideCount > 1000) {
+        await bot.sendMessage(chatId, copy.pricing.customSlides.tooMany);
+        return;
+      }
+
+      // Очищаем флаг
+      delete sessions[userId].awaitingCustomSlides;
+
+      // Получаем цену
+      const tier = await db.getActiveSubscription(userId);
+      const pricePerSlide = pricing.getPerSlidePrice(tier);
+      const totalPrice = slideCount * pricePerSlide;
+      const starsPrice = pricing.getStarsPrice(totalPrice);
+
+      // Показываем подтверждение с выбором оплаты
+      await bot.sendMessage(chatId,
+        copy.pricing.customSlides.confirm(slideCount, pricePerSlide, totalPrice, tier),
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.pricing.stars.starsOption(starsPrice), callback_data: `stars_custom_${slideCount}` }],
+              [{ text: copy.pricing.stars.rubOption(totalPrice), callback_data: `rub_custom_${slideCount}` }],
+              [{ text: '← Назад', callback_data: 'view_packs' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
     // Сразу показываем выбор количества слайдов
     await bot.sendMessage(chatId, copy.mainFlow.requestSlideCount(text), {
       reply_markup: {
@@ -829,12 +871,135 @@ bot.on('callback_query', async (query) => {
             [{ text: copy.pricing.buttons.buySlides(15, 490), callback_data: 'buy_pack_small' }],
             [{ text: copy.pricing.buttons.buySlides(50, 1490), callback_data: 'buy_pack_medium' }],
             [{ text: copy.pricing.buttons.buySlides(150, 3990), callback_data: 'buy_pack_large' }],
+            [{ text: copy.pricing.buttons.buyCustom, callback_data: 'buy_custom' }],
             [{ text: '───────────────', callback_data: 'noop' }],
             [{ text: copy.pricing.buttons.viewPro, callback_data: 'view_pro' }],
             [{ text: '← Назад', callback_data: 'menu_buy' }]
           ]
         }
       });
+      return;
+    }
+
+    // Кастомное количество слайдов - запрос ввода
+    if (data === 'buy_custom') {
+      sessions[userId] = { ...sessions[userId], awaitingCustomSlides: true };
+
+      await bot.editMessageText(copy.pricing.customSlides.prompt, {
+        chat_id: chatId,
+        message_id: messageId,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '← Назад', callback_data: 'view_packs' }]
+          ]
+        }
+      });
+      return;
+    }
+
+    // Подтверждение кастомной покупки - выбор способа оплаты
+    if (data.startsWith('confirm_custom_')) {
+      const slideCount = parseInt(data.replace('confirm_custom_', ''));
+      const tier = await db.getActiveSubscription(userId);
+      const pricePerSlide = pricing.getPerSlidePrice(tier);
+      const totalPrice = slideCount * pricePerSlide;
+      const starsPrice = pricing.getStarsPrice(totalPrice);
+
+      await bot.editMessageText(
+        copy.pricing.customSlides.confirm(slideCount, pricePerSlide, totalPrice, tier),
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.pricing.stars.starsOption(starsPrice), callback_data: `stars_custom_${slideCount}` }],
+              [{ text: copy.pricing.stars.rubOption(totalPrice), callback_data: `rub_custom_${slideCount}` }],
+              [{ text: '← Назад', callback_data: 'view_packs' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // Оплата кастомного количества через Stars
+    if (data.startsWith('stars_custom_')) {
+      const slideCount = parseInt(data.replace('stars_custom_', ''));
+      const tier = await db.getActiveSubscription(userId);
+      const pricePerSlide = pricing.getPerSlidePrice(tier);
+      const totalPrice = slideCount * pricePerSlide;
+      const starsPrice = pricing.getStarsPrice(totalPrice);
+
+      await sendStarsInvoice(
+        chatId,
+        userId,
+        'custom_slides',
+        `Swipely: ${slideCount} слайдов`,
+        `Photo Mode слайды`,
+        starsPrice,
+        { slides: slideCount }
+      );
+      return;
+    }
+
+    // Оплата кастомного количества через YooKassa
+    if (data.startsWith('rub_custom_')) {
+      const slideCount = parseInt(data.replace('rub_custom_', ''));
+      const tier = await db.getActiveSubscription(userId);
+      const pricePerSlide = pricing.getPerSlidePrice(tier);
+      const totalPrice = slideCount * pricePerSlide;
+
+      await bot.sendMessage(chatId, '⏳ Создаю ссылку на оплату...');
+
+      const botInfo = await bot.getMe();
+
+      const payment = await yookassa.createPayment({
+        amount: totalPrice,
+        description: `Swipely: ${slideCount} слайдов`,
+        metadata: {
+          user_id: userId,
+          product_type: 'custom_slides',
+          slides: slideCount
+        },
+        returnUrl: yookassa.getTelegramReturnUrl(botInfo.username, 'temp')
+      });
+
+      if (!payment.success) {
+        await bot.sendMessage(chatId, `❌ Ошибка создания платежа: ${payment.error}\n\nПопробуй позже.`);
+        return;
+      }
+
+      await db.createPayment(payment.paymentId, userId, totalPrice, 'custom_slides', { slides: slideCount });
+      await savePayment({
+        payment_id: payment.paymentId,
+        telegram_id: userId,
+        amount: totalPrice,
+        currency: 'RUB',
+        product_type: 'custom_slides',
+        product_data: { slides: slideCount },
+        payment_method: 'yookassa',
+        status: 'pending'
+      });
+
+      await bot.sendMessage(chatId,
+        `💳 **Покупка слайдов**\n\n` +
+        `📦 Количество: ${slideCount} шт.\n` +
+        `💰 Цена: ${pricePerSlide}₽/шт.\n` +
+        `💵 Итого: ${pricing.formatPrice(totalPrice)}${tier === 'pro' ? ' (PRO цена)' : ''}\n\n` +
+        `👇 Нажми кнопку для оплаты:`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: `💳 Оплатить ${totalPrice}₽`, url: payment.confirmationUrl }],
+              [{ text: '🔄 Я оплатил, проверить', callback_data: `check_payment_${payment.paymentId}` }],
+              [{ text: '← Назад', callback_data: 'view_packs' }]
+            ]
+          }
+        }
+      );
       return;
     }
 
@@ -1573,6 +1738,7 @@ ${recentText}`;
               [{ text: copy.pricing.buttons.buySlides(15, 490), callback_data: 'buy_pack_small' }],
               [{ text: copy.pricing.buttons.buySlides(50, 1490), callback_data: 'buy_pack_medium' }],
               [{ text: copy.pricing.buttons.buySlides(150, 3990), callback_data: 'buy_pack_large' }],
+              [{ text: copy.pricing.buttons.buyCustom, callback_data: 'buy_custom' }],
               [{ text: '───────────────', callback_data: 'noop' }],
               [{ text: copy.pricing.buttons.viewPro, callback_data: 'view_pro' }],
               [{ text: '← Главное меню', callback_data: 'menu_main' }]
