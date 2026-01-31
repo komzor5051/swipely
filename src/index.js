@@ -7,7 +7,18 @@ const { transcribeVoice } = require('./services/whisper');
 const { generateCarouselContent } = require('./services/gemini');
 const { renderSlides, renderSlidesWithImages } = require('./services/renderer');
 const { downloadTelegramPhoto, generateCarouselImages, STYLE_PROMPTS } = require('./services/imageGenerator');
-const { supabase, upsertUser, saveCarouselGeneration, saveDisplayUsername, getDisplayUsername } = require('./services/supabaseService');
+const {
+  supabase,
+  upsertUser,
+  saveCarouselGeneration,
+  saveDisplayUsername,
+  getDisplayUsername,
+  savePayment,
+  updatePaymentStatus,
+  getPaymentsStats,
+  getRecentPayments,
+  getTotalPaymentsStats
+} = require('./services/supabaseService');
 const { logUser, logGeneration } = require('./services/userLogger');
 const { getPreviewPaths, STYLE_INFO } = require('./services/previewService');
 const { createEditSession } = require('./services/editorService');
@@ -61,7 +72,7 @@ bot.on('successful_payment', async (msg) => {
     // Генерируем уникальный ID для БД
     const paymentId = `stars_${Date.now()}_${userId}`;
 
-    // Создаём запись в БД
+    // Создаём запись в локальной БД
     db.createPayment(
       paymentId,
       userId,
@@ -73,6 +84,18 @@ bot.on('successful_payment', async (msg) => {
 
     // Обрабатываем платёж (начисляем слайды/PRO)
     db.processSuccessfulPayment(paymentId);
+
+    // Сохраняем платёж в Supabase
+    await savePayment({
+      payment_id: paymentId,
+      telegram_id: userId,
+      amount: payment.total_amount,
+      currency: 'XTR',
+      product_type: product_type,
+      product_data: { slides, months, telegram_charge_id: payment.telegram_payment_charge_id },
+      payment_method: 'telegram_stars',
+      status: 'succeeded'
+    });
 
     // Получаем обновлённый статус
     const status = db.getUserStatus(userId);
@@ -279,6 +302,18 @@ async function handlePaymentReturn(chatId, userId, paymentId) {
 
       if (result) {
         const status = db.getUserStatus(userId);
+
+        // Сохраняем платёж в Supabase
+        await savePayment({
+          payment_id: paymentId,
+          telegram_id: userId,
+          amount: result.amount || 0,
+          currency: 'RUB',
+          product_type: result.product_type,
+          product_data: result.product_data || {},
+          payment_method: 'yookassa',
+          status: 'succeeded'
+        });
 
         if (result.product_type.startsWith('pro_')) {
           // PRO подписка
@@ -1258,29 +1293,12 @@ bot.on('callback_query', async (query) => {
       return bot.answerCallbackQuery(query.id, { text: '⛔ Доступ запрещён', show_alert: true });
     }
 
-    // Статистика оплат
+    // Статистика оплат (из Supabase)
     if (data === 'admin_payments') {
       try {
-        // Получаем статистику из БД
-        const allPayments = db.db?.prepare(`
-          SELECT payment_method, COUNT(*) as count, SUM(amount) as total, status
-          FROM payments
-          GROUP BY payment_method, status
-        `).all() || [];
-
-        const starsSucceeded = allPayments.find(p => p.payment_method === 'telegram_stars' && p.status === 'succeeded') || { count: 0, total: 0 };
-        const yookassaSucceeded = allPayments.find(p => p.payment_method === 'yookassa' && p.status === 'succeeded') || { count: 0, total: 0 };
-        const starsPending = allPayments.find(p => p.payment_method === 'telegram_stars' && p.status === 'pending') || { count: 0 };
-        const yookassaPending = allPayments.find(p => p.payment_method === 'yookassa' && p.status === 'pending') || { count: 0 };
-
-        // Последние 5 успешных платежей
-        const recentPayments = db.db?.prepare(`
-          SELECT payment_id, user_id, amount, product_type, payment_method, created_at
-          FROM payments
-          WHERE status = 'succeeded'
-          ORDER BY created_at DESC
-          LIMIT 5
-        `).all() || [];
+        // Получаем статистику из Supabase
+        const stats = await getPaymentsStats();
+        const recentPayments = await getRecentPayments(5);
 
         let recentText = recentPayments.length > 0
           ? recentPayments.map(p => {
@@ -1290,15 +1308,15 @@ bot.on('callback_query', async (query) => {
             }).join('\n')
           : 'Нет платежей';
 
-        const text = `💳 **Статистика оплат**
+        const text = `💳 **Статистика оплат (Supabase)**
 
 **⭐ Telegram Stars:**
-├ Успешных: ${starsSucceeded.count} (${starsSucceeded.total || 0}⭐)
-└ В ожидании: ${starsPending.count}
+├ Успешных: ${stats?.stars?.succeeded?.count || 0} (${stats?.stars?.succeeded?.total || 0}⭐)
+└ В ожидании: ${stats?.stars?.pending?.count || 0}
 
 **💳 YooKassa:**
-├ Успешных: ${yookassaSucceeded.count} (${yookassaSucceeded.total || 0}₽)
-└ В ожидании: ${yookassaPending.count}
+├ Успешных: ${stats?.yookassa?.succeeded?.count || 0} (${stats?.yookassa?.succeeded?.total || 0}₽)
+└ В ожидании: ${stats?.yookassa?.pending?.count || 0}
 
 **📋 Последние платежи:**
 ${recentText}`;
@@ -1316,7 +1334,7 @@ ${recentText}`;
         });
       } catch (err) {
         console.error('Admin payments error:', err);
-        await bot.sendMessage(chatId, '❌ Ошибка получения статистики');
+        await bot.sendMessage(chatId, '❌ Ошибка получения статистики: ' + err.message);
       }
       return;
     }
@@ -1392,7 +1410,7 @@ ${recentText}`;
       return;
     }
 
-    // Общая статистика (комбинированная Supabase + SQLite)
+    // Общая статистика (полностью из Supabase)
     if (data === 'admin_stats') {
       try {
         // Пользователи из Supabase
@@ -1413,26 +1431,23 @@ ${recentText}`;
           .select('*', { count: 'exact', head: true })
           .eq('generation_type', 'carousel');
 
-        // Платежи из локальной SQLite (там точные данные)
-        const totalPayments = db.db?.prepare(`SELECT COUNT(*) as count FROM payments WHERE status = 'succeeded'`).get()?.count || 0;
-        const totalRevenue = db.db?.prepare(`SELECT SUM(amount) as total FROM payments WHERE status = 'succeeded' AND payment_method = 'yookassa'`).get()?.total || 0;
-        const totalStars = db.db?.prepare(`SELECT SUM(amount) as total FROM payments WHERE status = 'succeeded' AND payment_method = 'telegram_stars'`).get()?.total || 0;
-        const todayPayments = db.db?.prepare(`SELECT COUNT(*) as count FROM payments WHERE status = 'succeeded' AND date(created_at) = ?`).get(today)?.count || 0;
+        // Платежи из Supabase
+        const paymentStats = await getTotalPaymentsStats();
 
-        const text = `📊 **Общая статистика**
+        const text = `📊 **Общая статистика (Supabase)**
 
 **💰 Доход:**
-├ YooKassa: ${(totalRevenue || 0).toLocaleString('ru-RU')}₽
-├ Stars: ${totalStars || 0}⭐ (~${Math.round((totalStars || 0) * 1.66)}₽)
-└ Всего платежей: ${totalPayments}
+├ YooKassa: ${(paymentStats?.totalRevenue || 0).toLocaleString('ru-RU')}₽
+├ Stars: ${paymentStats?.totalStars || 0}⭐ (~${Math.round((paymentStats?.totalStars || 0) * 1.66)}₽)
+└ Всего платежей: ${paymentStats?.totalPayments || 0}
 
-**👥 Пользователи (Supabase):**
+**👥 Пользователи:**
 ├ Всего: ${totalUsers || 0}
 └ Сегодня: +${todayUsers || 0}
 
 **📈 Активность:**
 ├ Генераций всего: ${totalGenerations || 0}
-└ Платежей сегодня: ${todayPayments}`;
+└ Платежей сегодня: ${paymentStats?.todayPayments || 0}`;
 
         await bot.editMessageText(text, {
           chat_id: chatId,

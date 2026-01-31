@@ -399,6 +399,202 @@ async function getDisplayUsername(telegramId) {
   }
 }
 
+// ============================================
+// ПЛАТЕЖИ (PAYMENTS)
+// ============================================
+
+/**
+ * Сохранение платежа в Supabase
+ */
+async function savePayment(paymentData) {
+  const {
+    payment_id,
+    telegram_id,
+    amount,
+    currency,
+    product_type,
+    product_data,
+    payment_method,
+    status
+  } = paymentData;
+
+  try {
+    const { data, error } = await supabase
+      .from('payments')
+      .insert({
+        payment_id,
+        telegram_id,
+        amount,
+        currency: currency || (payment_method === 'telegram_stars' ? 'XTR' : 'RUB'),
+        product_type,
+        product_data,
+        payment_method,
+        status: status || 'pending'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Ошибка сохранения платежа в Supabase:', error);
+      return null;
+    }
+
+    console.log(`💳 Платеж сохранен в Supabase: ${payment_id}`);
+    return data;
+  } catch (err) {
+    console.error('❌ Критическая ошибка savePayment:', err);
+    return null;
+  }
+}
+
+/**
+ * Обновление статуса платежа
+ */
+async function updatePaymentStatus(paymentId, status) {
+  try {
+    const { error } = await supabase
+      .from('payments')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('payment_id', paymentId);
+
+    if (error) {
+      console.error('❌ Ошибка обновления статуса платежа:', error);
+      return false;
+    }
+
+    console.log(`💳 Статус платежа обновлен: ${paymentId} → ${status}`);
+    return true;
+  } catch (err) {
+    console.error('❌ Критическая ошибка updatePaymentStatus:', err);
+    return false;
+  }
+}
+
+/**
+ * Получение статистики платежей для админки
+ */
+async function getPaymentsStats() {
+  try {
+    // Stars успешные
+    const { count: starsSucceededCount, data: starsData } = await supabase
+      .from('payments')
+      .select('amount', { count: 'exact' })
+      .eq('payment_method', 'telegram_stars')
+      .eq('status', 'succeeded');
+
+    const starsTotal = starsData?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    // YooKassa успешные
+    const { count: yookassaSucceededCount, data: yookassaData } = await supabase
+      .from('payments')
+      .select('amount', { count: 'exact' })
+      .eq('payment_method', 'yookassa')
+      .eq('status', 'succeeded');
+
+    const yookassaTotal = yookassaData?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    // Pending
+    const { count: starsPendingCount } = await supabase
+      .from('payments')
+      .select('*', { count: 'exact', head: true })
+      .eq('payment_method', 'telegram_stars')
+      .eq('status', 'pending');
+
+    const { count: yookassaPendingCount } = await supabase
+      .from('payments')
+      .select('*', { count: 'exact', head: true })
+      .eq('payment_method', 'yookassa')
+      .eq('status', 'pending');
+
+    return {
+      stars: {
+        succeeded: { count: starsSucceededCount || 0, total: starsTotal },
+        pending: { count: starsPendingCount || 0 }
+      },
+      yookassa: {
+        succeeded: { count: yookassaSucceededCount || 0, total: yookassaTotal },
+        pending: { count: yookassaPendingCount || 0 }
+      }
+    };
+  } catch (err) {
+    console.error('❌ Ошибка получения статистики платежей:', err);
+    return null;
+  }
+}
+
+/**
+ * Получение последних платежей
+ */
+async function getRecentPayments(limit = 5) {
+  try {
+    const { data, error } = await supabase
+      .from('payments')
+      .select('payment_id, telegram_id, amount, product_type, payment_method, status, created_at')
+      .eq('status', 'succeeded')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('❌ Ошибка получения последних платежей:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('❌ Критическая ошибка getRecentPayments:', err);
+    return [];
+  }
+}
+
+/**
+ * Получение общей статистики платежей
+ */
+async function getTotalPaymentsStats() {
+  try {
+    // Всего успешных платежей
+    const { count: totalPayments } = await supabase
+      .from('payments')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'succeeded');
+
+    // Сумма по YooKassa
+    const { data: yookassaData } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('payment_method', 'yookassa')
+      .eq('status', 'succeeded');
+
+    const totalRevenue = yookassaData?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    // Сумма по Stars
+    const { data: starsData } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('payment_method', 'telegram_stars')
+      .eq('status', 'succeeded');
+
+    const totalStars = starsData?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    // Сегодняшние платежи
+    const today = new Date().toISOString().split('T')[0];
+    const { count: todayPayments } = await supabase
+      .from('payments')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'succeeded')
+      .gte('created_at', today);
+
+    return {
+      totalPayments: totalPayments || 0,
+      totalRevenue,
+      totalStars,
+      todayPayments: todayPayments || 0
+    };
+  } catch (err) {
+    console.error('❌ Ошибка получения общей статистики:', err);
+    return null;
+  }
+}
+
 module.exports = {
   supabase,
   upsertUser,
@@ -414,5 +610,11 @@ module.exports = {
   skipOnboarding,
   // Настройки пользователя
   saveDisplayUsername,
-  getDisplayUsername
+  getDisplayUsername,
+  // Платежи
+  savePayment,
+  updatePaymentStatus,
+  getPaymentsStats,
+  getRecentPayments,
+  getTotalPaymentsStats
 };
