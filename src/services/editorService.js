@@ -13,9 +13,10 @@ const EDITOR_BOT_SECRET = process.env.EDITOR_BOT_SECRET;
  * @param {string} stylePreset - Название шаблона (minimal_pop, notebook, etc.)
  * @param {string} format - Формат (square | portrait)
  * @param {string} username - Username пользователя для отображения
+ * @param {Array<string>} images - Массив base64 изображений (для Photo Mode)
  * @returns {Promise<{token: string, editUrl: string, expiresAt: string}|null>}
  */
-async function createEditSession(userId, carouselData, stylePreset, format, username) {
+async function createEditSession(userId, carouselData, stylePreset, format, username, images = null) {
   if (!EDITOR_BOT_SECRET) {
     console.log('⚠️ EDITOR_BOT_SECRET not configured, skipping edit session');
     return null;
@@ -24,6 +25,9 @@ async function createEditSession(userId, carouselData, stylePreset, format, user
   try {
     console.log('📝 Creating edit session for user:', userId);
     console.log('🔗 Editor API URL:', EDITOR_API_URL);
+    if (images) {
+      console.log(`📸 Including ${images.length} images for Photo Mode`);
+    }
 
     const response = await fetch(`${EDITOR_API_URL}/api/sessions`, {
       method: 'POST',
@@ -37,6 +41,7 @@ async function createEditSession(userId, carouselData, stylePreset, format, user
         stylePreset,
         format,
         username,
+        images,
       }),
     });
 

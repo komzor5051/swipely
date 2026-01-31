@@ -457,8 +457,8 @@ async function startPhotoModeGeneration(chatId, userId) {
       { mode: 'photo', imageStyle: imageStyle }
     );
 
-    // 7. Создаём сессию редактирования (для Photo Mode используем шаблон photo_overlay)
-    const editSession = await createEditSession(userId, carouselData, 'photo_overlay', format, username);
+    // 7. Создаём сессию редактирования (для Photo Mode передаём изображения)
+    const editSession = await createEditSession(userId, carouselData, 'photo_overlay', format, username, images);
 
     // 8. Результат с кнопками
     const resultButtons = [
