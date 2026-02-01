@@ -208,14 +208,10 @@ function formatSlideContent(text) {
 
 function getDesignConfig(stylePreset) {
   const presets = {
-    minimal_pop: { name: 'Minimal Pop', max_words_per_slide: 40, tone: 'energetic, modern, minimalist' },
     notebook: { name: 'Notebook Sketch', max_words_per_slide: 45, tone: 'personal, educational, handwritten-feel' },
-    darkest: { name: 'Darkest Hour', max_words_per_slide: 50, tone: 'professional, elegant, cyberpunk' },
     aurora: { name: 'Aurora', max_words_per_slide: 45, tone: 'ethereal, modern, dreamy' },
     terminal: { name: 'Terminal', max_words_per_slide: 40, tone: 'technical, retro-computer, hacker' },
     editorial: { name: 'Editorial', max_words_per_slide: 45, tone: 'high-fashion, magazine, bold' },
-    zen: { name: 'Zen', max_words_per_slide: 35, tone: 'minimalist, japanese, calm' },
-    memphis: { name: 'Memphis', max_words_per_slide: 40, tone: '80s retro, playful, vibrant' },
     luxe: { name: 'Luxe', max_words_per_slide: 40, tone: 'premium, luxury, elegant' },
     backspace: { name: 'Backspace', max_words_per_slide: 40, tone: 'modern agency, bold typography, minimalist' },
     star_highlight: { name: 'Star Highlight', max_words_per_slide: 25, tone: 'elegant, sophisticated, designer-focused, serif typography' },
@@ -230,7 +226,7 @@ function getDesignConfig(stylePreset) {
     // Режим с AI-аватарами - короткие тексты для overlay поверх изображений
     photo_mode: { name: 'AI Photo', max_words_per_slide: 25, tone: 'impactful, concise, visual-first' }
   };
-  return presets[stylePreset] || presets.minimal_pop;
+  return presets[stylePreset] || presets.notebook;
 }
 
 function buildSystemPrompt(designConfig, slideCount, toneGuidelines) {

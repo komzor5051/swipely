@@ -12,20 +12,10 @@ if (!fs.existsSync(PREVIEWS_DIR)) {
 
 // Информация о стилях для превью
 const STYLE_INFO = {
-  minimal_pop: {
-    name: 'Minimal Pop',
-    emoji: '✨',
-    description: 'Neo-brutalism'
-  },
   notebook: {
     name: 'Notebook',
     emoji: '📓',
     description: 'Крафтовый стиль'
-  },
-  darkest: {
-    name: 'Darkest',
-    emoji: '🌚',
-    description: 'Премиум тёмный'
   },
   aurora: {
     name: 'Aurora',
@@ -42,16 +32,6 @@ const STYLE_INFO = {
     emoji: '📰',
     description: 'Журнальный стиль'
   },
-  zen: {
-    name: 'Zen',
-    emoji: '🍃',
-    description: 'Минимализм'
-  },
-  memphis: {
-    name: 'Memphis',
-    emoji: '🎨',
-    description: '80-е, яркий'
-  },
   luxe: {
     name: 'Luxe',
     emoji: '💎',
@@ -61,59 +41,72 @@ const STYLE_INFO = {
     name: 'Backspace',
     emoji: '🔲',
     description: 'Агентский'
+  },
+  star_highlight: {
+    name: 'Star Highlight',
+    emoji: '⭐',
+    description: 'Жёлтый хайлайт'
+  },
+  purple_accent: {
+    name: 'Purple Accent',
+    emoji: '💜',
+    description: 'Фиолетовый бейдж'
+  },
+  quote_doodle: {
+    name: 'Quote Doodle',
+    emoji: '✍️',
+    description: 'Для цитат'
+  },
+  speech_bubble: {
+    name: 'Speech Bubble',
+    emoji: '💬',
+    description: 'Баббл с цитатой'
+  },
+  grid_multi: {
+    name: 'Grid Multi',
+    emoji: '📊',
+    description: 'Для статистики'
+  },
+  receipt: {
+    name: 'Receipt',
+    emoji: '🧾',
+    description: 'Стиль чека'
+  },
+  lime_checklist: {
+    name: 'Lime Checklist',
+    emoji: '🍋',
+    description: 'Чеклист'
+  },
+  app_list: {
+    name: 'App List',
+    emoji: '📱',
+    description: 'Меню приложения'
+  },
+  paper_image: {
+    name: 'Paper Texture',
+    emoji: '📜',
+    description: 'Мятая бумага'
   }
 };
 
 // Порядок стилей для отображения
 const STYLE_ORDER = [
-  'minimal_pop',
   'notebook',
-  'darkest',
   'aurora',
   'terminal',
   'editorial',
-  'zen',
-  'memphis',
   'luxe',
-  'backspace'
+  'backspace',
+  'star_highlight',
+  'purple_accent',
+  'quote_doodle',
+  'speech_bubble',
+  'grid_multi',
+  'receipt',
+  'lime_checklist',
+  'app_list',
+  'paper_image'
 ];
-
-/**
- * Генерация HTML для превью стиля (квадратное изображение 540x540)
- */
-function generatePreviewHTML(styleKey, styleName) {
-  const templatePath = path.join(TEMPLATES_DIR, `${styleKey}.html`);
-
-  if (!fs.existsSync(templatePath)) {
-    console.warn(`⚠️ Шаблон ${styleKey} не найден`);
-    return null;
-  }
-
-  let template = fs.readFileSync(templatePath, 'utf-8');
-
-  // Заменяем размеры на квадратные 540x540 для превью
-  template = template.replace(/width:\s*1080px/g, 'width: 540px');
-  template = template.replace(/height:\s*1350px/g, 'height: 540px');
-
-  // Уменьшаем все размеры шрифтов и отступов вдвое
-  template = template.replace(/font-size:\s*(\d+)px/g, (match, size) => {
-    return `font-size: ${Math.round(parseInt(size) * 0.5)}px`;
-  });
-  template = template.replace(/padding:\s*(\d+)px\s+(\d+)px/g, (match, v, h) => {
-    return `padding: ${Math.round(parseInt(v) * 0.4)}px ${Math.round(parseInt(h) * 0.4)}px`;
-  });
-
-  // Заменяем контент на название стиля
-  template = template.replace(/\{\{TITLE\}\}/g, styleName);
-  template = template.replace(/\{\{CONTENT\}\}/g, '');
-  template = template.replace(/\{\{SLIDE_NUMBER\}\}/g, '');
-  template = template.replace(/\{\{TOTAL_SLIDES\}\}/g, '');
-
-  // Убираем счётчик слайдов
-  template = template.replace(/<div class="slide-counter">[\s\S]*?<\/div>/g, '');
-
-  return template;
-}
 
 /**
  * Специальный шаблон превью с названием стиля по центру
@@ -123,16 +116,21 @@ function getPreviewTemplate(styleKey) {
 
   // Базовые цвета для каждого стиля
   const styleColors = {
-    minimal_pop: { bg: '#FAFAFA', text: '#0A0A0A', accent: '#FF2D6A' },
     notebook: { bg: '#FEF9E7', text: '#1A1A1A', accent: '#C13C3C' },
-    darkest: { bg: '#0A0A0F', text: '#FFFFFF', accent: '#00D4FF' },
     aurora: { bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', text: '#FFFFFF', accent: '#E94560' },
     terminal: { bg: '#0D1117', text: '#00FF00', accent: '#00FF00' },
     editorial: { bg: '#F5F5F0', text: '#1A1A1A', accent: '#D4AF37' },
-    zen: { bg: '#F8F6F0', text: '#2D2D2D', accent: '#7C9885' },
-    memphis: { bg: '#FFE66D', text: '#2D2D2D', accent: '#FF6B6B' },
     luxe: { bg: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', text: '#D4AF37', accent: '#D4AF37' },
-    backspace: { bg: '#F0EFED', text: '#2D2A26', accent: '#5B5FE8' }
+    backspace: { bg: '#F0EFED', text: '#2D2A26', accent: '#5B5FE8' },
+    star_highlight: { bg: '#FFFFFF', text: '#0A0A0A', accent: '#FFF59D' },
+    purple_accent: { bg: '#E8E6F2', text: '#0A0A0A', accent: '#9B8FD9' },
+    quote_doodle: { bg: '#F5F3EE', text: '#0A0A0A', accent: '#A3E635' },
+    speech_bubble: { bg: '#F8F8F8', text: '#1A1A1A', accent: '#F26B3A' },
+    grid_multi: { bg: '#FAFAFA', text: '#0A0A0A', accent: '#D4F542' },
+    receipt: { bg: '#E8E8E8', text: '#1A1A1A', accent: '#E8725C' },
+    lime_checklist: { bg: '#D4F542', text: '#0A0A0A', accent: '#0A0A0A' },
+    app_list: { bg: '#E8E6F2', text: '#0A0A0A', accent: '#6366F1' },
+    paper_image: { bg: '#F5F3EE', text: '#1A1A1A', accent: '#E8725C' }
   };
 
   const colors = styleColors[styleKey] || { bg: '#FFFFFF', text: '#000000', accent: '#FF0000' };
@@ -172,7 +170,7 @@ function getPreviewTemplate(styleKey) {
 
     .name {
       font-family: 'Unbounded', sans-serif;
-      font-size: 48px;
+      font-size: 42px;
       font-weight: 800;
       color: ${colors.text};
       text-transform: uppercase;
@@ -200,40 +198,6 @@ function getPreviewTemplate(styleKey) {
     }
 
     /* Стиль-специфичные декорации */
-    ${styleKey === 'minimal_pop' ? `
-      .diagonal-slash {
-        position: absolute;
-        width: 700px;
-        height: 80px;
-        background: linear-gradient(135deg, #FF2D6A 0%, #FF6B35 100%);
-        transform: rotate(-12deg);
-        top: 65%;
-        left: -100px;
-        z-index: 0;
-        opacity: 0.9;
-      }
-      body::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: radial-gradient(circle, rgba(10,10,10,0.04) 1.5px, transparent 1.5px);
-        background-size: 20px 20px;
-        z-index: 0;
-      }
-      .frame {
-        position: absolute;
-        top: 25px;
-        left: 25px;
-        right: 25px;
-        bottom: 25px;
-        border: 5px solid #0A0A0A;
-        z-index: 0;
-      }
-    ` : ''}
-
     ${styleKey === 'notebook' ? `
       body::before {
         content: '';
@@ -265,19 +229,6 @@ function getPreviewTemplate(styleKey) {
       }
     ` : ''}
 
-    ${styleKey === 'darkest' ? `
-      body::before {
-        content: '';
-        position: absolute;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(0,212,255,0.2) 0%, transparent 70%);
-        top: -100px;
-        right: -100px;
-        z-index: 0;
-      }
-    ` : ''}
-
     ${styleKey === 'terminal' ? `
       body::before {
         content: '>';
@@ -305,41 +256,6 @@ function getPreviewTemplate(styleKey) {
       }
     ` : ''}
 
-    ${styleKey === 'memphis' ? `
-      .circle {
-        position: absolute;
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: #FF6B6B;
-        top: 30px;
-        right: 40px;
-        z-index: 0;
-      }
-      .triangle {
-        position: absolute;
-        width: 0;
-        height: 0;
-        border-left: 40px solid transparent;
-        border-right: 40px solid transparent;
-        border-bottom: 70px solid #4ECDC4;
-        bottom: 40px;
-        left: 40px;
-        z-index: 0;
-      }
-      .squiggle {
-        position: absolute;
-        bottom: 100px;
-        right: 30px;
-        width: 60px;
-        height: 30px;
-        border: 4px solid #2D2D2D;
-        border-radius: 50% 50% 0 0;
-        border-bottom: none;
-        z-index: 0;
-      }
-    ` : ''}
-
     ${styleKey === 'luxe' ? `
       body::before {
         content: '';
@@ -349,20 +265,6 @@ function getPreviewTemplate(styleKey) {
         width: 100%;
         height: 100%;
         background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        z-index: 0;
-      }
-    ` : ''}
-
-    ${styleKey === 'zen' ? `
-      .circle-zen {
-        position: absolute;
-        width: 200px;
-        height: 200px;
-        border: 2px solid rgba(124, 152, 133, 0.2);
-        border-radius: 50%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
         z-index: 0;
       }
     ` : ''}
@@ -389,13 +291,283 @@ function getPreviewTemplate(styleKey) {
       }
       .dot-1 { top: 120px; left: 50px; }
       .dot-2 { bottom: 150px; right: 80px; }
-      .connector-backspace {
+    ` : ''}
+
+    ${styleKey === 'star_highlight' ? `
+      .star-icon {
         position: absolute;
-        width: 3px;
-        height: 60px;
-        background: #5B5FE8;
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
       }
-      .conn-1 { top: 140px; left: 58px; }
+      .star-icon svg {
+        width: 100%;
+        height: 100%;
+        fill: #0A0A0A;
+      }
+      .highlight-badge {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #FFF59D;
+        padding: 8px 20px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #0A0A0A;
+      }
+    ` : ''}
+
+    ${styleKey === 'purple_accent' ? `
+      .purple-badge {
+        position: absolute;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%) rotate(-3deg);
+        background: #9B8FD9;
+        color: white;
+        padding: 10px 24px;
+        font-size: 20px;
+        font-weight: 700;
+        box-shadow: 4px 6px 0 rgba(0,0,0,0.15);
+      }
+      .pink-dot {
+        position: absolute;
+        bottom: 60px;
+        right: 150px;
+        width: 14px;
+        height: 14px;
+        background: #E91E8C;
+        border-radius: 50%;
+      }
+    ` : ''}
+
+    ${styleKey === 'quote_doodle' ? `
+      .quote-mark {
+        position: absolute;
+        top: 60px;
+        left: 60px;
+        font-family: Georgia, serif;
+        font-size: 100px;
+        font-weight: 700;
+        color: #0A0A0A;
+        line-height: 0.5;
+      }
+      .green-circle {
+        position: absolute;
+        bottom: 60px;
+        right: 60px;
+        width: 50px;
+        height: 50px;
+        background: #1A1A1A;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .green-circle::after {
+        content: '→';
+        color: #A3E635;
+        font-size: 24px;
+      }
+    ` : ''}
+
+    ${styleKey === 'speech_bubble' ? `
+      .bubble {
+        position: absolute;
+        top: 80px;
+        left: 60px;
+        width: 100px;
+        height: 100px;
+        background: #F26B3A;
+        border-radius: 15px 15px 15px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .bubble::after {
+        content: ',,';
+        font-family: Georgia, serif;
+        font-size: 60px;
+        color: white;
+        line-height: 0.5;
+      }
+    ` : ''}
+
+    ${styleKey === 'grid_multi' ? `
+      body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+          linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+        background-size: 30px 30px;
+        z-index: 0;
+      }
+      .deco-lines {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+      }
+      .deco-line {
+        width: 80px;
+        height: 8px;
+        background: #D4F542;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        transform: rotate(-25deg);
+      }
+    ` : ''}
+
+    ${styleKey === 'receipt' ? `
+      .receipt-paper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 280px;
+        background: white;
+        padding: 30px 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      }
+      .receipt-paper::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        background: linear-gradient(135deg, white 25%, transparent 25%),
+                    linear-gradient(225deg, white 25%, transparent 25%);
+        background-size: 14px 20px;
+      }
+      .barcode {
+        display: flex;
+        gap: 2px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      .bar { background: #1A1A1A; height: 30px; }
+      .bar-thin { width: 2px; }
+      .bar-thick { width: 4px; }
+    ` : ''}
+
+    ${styleKey === 'lime_checklist' ? `
+      .notepad {
+        position: absolute;
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        background: #F5F0E6;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 5px 5px 0 rgba(0,0,0,0.15);
+      }
+      .checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #E0DBD0;
+        font-size: 16px;
+        color: #0A0A0A;
+      }
+      .checkbox::before {
+        content: '✓';
+        width: 20px;
+        height: 20px;
+        border: 2px solid #0A0A0A;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+    ` : ''}
+
+    ${styleKey === 'app_list' ? `
+      .search-bar {
+        position: absolute;
+        top: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 280px;
+        background: #0A0A0A;
+        border-radius: 30px;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .search-bar span {
+        color: white;
+        font-size: 14px;
+        opacity: 0.7;
+      }
+      .search-btn {
+        width: 30px;
+        height: 30px;
+        background: #6366F1;
+        border-radius: 50%;
+      }
+      .list-item {
+        position: absolute;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .list-dot {
+        width: 12px;
+        height: 12px;
+        background: #6366F1;
+        border-radius: 50%;
+      }
+      .list-text {
+        font-size: 18px;
+        font-weight: 600;
+        color: #0A0A0A;
+      }
+    ` : ''}
+
+    ${styleKey === 'paper_image' ? `
+      body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        opacity: 0.12;
+        z-index: 0;
+      }
+      .dashed-arrow {
+        position: absolute;
+        bottom: 80px;
+        right: 80px;
+        width: 80px;
+        height: 80px;
+      }
+      .dashed-arrow svg {
+        width: 100%;
+        height: 100%;
+      }
+      .dashed-arrow path {
+        fill: none;
+        stroke: #1A1A1A;
+        stroke-width: 3;
+        stroke-dasharray: 8, 6;
+      }
     ` : ''}
 
     .content {
@@ -408,11 +580,17 @@ function getPreviewTemplate(styleKey) {
   </style>
 </head>
 <body>
-  ${styleKey === 'minimal_pop' ? '<div class="frame"></div><div class="diagonal-slash"></div>' : ''}
   ${styleKey === 'notebook' ? '<div class="margin-line"></div>' : ''}
-  ${styleKey === 'memphis' ? '<div class="circle"></div><div class="triangle"></div><div class="squiggle"></div>' : ''}
-  ${styleKey === 'zen' ? '<div class="circle-zen"></div>' : ''}
-  ${styleKey === 'backspace' ? '<div class="dot-backspace dot-1"></div><div class="connector-backspace conn-1"></div><div class="dot-backspace dot-2"></div>' : ''}
+  ${styleKey === 'backspace' ? '<div class="dot-backspace dot-1"></div><div class="dot-backspace dot-2"></div>' : ''}
+  ${styleKey === 'star_highlight' ? '<div class="star-icon"><svg viewBox="0 0 100 100"><polygon points="50,0 54,42 100,50 54,58 50,100 46,58 0,50 46,42"/></svg></div><div class="highlight-badge">[ highlight ]</div>' : ''}
+  ${styleKey === 'purple_accent' ? '<div class="purple-badge">accent</div><div class="pink-dot"></div>' : ''}
+  ${styleKey === 'quote_doodle' ? '<div class="quote-mark">"</div><div class="green-circle"></div>' : ''}
+  ${styleKey === 'speech_bubble' ? '<div class="bubble"></div>' : ''}
+  ${styleKey === 'grid_multi' ? '<div class="deco-lines"><div class="deco-line"></div><div class="deco-line"></div><div class="deco-line"></div></div>' : ''}
+  ${styleKey === 'receipt' ? '<div class="receipt-paper"><div class="barcode"><div class="bar bar-thick"></div><div class="bar bar-thin"></div><div class="bar bar-thick"></div><div class="bar bar-thin"></div><div class="bar bar-thick"></div><div class="bar bar-thin"></div><div class="bar bar-thick"></div></div></div>' : ''}
+  ${styleKey === 'lime_checklist' ? '<div class="notepad"><div class="checkbox">Item one</div><div class="checkbox">Item two</div></div>' : ''}
+  ${styleKey === 'app_list' ? '<div class="search-bar"><span>Search...</span><div class="search-btn"></div></div><div class="list-item"><div class="list-dot"></div><span class="list-text">Service item</span></div>' : ''}
+  ${styleKey === 'paper_image' ? '<div class="dashed-arrow"><svg viewBox="0 0 80 80"><path d="M 10 10 Q 50 20, 40 50 Q 30 70, 60 70 L 70 60 M 60 70 L 55 55"/></svg></div>' : ''}
 
   <div class="content">
     <div class="emoji">${info.emoji}</div>

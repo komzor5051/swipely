@@ -130,14 +130,8 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
   let templatePath;
 
   switch (stylePreset) {
-    case 'minimal_pop':
-      templatePath = path.join(TEMPLATES_DIR, 'minimal_pop.html');
-      break;
     case 'notebook':
       templatePath = path.join(TEMPLATES_DIR, 'notebook.html');
-      break;
-    case 'darkest':
-      templatePath = path.join(TEMPLATES_DIR, 'darkest.html');
       break;
     case 'aurora':
       templatePath = path.join(TEMPLATES_DIR, 'aurora.html');
@@ -147,12 +141,6 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
       break;
     case 'editorial':
       templatePath = path.join(TEMPLATES_DIR, 'editorial.html');
-      break;
-    case 'zen':
-      templatePath = path.join(TEMPLATES_DIR, 'zen.html');
-      break;
-    case 'memphis':
-      templatePath = path.join(TEMPLATES_DIR, 'memphis.html');
       break;
     case 'luxe':
       templatePath = path.join(TEMPLATES_DIR, 'luxe.html');
@@ -188,7 +176,7 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
       templatePath = path.join(TEMPLATES_DIR, 'paper_image.html');
       break;
     default:
-      templatePath = path.join(TEMPLATES_DIR, 'minimal_pop.html');
+      templatePath = path.join(TEMPLATES_DIR, 'notebook.html');
   }
 
   // Если шаблон не существует, создаём базовый HTML
@@ -236,14 +224,10 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
 function injectUsernameOverlay(html, username, stylePreset) {
   // Определяем цвета в зависимости от стиля
   const styleColors = {
-    minimal_pop: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.7)' },
     notebook: { text: '#1A1A1A', bg: 'rgba(254,249,231,0.8)' },
-    darkest: { text: '#00D4FF', bg: 'rgba(0,0,0,0.5)' },
     aurora: { text: '#FFFFFF', bg: 'rgba(0,0,0,0.4)' },
     terminal: { text: '#00FF00', bg: 'rgba(13,17,23,0.8)' },
     editorial: { text: '#1A1A1A', bg: 'rgba(245,245,240,0.8)' },
-    zen: { text: '#2D2D2D', bg: 'rgba(248,246,240,0.8)' },
-    memphis: { text: '#2D2D2D', bg: 'rgba(255,230,109,0.8)' },
     luxe: { text: '#D4AF37', bg: 'rgba(26,26,26,0.8)' },
     backspace: { text: '#2D2A26', bg: 'rgba(240,239,237,0.9)' },
     star_highlight: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.85)' },

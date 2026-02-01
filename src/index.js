@@ -1996,14 +1996,10 @@ ${recentText}`;
       await bot.sendMessage(chatId, 'Выбери стиль для просмотра примера:', {
         reply_markup: {
           inline_keyboard: [
-            [{ text: '✨ Minimal Pop', callback_data: 'view_style_minimal_pop' }],
             [{ text: '📓 Notebook Sketch', callback_data: 'view_style_notebook' }],
-            [{ text: '🌚 Darkest Hour', callback_data: 'view_style_darkest' }],
             [{ text: '🌌 Aurora', callback_data: 'view_style_aurora' }],
             [{ text: '💻 Terminal', callback_data: 'view_style_terminal' }],
             [{ text: '📰 Editorial', callback_data: 'view_style_editorial' }],
-            [{ text: '🍃 Zen', callback_data: 'view_style_zen' }],
-            [{ text: '🎨 Memphis', callback_data: 'view_style_memphis' }],
             [{ text: '💎 Luxe', callback_data: 'view_style_luxe' }],
             [{ text: '🔲 Backspace', callback_data: 'view_style_backspace' }],
             [{ text: '⭐ Star Highlight', callback_data: 'view_style_star_highlight' }],
@@ -2148,20 +2144,12 @@ ${recentText}`;
           reply_markup: {
             inline_keyboard: [
               [
-                { text: '✨ Minimal Pop', callback_data: 'style_minimal_pop' },
-                { text: '📓 Notebook', callback_data: 'style_notebook' }
-              ],
-              [
-                { text: '🌚 Darkest', callback_data: 'style_darkest' },
+                { text: '📓 Notebook', callback_data: 'style_notebook' },
                 { text: '🌌 Aurora', callback_data: 'style_aurora' }
               ],
               [
                 { text: '💻 Terminal', callback_data: 'style_terminal' },
                 { text: '📰 Editorial', callback_data: 'style_editorial' }
-              ],
-              [
-                { text: '🍃 Zen', callback_data: 'style_zen' },
-                { text: '🎨 Memphis', callback_data: 'style_memphis' }
               ],
               [
                 { text: '💎 Luxe', callback_data: 'style_luxe' },
@@ -2310,14 +2298,10 @@ ${recentText}`;
     if (data.startsWith('style_')) {
       const styleKey = data.replace('style_', '');
       const styleNames = {
-        'minimal_pop': 'Minimal Pop',
         'notebook': 'Notebook Sketch',
-        'darkest': 'Darkest Hour',
         'aurora': 'Aurora',
         'terminal': 'Terminal',
         'editorial': 'Editorial',
-        'zen': 'Zen',
-        'memphis': 'Memphis',
         'luxe': 'Luxe',
         'backspace': 'Backspace',
         'star_highlight': 'Star Highlight',
