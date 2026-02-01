@@ -148,6 +148,12 @@ export default function SlideCanvas({
 
       // Setup draggable element
       const setupDraggable = (el: HTMLElement, elementType: ElementType) => {
+        // Move element to body level for proper absolute positioning
+        const body = iframeDoc.body;
+        if (el.parentElement !== body) {
+          body.appendChild(el);
+        }
+
         el.setAttribute('contenteditable', 'true');
         el.style.outline = 'none';
         el.style.cursor = 'move';
@@ -155,14 +161,15 @@ export default function SlideCanvas({
         el.style.position = 'absolute';
         el.style.width = '90%';
         el.style.boxSizing = 'border-box';
+        el.style.zIndex = '100';
 
         // Apply saved position or set default
         const savedPosition = elementType === 'title' ? slide.titlePosition : slide.contentPosition;
         if (savedPosition) {
           applyPosition(el, savedPosition);
         } else {
-          // Default positions
-          const defaultY = elementType === 'title' ? 35 : 60;
+          // Default positions - title higher, content lower
+          const defaultY = elementType === 'title' ? 25 : 55;
           el.style.left = '50%';
           el.style.top = `${defaultY}%`;
           el.style.transform = 'translate(-50%, -50%)';
