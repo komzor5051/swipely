@@ -441,8 +441,19 @@ function SlideCard({
       const iframeDoc = iframe.contentDocument;
       if (!iframeDoc) return;
 
-      const headlineEl = iframeDoc.querySelector('.headline') as HTMLElement;
-      const contentEl = iframeDoc.querySelector('.content') as HTMLElement;
+      // Find elements by multiple possible selectors (different templates use different classes)
+      const headlineEl = (
+        iframeDoc.querySelector('.headline') ||
+        iframeDoc.querySelector('.quote-text') ||
+        iframeDoc.querySelector('h1')
+      ) as HTMLElement;
+
+      const contentEl = (
+        iframeDoc.querySelector('.content') ||
+        iframeDoc.querySelector('.quote-author') ||
+        iframeDoc.querySelector('.highlight-box') ||
+        iframeDoc.querySelector('p:not(.quote-text)')
+      ) as HTMLElement;
 
       const setupElement = (el: HTMLElement, elementType: ElementType) => {
         if (!el) return;
@@ -532,19 +543,23 @@ function SlideCard({
 
       const style = iframeDoc.createElement('style');
       style.textContent = `
-        .headline, .content {
+        .headline, .content, .quote-text, .quote-author, .highlight-box, h1, p {
           transition: outline 0.15s ease;
         }
-        .headline:hover, .content:hover {
+        .editable-element:hover {
           outline: 2px dashed rgba(10, 132, 255, 0.5) !important;
           outline-offset: 8px;
         }
-        .headline.selected, .content.selected {
+        .editable-element.selected {
           outline: 2px solid #0A84FF !important;
           outline-offset: 8px;
         }
       `;
       iframeDoc.head.appendChild(style);
+
+      // Add editable-element class to found elements
+      if (headlineEl) headlineEl.classList.add('editable-element');
+      if (contentEl) contentEl.classList.add('editable-element');
 
       if (isActive) {
         if (selectedElement === 'title' && headlineEl) {
