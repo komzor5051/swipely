@@ -1978,17 +1978,28 @@ ${recentText}`;
 
     // ==================== VIEW STYLES ====================
     if (data === 'view_styles') {
-      // Отправляем превью стилей альбомом
+      // Отправляем превью стилей альбомами (макс 10 фото в альбоме)
       try {
         const previews = await getPreviewPaths();
+        const ALBUM_LIMIT = 10;
 
-        const mediaGroup = previews.map((preview, idx) => ({
+        // Первый альбом (первые 10)
+        const firstBatch = previews.slice(0, ALBUM_LIMIT).map((preview, idx) => ({
           type: 'photo',
           media: preview.path,
-          caption: idx === 0 ? '🎨 Доступные стили карусели' : undefined
+          caption: idx === 0 ? '🎨 Доступные стили (1/2)' : undefined
         }));
+        await bot.sendMediaGroup(chatId, firstBatch);
 
-        await bot.sendMediaGroup(chatId, mediaGroup);
+        // Второй альбом (остальные)
+        if (previews.length > ALBUM_LIMIT) {
+          const secondBatch = previews.slice(ALBUM_LIMIT).map((preview, idx) => ({
+            type: 'photo',
+            media: preview.path,
+            caption: idx === 0 ? '🎨 Доступные стили (2/2)' : undefined
+          }));
+          await bot.sendMediaGroup(chatId, secondBatch);
+        }
       } catch (err) {
         console.error('⚠️ Не удалось отправить превью стилей:', err.message);
       }
@@ -2121,17 +2132,28 @@ ${recentText}`;
         // Игнорируем ошибку если сообщение уже удалено
       }
 
-      // Отправляем превью стилей альбомом
+      // Отправляем превью стилей альбомами (макс 10 фото в альбоме)
       try {
         const previews = await getPreviewPaths();
+        const ALBUM_LIMIT = 10;
 
-        const mediaGroup = previews.map((preview, idx) => ({
+        // Первый альбом (первые 10)
+        const firstBatch = previews.slice(0, ALBUM_LIMIT).map((preview, idx) => ({
           type: 'photo',
           media: preview.path,
-          caption: idx === 0 ? '👆 Превью всех стилей' : undefined
+          caption: idx === 0 ? '👆 Превью стилей (1/2)' : undefined
         }));
+        await bot.sendMediaGroup(chatId, firstBatch);
 
-        await bot.sendMediaGroup(chatId, mediaGroup);
+        // Второй альбом (остальные)
+        if (previews.length > ALBUM_LIMIT) {
+          const secondBatch = previews.slice(ALBUM_LIMIT).map((preview, idx) => ({
+            type: 'photo',
+            media: preview.path,
+            caption: idx === 0 ? '👆 Превью стилей (2/2)' : undefined
+          }));
+          await bot.sendMediaGroup(chatId, secondBatch);
+        }
       } catch (err) {
         console.error('⚠️ Не удалось отправить превью стилей:', err.message);
       }
