@@ -29,6 +29,18 @@ function App() {
     loadSession(token);
   }, [token]);
 
+  // Preload all images when session loads
+  useEffect(() => {
+    if (!session?.images) return;
+
+    session.images.forEach((imageUrl) => {
+      if (imageUrl) {
+        const img = new Image();
+        img.src = imageUrl;
+      }
+    });
+  }, [session?.images]);
+
   async function loadSession(token: string) {
     setLoading(true);
     const data = await getSession(token);
