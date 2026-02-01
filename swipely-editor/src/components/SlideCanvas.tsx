@@ -226,8 +226,8 @@ export default function SlideCanvas({
         const deltaX = ((e.clientX - state.startX) / width) * 100;
         const deltaY = ((e.clientY - state.startY) / height) * 100;
 
-        const newX = Math.max(10, Math.min(90, state.initialLeft + deltaX));
-        const newY = Math.max(5, Math.min(95, state.initialTop + deltaY));
+        const newX = Math.max(0, Math.min(100, state.initialLeft + deltaX));
+        const newY = Math.max(0, Math.min(100, state.initialTop + deltaY));
 
         state.element.style.left = `${newX}%`;
         state.element.style.top = `${newY}%`;
