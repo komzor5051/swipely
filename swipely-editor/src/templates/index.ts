@@ -2,179 +2,6 @@
 // Imported from swipely-bot/src/templates/
 
 export const templates: Record<string, string> = {
-  minimal_pop: `<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --white: #FAFAFA;
-      --black: #0A0A0A;
-      --gray-light: #F0F0F0;
-      --electric-pink: #FF2D6A;
-      --electric-orange: #FF6B35;
-      --accent-gradient: linear-gradient(135deg, var(--electric-pink) 0%, var(--electric-orange) 100%);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      width: {{WIDTH}}px;
-      height: {{HEIGHT}}px;
-      background: var(--white);
-      font-family: 'Manrope', sans-serif;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-image: radial-gradient(circle, rgba(10,10,10,0.04) 1.5px, transparent 1.5px);
-      background-size: 32px 32px;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .diagonal-slash {
-      position: absolute;
-      width: 1400px;
-      height: 220px;
-      background: var(--accent-gradient);
-      transform: rotate(-12deg);
-      top: 42%;
-      left: -200px;
-      z-index: 1;
-      box-shadow: 0 30px 80px rgba(255, 45, 106, 0.25), 0 15px 40px rgba(255, 107, 53, 0.2);
-    }
-    .frame {
-      position: absolute;
-      top: 50px; left: 50px; right: 50px; bottom: 50px;
-      border: 10px solid var(--black);
-      z-index: 0;
-      pointer-events: none;
-    }
-    .slide-counter {
-      position: absolute;
-      top: 85px;
-      right: 90px;
-      font-family: 'Unbounded', sans-serif;
-      z-index: 10;
-      text-align: right;
-    }
-    .slide-counter .current {
-      font-size: 120px;
-      font-weight: 900;
-      color: var(--black);
-      letter-spacing: -6px;
-      line-height: 0.85;
-      display: block;
-    }
-    .slide-counter .total {
-      font-size: 32px;
-      font-weight: 600;
-      color: var(--black);
-      opacity: 0.25;
-      margin-top: 5px;
-    }
-    .content-wrapper {
-      position: relative;
-      z-index: 5;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 120px 90px;
-      padding-right: 220px;
-    }
-    .headline {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 82px;
-      font-weight: 900;
-      line-height: 0.95;
-      color: var(--black);
-      letter-spacing: -3px;
-      margin-bottom: 50px;
-      text-transform: uppercase;
-      position: relative;
-      max-width: 800px;
-    }
-    .headline::before {
-      content: '\\2197';
-      position: absolute;
-      left: -65px;
-      top: 0;
-      font-size: 50px;
-      color: var(--electric-pink);
-      font-weight: 400;
-      font-family: sans-serif;
-    }
-    .content {
-      font-family: 'Manrope', sans-serif;
-      font-size: 34px;
-      font-weight: 500;
-      line-height: 1.55;
-      color: var(--black);
-      max-width: 780px;
-      position: relative;
-    }
-    .corner-mark {
-      position: absolute;
-      bottom: 90px;
-      left: 90px;
-      z-index: 10;
-    }
-    .corner-mark-line {
-      width: 100px;
-      height: 5px;
-      background: var(--black);
-    }
-    .accent-dot {
-      position: absolute;
-      bottom: 100px;
-      right: 100px;
-      width: 32px;
-      height: 32px;
-      background: var(--accent-gradient);
-      border-radius: 50%;
-      z-index: 10;
-      box-shadow: 0 8px 25px rgba(255, 45, 106, 0.45);
-    }
-    .watermark-arrow {
-      position: absolute;
-      top: 50%;
-      right: 80px;
-      transform: translateY(-50%);
-      font-size: 300px;
-      color: var(--black);
-      opacity: 0.03;
-      z-index: 0;
-      font-weight: 900;
-      line-height: 1;
-      pointer-events: none;
-    }
-  </style>
-</head>
-<body>
-  <div class="frame"></div>
-  <div class="diagonal-slash"></div>
-  <div class="slide-counter">
-    <span class="current">{{SLIDE_NUMBER}}</span>
-    <span class="total">/{{TOTAL_SLIDES}}</span>
-  </div>
-  <div class="content-wrapper">
-    <h1 class="headline">{{TITLE}}</h1>
-    <p class="content">{{CONTENT}}</p>
-  </div>
-  <div class="corner-mark">
-    <div class="corner-mark-line"></div>
-  </div>
-  <div class="accent-dot"></div>
-  <div class="watermark-arrow">\u2192</div>
-</body>
-</html>`,
-
   notebook: `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -315,140 +142,6 @@ export const templates: Record<string, string> = {
   <div class="coffee-stain"></div>
   <div class="paper-fold"></div>
   <div class="tape"></div>
-</body>
-</html>`,
-
-  darkest: `<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --void: #050510;
-      --deep: #0A0A1F;
-      --surface: #12122A;
-      --cyan: #00FFE5;
-      --magenta: #FF00AA;
-      --white: #FFFFFF;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      width: {{WIDTH}}px;
-      height: {{HEIGHT}}px;
-      background: linear-gradient(170deg, var(--void) 0%, var(--deep) 60%, var(--surface) 100%);
-      font-family: 'Space Grotesk', sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 100px 85px;
-      position: relative;
-      overflow: hidden;
-    }
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-image: linear-gradient(rgba(0,255,229,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,229,0.03) 1px, transparent 1px);
-      background-size: 80px 80px;
-      opacity: 0.6;
-      pointer-events: none;
-      z-index: 0;
-    }
-    body::after {
-      content: '';
-      position: absolute;
-      width: 900px;
-      height: 900px;
-      background: radial-gradient(circle, rgba(0,255,229,0.1) 0%, rgba(255,0,170,0.05) 40%, transparent 70%);
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 0;
-      pointer-events: none;
-    }
-    .slide-counter {
-      position: absolute;
-      top: 60px;
-      right: 85px;
-      font-family: 'Unbounded', sans-serif;
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--cyan);
-      letter-spacing: 6px;
-      z-index: 10;
-      text-shadow: 0 0 20px rgba(0,255,229,0.7), 0 0 40px rgba(0,255,229,0.4);
-    }
-    .content-wrapper {
-      position: relative;
-      z-index: 5;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .headline {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 92px;
-      font-weight: 900;
-      line-height: 1.0;
-      color: var(--white);
-      margin-bottom: 55px;
-      letter-spacing: -2px;
-      text-transform: uppercase;
-      max-width: 900px;
-      text-shadow: 0 0 40px rgba(0,255,229,0.4), 0 0 80px rgba(0,255,229,0.2);
-    }
-    .headline::after {
-      content: '';
-      position: absolute;
-      bottom: -20px;
-      left: 0;
-      width: 220px;
-      height: 5px;
-      background: linear-gradient(90deg, var(--cyan) 0%, transparent 100%);
-      box-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan);
-    }
-    .content {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 34px;
-      font-weight: 400;
-      line-height: 1.65;
-      color: var(--white);
-      position: relative;
-      z-index: 2;
-      max-width: 880px;
-      opacity: 0.92;
-    }
-    .corner { position: absolute; width: 100px; height: 100px; z-index: 1; }
-    .corner-tl { top: 70px; left: 70px; border-top: 4px solid var(--cyan); border-left: 4px solid var(--cyan); opacity: 0.5; }
-    .corner-br { bottom: 70px; right: 70px; border-bottom: 4px solid var(--magenta); border-right: 4px solid var(--magenta); opacity: 0.5; }
-    .particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; opacity: 0.8; }
-    .p1 { top: 220px; left: 140px; background: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
-    .p2 { top: 500px; right: 180px; background: var(--magenta); box-shadow: 0 0 15px var(--magenta); }
-    .scanlines {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0px, transparent 1px, transparent 3px, rgba(0,0,0,0.12) 4px);
-      pointer-events: none;
-      z-index: 8;
-      opacity: 0.4;
-    }
-  </style>
-</head>
-<body>
-  <div class="scanlines"></div>
-  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
-  <div class="content-wrapper">
-    <h1 class="headline">{{TITLE}}</h1>
-    <p class="content">{{CONTENT}}</p>
-  </div>
-  <div class="corner corner-tl"></div>
-  <div class="corner corner-br"></div>
-  <div class="particle p1"></div>
-  <div class="particle p2"></div>
 </body>
 </html>`,
 
@@ -818,248 +511,11 @@ export const templates: Record<string, string> = {
     <p class="content">{{CONTENT}}</p>
   </div>
   <div class="big-number">{{SLIDE_NUMBER}}</div>
-  <div class="slide-indicator">{{SLIDE_NUMBER}} \u2014 {{TOTAL_SLIDES}}</div>
+  <div class="slide-indicator">{{SLIDE_NUMBER}} — {{TOTAL_SLIDES}}</div>
   <div class="sidebar"><p class="sidebar-text">Swipely Editorial</p></div>
   <div class="dark-number">{{SLIDE_NUMBER}}</div>
   <div class="dot-pattern"></div>
   <div class="brand-mark">Swipely</div>
-</body>
-</html>`,
-
-  zen: `<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;500;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --paper: #FAF9F5;
-      --ink: #1C1C1C;
-      --stone: #8B8680;
-      --bamboo: #6B7F5E;
-      --sand: #D4CFC4;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      width: {{WIDTH}}px;
-      height: {{HEIGHT}}px;
-      background: var(--paper);
-      font-family: 'Zen Kaku Gothic New', sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 120px 110px;
-      position: relative;
-      overflow: hidden;
-    }
-    .slide-counter {
-      position: absolute;
-      top: 75px;
-      right: 110px;
-      font-size: 20px;
-      color: var(--stone);
-      font-weight: 300;
-      letter-spacing: 8px;
-      z-index: 10;
-    }
-    .vertical-text {
-      position: absolute;
-      right: 100px;
-      top: 50%;
-      transform: translateY(-50%);
-      writing-mode: vertical-rl;
-      font-family: 'Noto Serif JP', serif;
-      font-size: 24px;
-      color: var(--sand);
-      letter-spacing: 16px;
-      z-index: 5;
-    }
-    .content-wrapper { position: relative; z-index: 5; max-width: 800px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    .headline {
-      font-family: 'Noto Serif JP', serif;
-      font-size: 82px;
-      font-weight: 500;
-      line-height: 1.25;
-      color: var(--ink);
-      margin-bottom: 60px;
-      letter-spacing: 3px;
-      max-width: 750px;
-    }
-    .content {
-      font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 34px;
-      font-weight: 300;
-      line-height: 1.85;
-      color: var(--ink);
-      max-width: 700px;
-      opacity: 0.85;
-    }
-    .enso {
-      position: absolute;
-      top: 160px;
-      left: 90px;
-      width: 150px;
-      height: 150px;
-      border: 4px solid var(--stone);
-      border-radius: 50%;
-      opacity: 0.12;
-      z-index: 1;
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 20% 100%, 0 80%);
-    }
-    .horizon-line {
-      position: absolute;
-      bottom: 200px;
-      left: 110px;
-      width: 250px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--stone), transparent);
-      opacity: 0.25;
-      z-index: 5;
-    }
-    .seal {
-      position: absolute;
-      bottom: 75px;
-      left: 110px;
-      width: 60px;
-      height: 60px;
-      border: 3px solid var(--bamboo);
-      opacity: 0.3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Noto Serif JP', serif;
-      font-size: 26px;
-      color: var(--bamboo);
-      z-index: 5;
-    }
-  </style>
-</head>
-<body>
-  <div class="slide-counter">{{SLIDE_NUMBER}} \u00B7 {{TOTAL_SLIDES}}</div>
-  <div class="vertical-text">\u548C\u306E\u5FC3</div>
-  <div class="content-wrapper">
-    <h1 class="headline">{{TITLE}}</h1>
-    <p class="content">{{CONTENT}}</p>
-  </div>
-  <div class="enso"></div>
-  <div class="horizon-line"></div>
-  <div class="seal">\u7985</div>
-</body>
-</html>`,
-
-  memphis: `<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #FEF8ED;
-      --pink: #FF6B9D;
-      --yellow: #FFE156;
-      --blue: #4ECDC4;
-      --purple: #9B5DE5;
-      --orange: #FF9F43;
-      --black: #1A1A2E;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      width: {{WIDTH}}px;
-      height: {{HEIGHT}}px;
-      background: var(--bg);
-      font-family: 'DM Sans', sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 100px 90px;
-      position: relative;
-      overflow: hidden;
-    }
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-image: radial-gradient(var(--black) 2px, transparent 2px);
-      background-size: 35px 35px;
-      opacity: 0.05;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .slide-counter {
-      position: absolute;
-      top: 65px;
-      right: 85px;
-      font-family: 'Bowlby One', cursive;
-      font-size: 64px;
-      color: var(--purple);
-      z-index: 10;
-      text-shadow: 5px 5px 0 var(--yellow);
-    }
-    .content-wrapper { position: relative; z-index: 5; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    .headline {
-      font-family: 'Bowlby One', cursive;
-      font-size: 88px;
-      line-height: 1.05;
-      color: var(--black);
-      margin-bottom: 50px;
-      text-transform: uppercase;
-      position: relative;
-      max-width: 850px;
-    }
-    .headline::after {
-      content: '';
-      position: absolute;
-      bottom: -18px;
-      left: 0;
-      width: 280px;
-      height: 16px;
-      background: url("data:image/svg+xml,%3Csvg width='40' height='16' viewBox='0 0 40 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,8 Q10,0 20,8 T40,8' stroke='%23FF6B9D' stroke-width='5' fill='none'/%3E%3C/svg%3E") repeat-x;
-    }
-    .content {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 36px;
-      font-weight: 500;
-      line-height: 1.6;
-      color: var(--black);
-      max-width: 820px;
-      position: relative;
-    }
-    .shape { position: absolute; z-index: 1; }
-    .circle-big { width: 320px; height: 320px; background: var(--yellow); border-radius: 50%; top: -80px; right: -80px; opacity: 0.95; }
-    .rect-stripe {
-      width: 140px; height: 200px;
-      background: repeating-linear-gradient(45deg, var(--blue), var(--blue) 10px, var(--bg) 10px, var(--bg) 20px);
-      bottom: 130px; left: 50px; transform: rotate(-12deg);
-    }
-    .circle-small { width: 100px; height: 100px; background: var(--pink); border-radius: 50%; bottom: 90px; right: 180px; }
-    .triangle {
-      width: 0; height: 0;
-      border-left: 75px solid transparent;
-      border-right: 75px solid transparent;
-      border-bottom: 120px solid var(--purple);
-      top: 280px; right: 90px; transform: rotate(18deg); opacity: 0.85;
-    }
-    .semi-circle {
-      width: 120px; height: 60px;
-      background: var(--blue);
-      border-radius: 120px 120px 0 0;
-      bottom: 60px; left: 240px; transform: rotate(-25deg);
-    }
-  </style>
-</head>
-<body>
-  <div class="slide-counter">{{SLIDE_NUMBER}}</div>
-  <div class="content-wrapper">
-    <h1 class="headline">{{TITLE}}</h1>
-    <p class="content">{{CONTENT}}</p>
-  </div>
-  <div class="shape circle-big"></div>
-  <div class="shape rect-stripe"></div>
-  <div class="shape circle-small"></div>
-  <div class="shape triangle"></div>
-  <div class="shape semi-circle"></div>
 </body>
 </html>`,
 
@@ -1193,7 +649,7 @@ export const templates: Record<string, string> = {
   <div class="corner-ornament corner-tr"><svg viewBox="0 0 70 70"><path d="M0,0 L35,0 L35,6 L6,6 L6,35 L0,35 Z" fill="#C9A96E" opacity="0.65"/><circle cx="18" cy="18" r="4" fill="#C9A96E" opacity="0.45"/></svg></div>
   <div class="corner-ornament corner-bl"><svg viewBox="0 0 70 70"><path d="M0,0 L35,0 L35,6 L6,6 L6,35 L0,35 Z" fill="#C9A96E" opacity="0.65"/><circle cx="18" cy="18" r="4" fill="#C9A96E" opacity="0.45"/></svg></div>
   <div class="corner-ornament corner-br"><svg viewBox="0 0 70 70"><path d="M0,0 L35,0 L35,6 L6,6 L6,35 L0,35 Z" fill="#C9A96E" opacity="0.65"/><circle cx="18" cy="18" r="4" fill="#C9A96E" opacity="0.45"/></svg></div>
-  <div class="slide-counter">{{SLIDE_NUMBER}} \u2014 {{TOTAL_SLIDES}}</div>
+  <div class="slide-counter">{{SLIDE_NUMBER}} — {{TOTAL_SLIDES}}</div>
   <div class="brand-vertical">Swipely Luxe</div>
   <div class="content-wrapper">
     <h1 class="headline">{{TITLE}}</h1>
@@ -1460,6 +916,1362 @@ export const templates: Record<string, string> = {
   <div class="grid-pattern"></div>
 </body>
 </html>`,
+
+  star_highlight: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --ink: #0A0A0A;
+      --highlight: #FFF59D;
+      --gray: #666666;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Playfair Display', Georgia, serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px;
+    }
+    .category-tag {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .star-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 40px;
+    }
+    .star-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: var(--ink);
+    }
+    .content-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 900px;
+    }
+    .headline {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 78px;
+      font-weight: 500;
+      line-height: 1.15;
+      color: var(--ink);
+      letter-spacing: -1px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .highlight-box {
+      display: inline;
+      background: var(--highlight);
+      padding: 4px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+    .highlight-box::before { content: '[ '; }
+    .highlight-box::after { content: ' ]'; }
+    .accent {
+      background: var(--highlight);
+      padding: 2px 8px;
+      display: inline;
+    }
+    .content {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 36px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink);
+      text-align: center;
+      max-width: 800px;
+      margin-top: 20px;
+    }
+    .arrow-container {
+      position: absolute;
+      bottom: 180px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .arrow-line {
+      width: 120px;
+      height: 2px;
+      background: var(--ink);
+      position: relative;
+    }
+    .arrow-line::after {
+      content: '';
+      position: absolute;
+      right: -2px;
+      top: -6px;
+      width: 14px;
+      height: 14px;
+      border-right: 2px solid var(--ink);
+      border-top: 2px solid var(--ink);
+      transform: rotate(45deg);
+    }
+    .slide-counter {
+      position: absolute;
+      top: 60px;
+      right: 80px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="category-tag">[ {{TYPE}} ]</div>
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+  <div class="content-wrapper">
+    <div class="star-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,0 54,42 100,50 54,58 50,100 46,58 0,50 46,42" />
+      </svg>
+    </div>
+    <h1 class="headline">{{TITLE}}</h1>
+    <span class="highlight-box">{{CONTENT}}</span>
+  </div>
+  <div class="arrow-container">
+    <div class="arrow-line"></div>
+  </div>
+</body>
+</html>`,
+
+  purple_accent: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #E8E6F2;
+      --ink: #0A0A0A;
+      --purple: #9B8FD9;
+      --pink-dot: #E91E8C;
+      --white: #FFFFFF;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      position: absolute;
+      top: 60px;
+      left: 70px;
+      right: 70px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    .logo {
+      font-family: 'Inter', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -1px;
+    }
+    .logo::after { content: '.'; color: var(--ink); }
+    .arrow-right {
+      width: 50px;
+      height: 2px;
+      background: var(--ink);
+      position: relative;
+    }
+    .arrow-right::after {
+      content: '';
+      position: absolute;
+      right: -2px;
+      top: -7px;
+      width: 16px;
+      height: 16px;
+      border-right: 2px solid var(--ink);
+      border-top: 2px solid var(--ink);
+      transform: rotate(45deg);
+    }
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 160px 70px 200px;
+    }
+    .headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 92px;
+      font-weight: 800;
+      line-height: 1.0;
+      color: var(--ink);
+      letter-spacing: -4px;
+    }
+    .accent {
+      display: inline-block;
+      background: var(--purple);
+      color: var(--white);
+      padding: 12px 28px;
+      font-weight: 800;
+      transform: rotate(-3deg);
+      box-shadow: 6px 8px 0px rgba(0,0,0,0.15);
+      margin: 10px 0;
+      position: relative;
+      letter-spacing: -2px;
+    }
+    .pink-dot {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      background: var(--pink-dot);
+      border-radius: 50%;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--ink);
+      margin-top: 40px;
+      max-width: 700px;
+      opacity: 0.85;
+    }
+    .footer {
+      position: absolute;
+      bottom: 60px;
+      left: 70px;
+      right: 70px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--white);
+      color: var(--ink);
+      padding: 16px 28px;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .cta-button::before { content: '↗'; font-size: 16px; }
+    .slide-counter {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">K</div>
+    <div class="arrow-right"></div>
+  </div>
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}<span class="pink-dot"></span></h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+  <div class="footer">
+    <div class="cta-button">Swipe to learn</div>
+    <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+  </div>
+</body>
+</html>`,
+
+  quote_doodle: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F3EE;
+      --ink: #0A0A0A;
+      --gray: #666666;
+      --green: #A3E635;
+      --green-dark: #1A1A1A;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      position: absolute;
+      top: 50px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 10;
+    }
+    .author-info { display: flex; align-items: center; gap: 16px; }
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--green) 0%, #65A30D 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .author-text { display: flex; flex-direction: column; }
+    .author-name { font-size: 22px; font-weight: 700; color: var(--ink); }
+    .author-role { font-size: 16px; font-weight: 500; color: var(--gray); }
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 180px 70px 250px;
+    }
+    .quote-mark {
+      font-family: Georgia, serif;
+      font-size: 160px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 0.5;
+      margin-bottom: 20px;
+      margin-left: -15px;
+    }
+    .headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 82px;
+      font-weight: 900;
+      line-height: 1.05;
+      color: var(--ink);
+      letter-spacing: -3px;
+      max-width: 850px;
+    }
+    .dashed-arrow {
+      position: absolute;
+      right: 180px;
+      top: 55%;
+      width: 200px;
+      height: 200px;
+    }
+    .dashed-arrow svg { width: 100%; height: 100%; }
+    .dashed-arrow path {
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 3;
+      stroke-dasharray: 12, 8;
+      stroke-linecap: round;
+    }
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--gray);
+      margin-top: 40px;
+      max-width: 700px;
+    }
+    .accent { color: var(--ink); font-weight: 700; }
+    .cta-circle {
+      position: absolute;
+      bottom: 100px;
+      right: 100px;
+      width: 80px;
+      height: 80px;
+      background: var(--green-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cta-circle svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--green);
+      fill: none;
+      stroke-width: 2.5;
+    }
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 60px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--gray);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="author-info">
+      <div class="avatar">S</div>
+      <div class="author-text">
+        <span class="author-name">Swipely</span>
+        <span class="author-role">AI Carousel</span>
+      </div>
+    </div>
+  </div>
+  <div class="content-wrapper">
+    <div class="quote-mark">"</div>
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+  <div class="dashed-arrow">
+    <svg viewBox="0 0 200 200">
+      <path d="M 20 100 Q 100 20, 100 100 Q 100 160, 140 180 L 160 160 M 140 180 L 130 155"/>
+    </svg>
+  </div>
+  <div class="cta-circle">
+    <svg viewBox="0 0 24 24">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  </div>
+  <div class="footer">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+</body>
+</html>`,
+
+  speech_bubble: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8F8F8;
+      --ink: #1A1A1A;
+      --orange: #F26B3A;
+      --white: #FFFFFF;
+      --gray: #888888;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .header {
+      position: absolute;
+      top: 60px;
+      left: 70px;
+      z-index: 10;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 150px 70px;
+      position: relative;
+      z-index: 5;
+    }
+    .quote-container { display: flex; align-items: center; gap: 0; }
+    .speech-bubble {
+      width: 280px;
+      height: 280px;
+      background: var(--orange);
+      border-radius: 20px 20px 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -30px;
+      width: 60px;
+      height: 60px;
+      background: var(--orange);
+      border-radius: 0 0 60px 0;
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    }
+    .bubble-quotes {
+      font-family: Georgia, serif;
+      font-size: 180px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 0.7;
+      opacity: 0.95;
+    }
+    .quote-box {
+      background: var(--white);
+      padding: 45px 50px;
+      border-radius: 30px;
+      max-width: 520px;
+      margin-left: -40px;
+      box-shadow: 0 10px 60px rgba(0,0,0,0.08);
+      position: relative;
+      z-index: 2;
+    }
+    .quote-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+    .quote-author {
+      font-family: 'Inter', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--orange);
+    }
+    .accent { color: var(--orange); }
+    .footer {
+      position: absolute;
+      bottom: 60px;
+      left: 70px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+    }
+    .slide-counter {
+      position: absolute;
+      bottom: 65px;
+      right: 200px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <span class="logo-text">Swipely</span>
+    </div>
+  </div>
+  <div class="content-wrapper">
+    <div class="quote-container">
+      <div class="speech-bubble">
+        <span class="bubble-quotes">,,</span>
+      </div>
+      <div class="quote-box">
+        <p class="quote-text">{{TITLE}}</p>
+        <span class="quote-author">{{CONTENT}}</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+</body>
+</html>`,
+
+  grid_multi: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAFA;
+      --ink: #0A0A0A;
+      --pink: #F9A8D4;
+      --lime: #D4F542;
+      --blue: #60A5FA;
+      --gray: #888888;
+      --white: #FFFFFF;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+    .deco-lines {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      width: 180px;
+      height: 180px;
+      z-index: 1;
+    }
+    .deco-line {
+      position: absolute;
+      width: 200px;
+      height: 12px;
+      background: var(--lime);
+      border-radius: 6px;
+      transform-origin: right center;
+    }
+    .deco-line:nth-child(1) { top: 0; transform: rotate(-25deg); }
+    .deco-line:nth-child(2) { top: 25px; transform: rotate(-25deg); }
+    .deco-line:nth-child(3) { top: 50px; transform: rotate(-25deg); }
+    .deco-line:nth-child(4) { top: 75px; transform: rotate(-25deg); opacity: 0.5; }
+    .header {
+      position: absolute;
+      top: 60px;
+      left: 70px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+    }
+    .avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--lime) 100%);
+      border: 4px solid var(--white);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 200px 70px 250px;
+      position: relative;
+      z-index: 5;
+    }
+    .headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 88px;
+      font-weight: 800;
+      line-height: 1.05;
+      color: var(--ink);
+      letter-spacing: -3px;
+      max-width: 850px;
+    }
+    .accent {
+      display: inline-block;
+      background: var(--lime);
+      padding: 4px 16px;
+      transform: rotate(-2deg);
+      position: relative;
+    }
+    .accent::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 15%;
+      width: 70%;
+      height: 3px;
+      background: var(--blue);
+      border-radius: 2px;
+    }
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--gray);
+      margin-top: 50px;
+      max-width: 700px;
+    }
+    .footer {
+      position: absolute;
+      bottom: 60px;
+      left: 70px;
+      right: 70px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    .swipe-button {
+      display: inline-flex;
+      align-items: center;
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: 50px;
+      padding: 16px 32px;
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+    .footer-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+    .footer-handle { font-size: 18px; font-weight: 600; color: var(--ink); }
+  </style>
+</head>
+<body>
+  <div class="deco-lines">
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+  </div>
+  <div class="header">
+    <div class="avatar">S</div>
+  </div>
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+  <div class="footer">
+    <div class="swipe-button">SWIPE TO LEARN</div>
+    <div class="footer-right">
+      <span class="footer-handle">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</span>
+    </div>
+  </div>
+</body>
+</html>`,
+
+  receipt: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #E8E8E8;
+      --paper: #FFFFFF;
+      --ink: #1A1A1A;
+      --coral: #E8725C;
+      --gray: #888888;
+      --light-gray: #CCCCCC;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .receipt {
+      width: 680px;
+      background: var(--paper);
+      padding: 60px 50px 40px;
+      position: relative;
+      z-index: 5;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .receipt::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: 0;
+      width: 100%;
+      height: 30px;
+      background: linear-gradient(135deg, var(--paper) 25%, transparent 25%),
+                  linear-gradient(225deg, var(--paper) 25%, transparent 25%);
+      background-size: 20px 30px;
+    }
+    .receipt::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 0;
+      width: 100%;
+      height: 30px;
+      background: linear-gradient(315deg, var(--paper) 25%, transparent 25%),
+                  linear-gradient(45deg, var(--paper) 25%, transparent 25%);
+      background-size: 20px 30px;
+    }
+    .receipt-header { text-align: center; margin-bottom: 30px; }
+    .logo {
+      font-family: 'Inter', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: 2px;
+    }
+    .separator {
+      border: none;
+      border-top: 2px dashed var(--light-gray);
+      margin: 25px 0;
+    }
+    .headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--coral);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      margin: 30px 0;
+    }
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--ink);
+      text-align: center;
+      margin: 25px 0;
+    }
+    .accent { color: var(--coral); font-weight: 700; }
+    .barcode {
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      margin: 30px 0 15px;
+      height: 60px;
+    }
+    .bar { background: var(--ink); height: 100%; }
+    .bar-thin { width: 2px; }
+    .bar-medium { width: 4px; }
+    .bar-thick { width: 6px; }
+    .bar-space { width: 3px; background: transparent; }
+    .receipt-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--gray);
+      text-align: center;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt">
+    <div class="receipt-header">
+      <div class="logo">Swipely</div>
+    </div>
+    <hr class="separator">
+    <h1 class="headline">{{TITLE}}</h1>
+    <hr class="separator">
+    <p class="content">{{CONTENT}}</p>
+    <hr class="separator">
+    <div class="barcode">
+      <div class="bar bar-thick"></div>
+      <div class="bar bar-space"></div>
+      <div class="bar bar-thin"></div>
+      <div class="bar bar-space"></div>
+      <div class="bar bar-medium"></div>
+      <div class="bar bar-thin"></div>
+      <div class="bar bar-space"></div>
+      <div class="bar bar-thick"></div>
+      <div class="bar bar-space"></div>
+      <div class="bar bar-thin"></div>
+      <div class="bar bar-medium"></div>
+      <div class="bar bar-space"></div>
+      <div class="bar bar-thick"></div>
+    </div>
+    <p class="receipt-url">swipely.ai • {{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</p>
+  </div>
+</body>
+</html>`,
+
+  lime_checklist: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #D4F542;
+      --ink: #0A0A0A;
+      --paper: #F5F0E6;
+      --paper-line: #E0DBD0;
+      --white: #FFFFFF;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 60px;
+    }
+    .title-badge {
+      background: var(--ink);
+      color: var(--white);
+      padding: 20px 40px;
+      border-radius: 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      text-align: center;
+      display: inline-block;
+      margin: 80px auto 20px;
+      max-width: 90%;
+      line-height: 1.2;
+    }
+    .arrow-connector {
+      width: 3px;
+      height: 40px;
+      background: var(--ink);
+      margin: 0 auto;
+      position: relative;
+    }
+    .arrow-connector::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 14px solid var(--ink);
+    }
+    .notepad {
+      background: var(--paper);
+      border-radius: 20px;
+      padding: 50px 45px;
+      margin: 30px 40px;
+      flex: 1;
+      max-height: 750px;
+      position: relative;
+      box-shadow: 8px 8px 0 rgba(0,0,0,0.15), 0 10px 40px rgba(0,0,0,0.1);
+      border: 3px solid rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .notepad::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(transparent, transparent 54px, var(--paper-line) 54px, var(--paper-line) 56px);
+      pointer-events: none;
+    }
+    .checklist { list-style: none; position: relative; z-index: 1; }
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 18px 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .checkbox {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .checkbox svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--ink);
+      stroke-width: 3;
+      fill: none;
+    }
+    .accent { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 4px; }
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--white);
+      color: var(--ink);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .cta-button::before { content: '↗'; font-size: 14px; }
+    .slide-counter { font-size: 16px; font-weight: 600; color: var(--ink); opacity: 0.6; }
+  </style>
+</head>
+<body>
+  <div class="title-badge">{{TITLE}}</div>
+  <div class="arrow-connector"></div>
+  <div class="notepad">
+    <ul class="checklist">
+      <li class="checklist-item">
+        <div class="checkbox">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <span>{{CONTENT}}</span>
+      </li>
+    </ul>
+  </div>
+  <div class="footer">
+    <div class="cta-button">Swipe for more</div>
+    <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+  </div>
+</body>
+</html>`,
+
+  app_list: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #E8E6F2;
+      --ink: #0A0A0A;
+      --blue: #6366F1;
+      --white: #FFFFFF;
+      --gray: #888888;
+      --border: rgba(0,0,0,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 50px 60px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 50px;
+    }
+    .logo { font-size: 26px; font-weight: 700; color: var(--ink); }
+    .menu-icon { display: flex; flex-direction: column; gap: 6px; }
+    .menu-line { width: 32px; height: 3px; background: var(--ink); border-radius: 2px; }
+    .menu-line:nth-child(2) { width: 24px; }
+    .main-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 110px;
+      font-weight: 900;
+      line-height: 0.95;
+      color: var(--ink);
+      letter-spacing: -5px;
+      margin-bottom: 20px;
+    }
+    .arrow-indicator { font-size: 36px; color: var(--ink); margin-bottom: 30px; opacity: 0.6; }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: var(--ink);
+      border-radius: 50px;
+      padding: 8px 10px 8px 30px;
+      margin-bottom: 50px;
+      max-width: 550px;
+    }
+    .search-text {
+      flex: 1;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--white);
+      opacity: 0.8;
+    }
+    .search-button {
+      width: 52px;
+      height: 52px;
+      background: var(--blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-button svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--white);
+      fill: none;
+      stroke-width: 2.5;
+    }
+    .list-container { flex: 1; }
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .item-left { display: flex; align-items: center; gap: 20px; }
+    .item-dot { width: 16px; height: 16px; background: var(--blue); border-radius: 50%; }
+    .item-text { font-size: 30px; font-weight: 600; color: var(--ink); }
+    .item-arrow { font-size: 28px; color: var(--ink); opacity: 0.4; }
+    .accent { color: var(--blue); }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 30px;
+    }
+    .slide-counter { font-size: 16px; font-weight: 500; color: var(--gray); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Swipely</div>
+    <div class="menu-icon">
+      <div class="menu-line"></div>
+      <div class="menu-line"></div>
+    </div>
+  </div>
+  <h1 class="main-title">{{TITLE}}</h1>
+  <div class="arrow-indicator">↙</div>
+  <div class="search-bar">
+    <span class="search-text">What can we do for you?</span>
+    <div class="search-button">
+      <svg viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </div>
+  </div>
+  <div class="list-container">
+    <div class="list-item">
+      <div class="item-left">
+        <div class="item-dot"></div>
+        <span class="item-text">{{CONTENT}}</span>
+      </div>
+      <span class="item-arrow">›</span>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+  </div>
+</body>
+</html>`,
+
+  paper_image: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width={{WIDTH}}, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F3EE;
+      --ink: #1A1A1A;
+      --orange: #E8725C;
+      --gray: #888888;
+      --white: #FFFFFF;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: {{WIDTH}}px;
+      height: {{HEIGHT}}px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background:
+        linear-gradient(135deg, transparent 40%, rgba(0,0,0,0.03) 45%, transparent 50%),
+        linear-gradient(225deg, transparent 40%, rgba(255,255,255,0.5) 45%, transparent 50%),
+        radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.3) 0%, transparent 40%),
+        radial-gradient(ellipse at 70% 80%, rgba(0,0,0,0.04) 0%, transparent 40%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .header {
+      position: absolute;
+      top: 50px;
+      left: 0; right: 0;
+      text-align: center;
+      z-index: 10;
+    }
+    .logo { font-size: 28px; font-weight: 700; color: var(--ink); letter-spacing: -0.5px; }
+    .logo-dot { color: var(--orange); }
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 160px 70px 200px;
+      position: relative;
+      z-index: 5;
+    }
+    .headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 86px;
+      font-weight: 900;
+      line-height: 1.05;
+      color: var(--ink);
+      letter-spacing: -3px;
+      max-width: 900px;
+      text-align: center;
+      margin: 0 auto;
+    }
+    .accent { color: var(--orange); }
+    .dashed-arrow {
+      position: absolute;
+      right: 200px;
+      top: 45%;
+      width: 150px;
+      height: 180px;
+    }
+    .dashed-arrow svg { width: 100%; height: 100%; }
+    .dashed-arrow path {
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 3;
+      stroke-dasharray: 10, 8;
+      stroke-linecap: round;
+    }
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--gray);
+      text-align: center;
+      margin-top: 60px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      right: 70px;
+      z-index: 10;
+    }
+    .slide-counter { font-size: 16px; font-weight: 500; color: var(--gray); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="logo">swipely<span class="logo-dot">.</span></span>
+  </div>
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+  <div class="dashed-arrow">
+    <svg viewBox="0 0 150 180">
+      <path d="M 20 10 Q 80 40, 60 90 Q 40 140, 90 160 L 110 145 M 90 160 L 75 140"/>
+    </svg>
+  </div>
+  <div class="footer">
+    <span class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</span>
+  </div>
+</body>
+</html>`,
 };
 
 export function getTemplate(name: string): string | null {
@@ -1486,7 +2298,8 @@ export function renderTemplate(
     .replace(/\{\{SLIDE_NUMBER\}\}/g, String(data.slideNumber))
     .replace(/\{\{TOTAL_SLIDES\}\}/g, String(data.totalSlides))
     .replace(/\{\{WIDTH\}\}/g, String(data.width))
-    .replace(/\{\{HEIGHT\}\}/g, String(data.height));
+    .replace(/\{\{HEIGHT\}\}/g, String(data.height))
+    .replace(/\{\{TYPE\}\}/g, 'INSIGHT');
 }
 
 export const templateList = Object.keys(templates);
