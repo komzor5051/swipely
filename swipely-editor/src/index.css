@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --color-coral: #FF6B6B;
-  --color-coral-dark: #EE5A6F;
-  --color-teal: #0D3B66;
-  --color-teal-light: #1A5F7A;
-  --color-butter: #FFD93D;
-  --color-charcoal: #2D3142;
-  --color-warm-white: #FAF8F6;
-  --color-cream: #F4F1EA;
+  --color-primary: #0A84FF;
+  --color-primary-dark: #0066CC;
+  --color-primary-light: #3D9FFF;
+  --color-teal: #1E3A5F;
+  --color-teal-light: #4A6B8A;
+  --color-charcoal: #1A1A2E;
+  --color-warm-white: #F8FAFC;
+  --color-cream: #E8F4FC;
 }
 
 body {
@@ -32,18 +32,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-coral);
+  background: var(--color-primary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-coral-dark);
+  background: var(--color-primary-dark);
 }
 
 /* Button styles */
 .btn-primary {
-  @apply px-6 py-3 bg-gradient-to-r from-coral to-coral-dark text-white font-semibold rounded-xl;
-  @apply shadow-lg shadow-coral/30 hover:shadow-xl hover:shadow-coral/40;
+  @apply px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-white font-semibold rounded-xl;
+  @apply shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40;
   @apply transition-all duration-200 hover:scale-105;
 }
 

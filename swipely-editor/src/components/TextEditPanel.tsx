@@ -78,8 +78,8 @@ export default function TextEditPanel({
               onClick={() => onSelectElement('title')}
               className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedElement === 'title'
-                  ? 'bg-coral text-white'
-                  : 'bg-cream text-teal-light hover:bg-coral/20'
+                  ? 'bg-primary text-white'
+                  : 'bg-cream text-teal-light hover:bg-primary/20'
               }`}
             >
               Заголовок
@@ -88,8 +88,8 @@ export default function TextEditPanel({
               onClick={() => onSelectElement('content')}
               className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedElement === 'content'
-                  ? 'bg-coral text-white'
-                  : 'bg-cream text-teal-light hover:bg-coral/20'
+                  ? 'bg-primary text-white'
+                  : 'bg-cream text-teal-light hover:bg-primary/20'
               }`}
             >
               Контент
@@ -108,7 +108,7 @@ export default function TextEditPanel({
             max={120}
             value={fontSize}
             onChange={(e) => handleFontSizeChange(Number(e.target.value))}
-            className="w-full h-2 bg-cream rounded-lg appearance-none cursor-pointer accent-coral"
+            className="w-full h-2 bg-cream rounded-lg appearance-none cursor-pointer accent-primary"
           />
           <div className="flex justify-between text-xs text-teal-light/60 mt-1">
             <span>12</span>
@@ -141,7 +141,7 @@ export default function TextEditPanel({
                 key={c}
                 onClick={() => handleColorChange(c)}
                 className={`w-6 h-6 rounded border-2 transition-transform hover:scale-110 ${
-                  color === c ? 'border-coral ring-2 ring-coral/30' : 'border-cream'
+                  color === c ? 'border-primary ring-2 ring-primary/30' : 'border-cream'
                 }`}
                 style={{ backgroundColor: c }}
                 title={c}
@@ -160,8 +160,8 @@ export default function TextEditPanel({
                 onClick={() => handleAlignChange(align)}
                 className={`flex-1 px-3 py-2 rounded-lg text-lg transition-colors ${
                   textAlign === align
-                    ? 'bg-coral text-white'
-                    : 'bg-cream text-teal-light hover:bg-coral/20'
+                    ? 'bg-primary text-white'
+                    : 'bg-cream text-teal-light hover:bg-primary/20'
                 }`}
                 title={align === 'left' ? 'По левому краю' : align === 'center' ? 'По центру' : 'По правому краю'}
               >

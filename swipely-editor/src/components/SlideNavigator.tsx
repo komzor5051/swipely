@@ -117,7 +117,7 @@ function SlidePreview({
       className={`
         w-full rounded-xl overflow-hidden transition-all duration-200
         ${isActive
-          ? 'ring-2 ring-coral shadow-lg shadow-coral/20 scale-105'
+          ? 'ring-2 ring-primary shadow-lg shadow-primary/20 scale-105'
           : 'ring-1 ring-cream hover:ring-teal-light'
         }
       `}
@@ -146,7 +146,7 @@ function SlidePreview({
 
         {/* Active indicator */}
         {isActive && (
-          <div className="absolute top-1 left-1 w-2 h-2 bg-coral rounded-full" />
+          <div className="absolute top-1 left-1 w-2 h-2 bg-primary rounded-full" />
         )}
       </div>
     </button>

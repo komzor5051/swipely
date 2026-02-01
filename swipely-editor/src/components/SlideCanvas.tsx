@@ -266,11 +266,11 @@ export default function SlideCanvas({
           outline-offset: 8px;
         }
         .headline:focus, .content:focus {
-          outline: 2px solid #FF6B6B !important;
+          outline: 2px solid #0A84FF !important;
           outline-offset: 8px;
         }
         .headline.selected, .content.selected {
-          outline: 2px solid #FF6B6B !important;
+          outline: 2px solid #0A84FF !important;
           outline-offset: 8px;
         }
       `;
