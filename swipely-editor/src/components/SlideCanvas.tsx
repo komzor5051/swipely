@@ -68,10 +68,10 @@ export default function SlideCanvas({
   // Apply position to element
   const applyPosition = useCallback((el: HTMLElement, position: TextPosition | undefined) => {
     if (!position) return;
-    el.style.position = 'absolute';
-    el.style.left = `${position.x}%`;
-    el.style.top = `${position.y}%`;
-    el.style.transform = 'translate(-50%, -50%)';
+    el.style.setProperty('position', 'absolute', 'important');
+    el.style.setProperty('left', `${position.x}%`, 'important');
+    el.style.setProperty('top', `${position.y}%`, 'important');
+    el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
   }, []);
 
   const updateSlideContent = useCallback(() => {
@@ -158,26 +158,26 @@ export default function SlideCanvas({
         }
 
         el.setAttribute('contenteditable', 'true');
-        el.style.outline = 'none';
-        el.style.cursor = 'move';
-        el.style.userSelect = 'text';
-        el.style.position = 'absolute';
-        el.style.width = '85%';
-        el.style.maxWidth = '900px';
-        el.style.boxSizing = 'border-box';
-        el.style.zIndex = '100';
-        el.style.margin = '0';
-        el.style.padding = '0';
 
         // Always apply position - use saved or default
         const savedPosition = elementType === 'title' ? slide.titlePosition : slide.contentPosition;
-        const defaultY = elementType === 'title' ? 30 : 60;
+        const defaultY = elementType === 'title' ? 30 : 65;
         const posX = savedPosition?.x ?? 50;
         const posY = savedPosition?.y ?? defaultY;
 
-        el.style.left = `${posX}%`;
-        el.style.top = `${posY}%`;
-        el.style.transform = 'translate(-50%, -50%)';
+        // Use setProperty with !important to override template CSS
+        el.style.setProperty('position', 'absolute', 'important');
+        el.style.setProperty('left', `${posX}%`, 'important');
+        el.style.setProperty('top', `${posY}%`, 'important');
+        el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+        el.style.setProperty('width', '85%', 'important');
+        el.style.setProperty('max-width', '900px', 'important');
+        el.style.setProperty('box-sizing', 'border-box', 'important');
+        el.style.setProperty('z-index', '100', 'important');
+        el.style.setProperty('margin', '0', 'important');
+        el.style.cursor = 'move';
+        el.style.userSelect = 'text';
+        el.style.outline = 'none';
 
         // Apply saved styles
         const savedStyles = elementType === 'title' ? slide.titleStyles : slide.contentStyles;
@@ -226,8 +226,8 @@ export default function SlideCanvas({
         const newX = Math.max(0, Math.min(100, state.initialLeft + deltaX));
         const newY = Math.max(0, Math.min(100, state.initialTop + deltaY));
 
-        state.element.style.left = `${newX}%`;
-        state.element.style.top = `${newY}%`;
+        state.element.style.setProperty('left', `${newX}%`, 'important');
+        state.element.style.setProperty('top', `${newY}%`, 'important');
       });
 
       // Mouseup to end drag
