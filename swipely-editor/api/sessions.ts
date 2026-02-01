@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-      const { userId, carouselData, stylePreset, format, username } = req.body;
+      const { userId, carouselData, stylePreset, format, username, imageUrls } = req.body;
 
       if (!userId || !carouselData || !stylePreset) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -53,6 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         style_preset: stylePreset,
         format: format || 'portrait',
         username: username || null,
+        images: imageUrls || null,
         expires_at: expiresAt.toISOString(),
       });
 

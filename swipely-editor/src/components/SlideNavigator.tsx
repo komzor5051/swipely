@@ -88,9 +88,13 @@ function SlidePreview({
 
     // If image is provided (Photo Mode), inject it as background
     if (image) {
+      // Determine if image is a URL or base64
+      const isUrl = image.startsWith('http://') || image.startsWith('https://');
+      const imageUrl = isUrl ? image : `data:image/png;base64,${image}`;
+
       const bgImageStyle = `
         body {
-          background-image: url('data:image/png;base64,${image}');
+          background-image: url('${imageUrl}');
           background-size: cover;
           background-position: center;
         }
