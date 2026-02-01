@@ -1,4 +1,4 @@
-import type { SlideTemplate } from './types';
+import type { SlideTemplate, DecorationElement, AvatarElement, TextElement, IconElement } from './types';
 
 export const gridMultiTemplate: SlideTemplate = {
   id: 'grid_multi',
@@ -25,7 +25,7 @@ export const gridMultiTemplate: SlideTemplate = {
         { offsetY: 50, opacity: 1 },
         { offsetY: 75, opacity: 0.5 },
       ],
-    },
+    } as DecorationElement,
 
     // Avatar
     {
@@ -37,10 +37,10 @@ export const gridMultiTemplate: SlideTemplate = {
       zIndex: 10,
       letter: 'S',
       size: 70,
-      gradient: ['#F9A8D4', '#D4F542'],
+      gradient: ['#F9A8D4', '#D4F542'] as [string, string],
       borderColor: '#FFFFFF',
       borderWidth: 4,
-    },
+    } as AvatarElement,
 
     // Author name
     {
@@ -54,7 +54,7 @@ export const gridMultiTemplate: SlideTemplate = {
       fontSize: 22,
       fontWeight: 700,
       color: '#0A0A0A',
-    },
+    } as TextElement,
 
     // Author handle
     {
@@ -68,7 +68,7 @@ export const gridMultiTemplate: SlideTemplate = {
       fontSize: 16,
       fontWeight: 500,
       color: '#888888',
-    },
+    } as TextElement,
 
     // Main heading (title placeholder)
     {
@@ -84,7 +84,7 @@ export const gridMultiTemplate: SlideTemplate = {
       color: '#0A0A0A',
       lineHeight: 1.05,
       maxWidth: 850,
-    },
+    } as TextElement,
 
     // Content text
     {
@@ -100,7 +100,7 @@ export const gridMultiTemplate: SlideTemplate = {
       color: '#888888',
       lineHeight: 1.5,
       maxWidth: 700,
-    },
+    } as TextElement,
 
     // Footer handle
     {
@@ -114,7 +114,7 @@ export const gridMultiTemplate: SlideTemplate = {
       fontSize: 18,
       fontWeight: 600,
       color: '#0A0A0A',
-    },
+    } as TextElement,
 
     // Footer CTA
     {
@@ -128,7 +128,7 @@ export const gridMultiTemplate: SlideTemplate = {
       fontSize: 14,
       fontWeight: 500,
       color: '#888888',
-    },
+    } as TextElement,
 
     // Icon: Arrow
     {
@@ -143,7 +143,7 @@ export const gridMultiTemplate: SlideTemplate = {
       color: '#0A0A0A',
       backgroundColor: '#FFFFFF',
       borderRadius: 10,
-    },
+    } as IconElement,
 
     // Icon: Share
     {
@@ -158,6 +158,6 @@ export const gridMultiTemplate: SlideTemplate = {
       color: '#0A0A0A',
       backgroundColor: '#FFFFFF',
       borderRadius: 10,
-    },
+    } as IconElement,
   ],
 };
