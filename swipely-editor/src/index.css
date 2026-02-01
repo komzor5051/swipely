@@ -13,49 +13,52 @@
   --color-cream: #E8F4FC;
 }
 
-body {
-  font-family: 'Outfit', sans-serif;
-  background-color: var(--color-warm-white);
-  color: var(--color-charcoal);
-  min-height: 100vh;
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
 }
 
-/* Custom scrollbar */
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: #f1f5f9;
+  color: var(--color-charcoal);
+}
+
+/* Custom scrollbar - thin and subtle */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-cream);
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-dark);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 /* Button styles */
 .btn-primary {
-  @apply px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-white font-semibold rounded-xl;
-  @apply shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40;
-  @apply transition-all duration-200 hover:scale-105;
+  @apply px-5 py-2.5 bg-primary text-white font-medium rounded-xl;
+  @apply shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30;
+  @apply transition-all duration-200 hover:bg-primary-dark;
 }
 
 .btn-secondary {
-  @apply px-6 py-3 bg-cream text-teal font-medium rounded-xl;
-  @apply border border-teal/20 hover:bg-teal hover:text-white;
+  @apply px-5 py-2.5 bg-white text-slate-700 font-medium rounded-xl;
+  @apply border border-slate-200 hover:bg-slate-50;
   @apply transition-all duration-200;
 }
 
 /* Card styles */
 .card {
-  @apply bg-white rounded-2xl border border-cream shadow-sm;
+  @apply bg-white rounded-2xl border border-slate-200 shadow-sm;
 }
 
 /* Loading animation */
