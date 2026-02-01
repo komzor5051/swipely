@@ -148,8 +148,11 @@ export default function SlideCanvas({
 
       // Setup draggable element
       const setupDraggable = (el: HTMLElement, elementType: ElementType) => {
-        // Move element to body level for proper absolute positioning
+        // Ensure body has position relative for absolute children
         const body = iframeDoc.body;
+        body.style.position = 'relative';
+
+        // Move element to body level for proper absolute positioning
         if (el.parentElement !== body) {
           body.appendChild(el);
         }
