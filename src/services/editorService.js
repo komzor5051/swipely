@@ -16,7 +16,7 @@ const supabase = SUPABASE_URL && SUPABASE_KEY
   : null;
 
 /**
- * Загружает массив base64 изображений в Supabase Storage
+ * Загружает массив base64 изображений в Supabase Storage (параллельно)
  * @param {number} userId - Telegram user ID
  * @param {Array<string>} images - Массив base64 изображений
  * @returns {Promise<Array<string>>} - Массив публичных URL
@@ -27,34 +27,32 @@ async function uploadImagesToStorage(userId, images) {
   }
 
   const timestamp = Date.now();
-  const imageUrls = [];
 
-  console.log(`📤 Загружаю ${images.length} изображений в Supabase Storage...`);
+  console.log(`📤 Загружаю ${images.length} изображений в Supabase Storage (параллельно)...`);
 
-  for (let i = 0; i < images.length; i++) {
-    const base64Data = images[i];
+  // Загружаем все изображения параллельно
+  const uploadPromises = images.map(async (base64Data, i) => {
     if (!base64Data) {
-      imageUrls.push(null);
-      continue;
+      return null;
     }
 
     try {
       // Конвертируем base64 в Buffer
       const buffer = Buffer.from(base64Data, 'base64');
-      const fileName = `${userId}/${timestamp}_slide_${i + 1}.png`;
+      const fileName = `${userId}/${timestamp}_slide_${i + 1}.webp`;
 
-      // Загружаем в Storage
+      // Загружаем в Storage как WebP (если исходник PNG, Supabase сохранит как есть)
       const { error } = await supabase.storage
         .from('carousel-images')
         .upload(fileName, buffer, {
-          contentType: 'image/png',
+          contentType: 'image/webp',
           upsert: true,
+          cacheControl: '31536000', // Кешировать на год
         });
 
       if (error) {
         console.error(`❌ Ошибка загрузки изображения ${i + 1}:`, error.message);
-        imageUrls.push(null);
-        continue;
+        return null;
       }
 
       // Получаем публичный URL
@@ -62,13 +60,15 @@ async function uploadImagesToStorage(userId, images) {
         .from('carousel-images')
         .getPublicUrl(fileName);
 
-      imageUrls.push(urlData.publicUrl);
       console.log(`✅ Изображение ${i + 1} загружено`);
+      return urlData.publicUrl;
     } catch (err) {
       console.error(`❌ Ошибка при загрузке изображения ${i + 1}:`, err.message);
-      imageUrls.push(null);
+      return null;
     }
-  }
+  });
+
+  const imageUrls = await Promise.all(uploadPromises);
 
   const successCount = imageUrls.filter(url => url !== null).length;
   console.log(`📤 Загружено ${successCount}/${images.length} изображений в Storage`);
