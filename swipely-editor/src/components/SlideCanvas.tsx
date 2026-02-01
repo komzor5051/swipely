@@ -192,33 +192,19 @@ export default function SlideCanvas({
           const selection = iframeDoc.getSelection();
           if (selection && selection.toString().length > 0) return;
 
-          // Check if this is a double-click scenario (text editing)
-          if ((e.target as HTMLElement).isContentEditable && e.detail === 1) {
-            // Start drag after short delay if no text selection
-            const startDrag = () => {
-              dragStateRef.current = {
-                isDragging: true,
-                element: el,
-                elementType,
-                startX: e.clientX,
-                startY: e.clientY,
-                initialLeft: parseFloat(el.style.left) || 50,
-                initialTop: parseFloat(el.style.top) || 50,
-              };
-              el.style.cursor = 'grabbing';
-              onSelectElement(elementType);
-            };
-
-            const timeout = setTimeout(startDrag, 150);
-
-            const cancelDrag = () => {
-              clearTimeout(timeout);
-              el.removeEventListener('mouseup', cancelDrag);
-              el.removeEventListener('mousemove', cancelDrag);
-            };
-
-            el.addEventListener('mouseup', cancelDrag, { once: true });
-          }
+          // Start drag immediately on mousedown
+          e.preventDefault();
+          dragStateRef.current = {
+            isDragging: true,
+            element: el,
+            elementType,
+            startX: e.clientX,
+            startY: e.clientY,
+            initialLeft: parseFloat(el.style.left) || 50,
+            initialTop: parseFloat(el.style.top) || 50,
+          };
+          el.style.cursor = 'grabbing';
+          onSelectElement(elementType);
         });
       };
 
@@ -297,7 +283,7 @@ export default function SlideCanvas({
         iframe.onload(new Event('load'));
       }
     }, 100);
-  }, [slide.title, slide.content, slideIndex, totalSlides, stylePreset, width, height, image, updateSlideContent, applyStyles, applyPosition, onSelectElement, onPositionChange, selectedElement, slide.titlePosition, slide.contentPosition, slide.titleStyles, slide.contentStyles]);
+  }, [slide.title, slide.content, slideIndex, totalSlides, stylePreset, width, height, image, updateSlideContent, applyStyles, applyPosition, onSelectElement, onPositionChange, selectedElement, slide.titleStyles, slide.contentStyles]);
 
   // Apply styles when they change (without re-rendering the whole iframe)
   useEffect(() => {
@@ -319,6 +305,23 @@ export default function SlideCanvas({
     headlineEl?.classList.toggle('selected', selectedElement === 'title');
     contentEl?.classList.toggle('selected', selectedElement === 'content');
   }, [slide.titleStyles, slide.contentStyles, selectedElement, applyStyles]);
+
+  // Apply positions when they change (without re-rendering the whole iframe)
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentDocument) return;
+
+    const doc = iframe.contentDocument;
+    const headlineEl = doc.querySelector('.headline') as HTMLElement;
+    const contentEl = doc.querySelector('.content') as HTMLElement;
+
+    if (headlineEl && slide.titlePosition) {
+      applyPosition(headlineEl, slide.titlePosition);
+    }
+    if (contentEl && slide.contentPosition) {
+      applyPosition(contentEl, slide.contentPosition);
+    }
+  }, [slide.titlePosition, slide.contentPosition, applyPosition]);
 
   return (
     <div className="flex flex-col items-center">
