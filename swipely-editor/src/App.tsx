@@ -149,8 +149,9 @@ function App() {
       {/* Header */}
       <header className="bg-white border-b border-cream px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-display text-teal">Swipely Editor</h1>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Swipely" className="w-8 h-8 rounded-lg" />
+            <h1 className="text-xl font-semibold text-teal">Swipely Editor</h1>
             <span className="text-sm text-teal-light">
               {saving ? 'Сохранение...' : lastSaved ? `Сохранено ${formatTime(lastSaved)}` : ''}
             </span>
