@@ -162,21 +162,22 @@ export default function SlideCanvas({
         el.style.cursor = 'move';
         el.style.userSelect = 'text';
         el.style.position = 'absolute';
-        el.style.width = '90%';
+        el.style.width = '85%';
+        el.style.maxWidth = '900px';
         el.style.boxSizing = 'border-box';
         el.style.zIndex = '100';
+        el.style.margin = '0';
+        el.style.padding = '0';
 
-        // Apply saved position or set default
+        // Always apply position - use saved or default
         const savedPosition = elementType === 'title' ? slide.titlePosition : slide.contentPosition;
-        if (savedPosition) {
-          applyPosition(el, savedPosition);
-        } else {
-          // Default positions - title higher, content lower
-          const defaultY = elementType === 'title' ? 25 : 55;
-          el.style.left = '50%';
-          el.style.top = `${defaultY}%`;
-          el.style.transform = 'translate(-50%, -50%)';
-        }
+        const defaultY = elementType === 'title' ? 30 : 60;
+        const posX = savedPosition?.x ?? 50;
+        const posY = savedPosition?.y ?? defaultY;
+
+        el.style.left = `${posX}%`;
+        el.style.top = `${posY}%`;
+        el.style.transform = 'translate(-50%, -50%)';
 
         // Apply saved styles
         const savedStyles = elementType === 'title' ? slide.titleStyles : slide.contentStyles;
