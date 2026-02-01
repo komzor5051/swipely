@@ -218,6 +218,15 @@ function getDesignConfig(stylePreset) {
     memphis: { name: 'Memphis', max_words_per_slide: 40, tone: '80s retro, playful, vibrant' },
     luxe: { name: 'Luxe', max_words_per_slide: 40, tone: 'premium, luxury, elegant' },
     backspace: { name: 'Backspace', max_words_per_slide: 40, tone: 'modern agency, bold typography, minimalist' },
+    star_highlight: { name: 'Star Highlight', max_words_per_slide: 25, tone: 'elegant, sophisticated, designer-focused, serif typography' },
+    purple_accent: { name: 'Purple Accent', max_words_per_slide: 35, tone: 'bold, modern branding, professional, impactful statements' },
+    quote_doodle: { name: 'Quote Doodle', max_words_per_slide: 30, tone: 'thoughtful, question-based, conversational, insightful' },
+    speech_bubble: { name: 'Speech Bubble', max_words_per_slide: 20, tone: 'quotable, memorable, wisdom-based, attribution-style' },
+    grid_multi: { name: 'Grid Multi', max_words_per_slide: 30, tone: 'data-driven, statistics, educational, engaging hooks' },
+    receipt: { name: 'Receipt', max_words_per_slide: 25, tone: 'bold statements, brand messaging, manifesto-style, concise' },
+    lime_checklist: { name: 'Lime Checklist', max_words_per_slide: 35, tone: 'benefit-focused, list-style, actionable tips, positive energy' },
+    app_list: { name: 'App List', max_words_per_slide: 30, tone: 'service-oriented, professional, menu-style, clear offerings' },
+    paper_image: { name: 'Paper Texture', max_words_per_slide: 30, tone: 'provocative, attention-grabbing, money/business focused, impactful' },
     // Режим с AI-аватарами - короткие тексты для overlay поверх изображений
     photo_mode: { name: 'AI Photo', max_words_per_slide: 25, tone: 'impactful, concise, visual-first' }
   };

@@ -160,6 +160,33 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
     case 'backspace':
       templatePath = path.join(TEMPLATES_DIR, 'backspace.html');
       break;
+    case 'star_highlight':
+      templatePath = path.join(TEMPLATES_DIR, 'star_highlight.html');
+      break;
+    case 'purple_accent':
+      templatePath = path.join(TEMPLATES_DIR, 'purple_accent.html');
+      break;
+    case 'quote_doodle':
+      templatePath = path.join(TEMPLATES_DIR, 'quote_doodle.html');
+      break;
+    case 'speech_bubble':
+      templatePath = path.join(TEMPLATES_DIR, 'speech_bubble.html');
+      break;
+    case 'grid_multi':
+      templatePath = path.join(TEMPLATES_DIR, 'grid_multi.html');
+      break;
+    case 'receipt':
+      templatePath = path.join(TEMPLATES_DIR, 'receipt.html');
+      break;
+    case 'lime_checklist':
+      templatePath = path.join(TEMPLATES_DIR, 'lime_checklist.html');
+      break;
+    case 'app_list':
+      templatePath = path.join(TEMPLATES_DIR, 'app_list.html');
+      break;
+    case 'paper_image':
+      templatePath = path.join(TEMPLATES_DIR, 'paper_image.html');
+      break;
     default:
       templatePath = path.join(TEMPLATES_DIR, 'minimal_pop.html');
   }
@@ -218,7 +245,16 @@ function injectUsernameOverlay(html, username, stylePreset) {
     zen: { text: '#2D2D2D', bg: 'rgba(248,246,240,0.8)' },
     memphis: { text: '#2D2D2D', bg: 'rgba(255,230,109,0.8)' },
     luxe: { text: '#D4AF37', bg: 'rgba(26,26,26,0.8)' },
-    backspace: { text: '#2D2A26', bg: 'rgba(240,239,237,0.9)' }
+    backspace: { text: '#2D2A26', bg: 'rgba(240,239,237,0.9)' },
+    star_highlight: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.85)' },
+    purple_accent: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.9)' },
+    quote_doodle: { text: '#0A0A0A', bg: 'rgba(245,243,238,0.9)' },
+    speech_bubble: { text: '#1A1A1A', bg: 'rgba(255,255,255,0.9)' },
+    grid_multi: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.9)' },
+    receipt: { text: '#1A1A1A', bg: 'rgba(255,255,255,0.95)' },
+    lime_checklist: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.9)' },
+    app_list: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.9)' },
+    paper_image: { text: '#1A1A1A', bg: 'rgba(245,243,238,0.9)' }
   };
 
   const colors = styleColors[stylePreset] || { text: '#FFFFFF', bg: 'rgba(0,0,0,0.5)' };

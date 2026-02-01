@@ -2005,7 +2005,16 @@ ${recentText}`;
             [{ text: '🍃 Zen', callback_data: 'view_style_zen' }],
             [{ text: '🎨 Memphis', callback_data: 'view_style_memphis' }],
             [{ text: '💎 Luxe', callback_data: 'view_style_luxe' }],
-            [{ text: '🔲 Backspace', callback_data: 'view_style_backspace' }]
+            [{ text: '🔲 Backspace', callback_data: 'view_style_backspace' }],
+            [{ text: '⭐ Star Highlight', callback_data: 'view_style_star_highlight' }],
+            [{ text: '💜 Purple Accent', callback_data: 'view_style_purple_accent' }],
+            [{ text: '✍️ Quote Doodle', callback_data: 'view_style_quote_doodle' }],
+            [{ text: '💬 Speech Bubble', callback_data: 'view_style_speech_bubble' }],
+            [{ text: '📊 Grid Multi', callback_data: 'view_style_grid_multi' }],
+            [{ text: '🧾 Receipt', callback_data: 'view_style_receipt' }],
+            [{ text: '🍋 Lime Checklist', callback_data: 'view_style_lime_checklist' }],
+            [{ text: '📱 App List', callback_data: 'view_style_app_list' }],
+            [{ text: '📜 Paper Texture', callback_data: 'view_style_paper_image' }]
           ]
         }
       });
@@ -2154,8 +2163,27 @@ ${recentText}`;
                 { text: '🍃 Zen', callback_data: 'style_zen' },
                 { text: '🎨 Memphis', callback_data: 'style_memphis' }
               ],
-              [{ text: '💎 Luxe', callback_data: 'style_luxe' }],
-              [{ text: '🔲 Backspace', callback_data: 'style_backspace' }]
+              [
+                { text: '💎 Luxe', callback_data: 'style_luxe' },
+                { text: '🔲 Backspace', callback_data: 'style_backspace' }
+              ],
+              [
+                { text: '⭐ Star Highlight', callback_data: 'style_star_highlight' },
+                { text: '💜 Purple Accent', callback_data: 'style_purple_accent' }
+              ],
+              [
+                { text: '✍️ Quote Doodle', callback_data: 'style_quote_doodle' },
+                { text: '💬 Speech Bubble', callback_data: 'style_speech_bubble' }
+              ],
+              [
+                { text: '📊 Grid Multi', callback_data: 'style_grid_multi' },
+                { text: '🧾 Receipt', callback_data: 'style_receipt' }
+              ],
+              [
+                { text: '🍋 Lime Checklist', callback_data: 'style_lime_checklist' },
+                { text: '📱 App List', callback_data: 'style_app_list' }
+              ],
+              [{ text: '📜 Paper Texture', callback_data: 'style_paper_image' }]
             ]
           }
         }
@@ -2291,7 +2319,16 @@ ${recentText}`;
         'zen': 'Zen',
         'memphis': 'Memphis',
         'luxe': 'Luxe',
-        'backspace': 'Backspace'
+        'backspace': 'Backspace',
+        'star_highlight': 'Star Highlight',
+        'purple_accent': 'Purple Accent',
+        'quote_doodle': 'Quote Doodle',
+        'speech_bubble': 'Speech Bubble',
+        'grid_multi': 'Grid Multi',
+        'receipt': 'Receipt',
+        'lime_checklist': 'Lime Checklist',
+        'app_list': 'App List',
+        'paper_image': 'Paper Texture'
       };
 
       await bot.editMessageText(

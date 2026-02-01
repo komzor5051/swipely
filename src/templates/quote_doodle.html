@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F3EE;
+      --ink: #0A0A0A;
+      --gray: #666666;
+      --green: #A3E635;
+      --green-dark: #1A1A1A;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header with avatar and social icons */
+    .header {
+      position: absolute;
+      top: 50px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 10;
+    }
+
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--green) 0%, #65A30D 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .author-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .author-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .author-role {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+    }
+
+    .social-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .social-handle {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-left: 10px;
+    }
+
+    /* Main content */
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 180px 70px 250px;
+    }
+
+    /* Quote marks */
+    .quote-mark {
+      font-family: Georgia, serif;
+      font-size: 160px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 0.5;
+      margin-bottom: 20px;
+      margin-left: -15px;
+    }
+
+    /* Headline text */
+    .headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 82px;
+      font-weight: 900;
+      line-height: 1.05;
+      color: var(--ink);
+      letter-spacing: -3px;
+      max-width: 850px;
+    }
+
+    /* Dashed arrow decoration */
+    .dashed-arrow {
+      position: absolute;
+      right: 180px;
+      top: 55%;
+      width: 200px;
+      height: 200px;
+    }
+
+    .dashed-arrow svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .dashed-arrow path {
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 3;
+      stroke-dasharray: 12, 8;
+      stroke-linecap: round;
+    }
+
+    /* Content/subtitle text */
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--gray);
+      margin-top: 40px;
+      max-width: 700px;
+    }
+
+    /* Accent for emphasized words */
+    .accent {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    /* Green CTA button */
+    .cta-circle {
+      position: absolute;
+      bottom: 100px;
+      right: 100px;
+      width: 80px;
+      height: 80px;
+      background: var(--green-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cta-circle svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--green);
+      fill: none;
+      stroke-width: 2.5;
+    }
+
+    /* Footer info */
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 60px;
+      right: 200px;
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Slide counter */
+    .slide-counter {
+      position: absolute;
+      top: 60px;
+      right: 60px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+      opacity: 0;
+    }
+
+    /* Closing quote */
+    .quote-close {
+      font-family: Georgia, serif;
+      font-size: 120px;
+      font-weight: 700;
+      color: var(--ink);
+      position: absolute;
+      right: 250px;
+      top: 58%;
+      line-height: 0.5;
+      opacity: 0.15;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="author-info">
+      <div class="avatar">S</div>
+      <div class="author-text">
+        <span class="author-name">Swipely</span>
+        <span class="author-role">AI Carousel</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide counter (hidden but available) -->
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+
+  <!-- Main content -->
+  <div class="content-wrapper">
+    <div class="quote-mark">"</div>
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+
+  <!-- Closing quote -->
+  <div class="quote-close">"</div>
+
+  <!-- Dashed arrow decoration -->
+  <div class="dashed-arrow">
+    <svg viewBox="0 0 200 200">
+      <path d="M 20 100 Q 100 20, 100 100 Q 100 160, 140 180 L 160 160 M 140 180 L 130 155"/>
+    </svg>
+  </div>
+
+  <!-- CTA circle button -->
+  <div class="cta-circle">
+    <svg viewBox="0 0 24 24">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-col">
+      <span>{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</span>
+    </div>
+  </div>
+</body>
+</html>
