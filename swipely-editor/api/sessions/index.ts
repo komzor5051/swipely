@@ -40,7 +40,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { userId, carouselData, stylePreset, format, username, images } = req.body;
+    // Поддержка обоих форматов: imageUrls (новый) и images (legacy)
+    const { userId, carouselData, stylePreset, format, username, imageUrls, images } = req.body;
 
     // Validate required fields
     if (!userId || !carouselData || !stylePreset) {
@@ -54,7 +55,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    // Insert session (images field for Photo Mode)
+    // Используем imageUrls если есть, иначе fallback на images (legacy base64)
+    const imagesToStore = imageUrls || images || null;
+
+    // Insert session (images field stores URLs or base64 for Photo Mode)
     const { error } = await supabase.from('carousel_edit_sessions').insert({
       token,
       user_id: userId,
@@ -62,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       style_preset: stylePreset,
       format: format || 'portrait',
       username: username || null,
-      images: images || null,
+      images: imagesToStore,
       expires_at: expiresAt.toISOString(),
     });
 

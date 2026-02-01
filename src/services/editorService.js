@@ -3,8 +3,78 @@
  * Создает временные сессии для редактирования через edit.swipely.ai
  */
 
+const { createClient } = require('@supabase/supabase-js');
+
 const EDITOR_API_URL = process.env.EDITOR_API_URL || 'https://swipely-six.vercel.app';
 const EDITOR_BOT_SECRET = process.env.EDITOR_BOT_SECRET;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+
+// Supabase клиент для загрузки в Storage
+const supabase = SUPABASE_URL && SUPABASE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
+
+/**
+ * Загружает массив base64 изображений в Supabase Storage
+ * @param {number} userId - Telegram user ID
+ * @param {Array<string>} images - Массив base64 изображений
+ * @returns {Promise<Array<string>>} - Массив публичных URL
+ */
+async function uploadImagesToStorage(userId, images) {
+  if (!supabase || !images || images.length === 0) {
+    return null;
+  }
+
+  const timestamp = Date.now();
+  const imageUrls = [];
+
+  console.log(`📤 Загружаю ${images.length} изображений в Supabase Storage...`);
+
+  for (let i = 0; i < images.length; i++) {
+    const base64Data = images[i];
+    if (!base64Data) {
+      imageUrls.push(null);
+      continue;
+    }
+
+    try {
+      // Конвертируем base64 в Buffer
+      const buffer = Buffer.from(base64Data, 'base64');
+      const fileName = `${userId}/${timestamp}_slide_${i + 1}.png`;
+
+      // Загружаем в Storage
+      const { error } = await supabase.storage
+        .from('carousel-images')
+        .upload(fileName, buffer, {
+          contentType: 'image/png',
+          upsert: true,
+        });
+
+      if (error) {
+        console.error(`❌ Ошибка загрузки изображения ${i + 1}:`, error.message);
+        imageUrls.push(null);
+        continue;
+      }
+
+      // Получаем публичный URL
+      const { data: urlData } = supabase.storage
+        .from('carousel-images')
+        .getPublicUrl(fileName);
+
+      imageUrls.push(urlData.publicUrl);
+      console.log(`✅ Изображение ${i + 1} загружено`);
+    } catch (err) {
+      console.error(`❌ Ошибка при загрузке изображения ${i + 1}:`, err.message);
+      imageUrls.push(null);
+    }
+  }
+
+  const successCount = imageUrls.filter(url => url !== null).length;
+  console.log(`📤 Загружено ${successCount}/${images.length} изображений в Storage`);
+
+  return imageUrls;
+}
 
 /**
  * Создает сессию редактирования и возвращает URL для редактора
@@ -25,8 +95,17 @@ async function createEditSession(userId, carouselData, stylePreset, format, user
   try {
     console.log('📝 Creating edit session for user:', userId);
     console.log('🔗 Editor API URL:', EDITOR_API_URL);
-    if (images) {
-      console.log(`📸 Including ${images.length} images for Photo Mode`);
+
+    // Для Photo Mode: загружаем изображения в Storage и передаём URL вместо base64
+    let imageUrls = null;
+    if (images && images.length > 0) {
+      console.log(`📸 Photo Mode: ${images.length} изображений`);
+      imageUrls = await uploadImagesToStorage(userId, images);
+
+      if (!imageUrls || imageUrls.every(url => url === null)) {
+        console.error('❌ Не удалось загрузить изображения в Storage');
+        // Продолжаем без изображений - редактор может работать без них
+      }
     }
 
     const response = await fetch(`${EDITOR_API_URL}/api/sessions`, {
@@ -41,7 +120,7 @@ async function createEditSession(userId, carouselData, stylePreset, format, user
         stylePreset,
         format,
         username,
-        images,
+        imageUrls, // Передаём URL вместо base64
       }),
     });
 
@@ -88,4 +167,5 @@ async function isEditorAvailable() {
 module.exports = {
   createEditSession,
   isEditorAvailable,
+  uploadImagesToStorage,
 };
