@@ -8,13 +8,47 @@ const supabase = createClient(
 
 /**
  * Создание или обновление пользователя в таблице profiles
+ * Использует RPC функцию для одного запроса вместо двух
  * НЕ сбрасывает балансы и другие важные данные!
  */
 async function upsertUser(telegramUser) {
   const { id: telegramId, username, first_name, last_name } = telegramUser;
 
   try {
-    // Сначала проверяем существует ли пользователь
+    // Используем RPC функцию для атомарного upsert (1 запрос вместо 2)
+    const { data, error } = await supabase.rpc('upsert_profile', {
+      p_telegram_id: telegramId,
+      p_username: username || null,
+      p_first_name: first_name || null,
+      p_last_name: last_name || null
+    });
+
+    if (error) {
+      // Fallback на старый метод если RPC функция не существует
+      if (error.code === '42883') { // function does not exist
+        console.log('⚠️ RPC функция не найдена, используем fallback');
+        return await upsertUserFallback(telegramUser);
+      }
+      console.error('❌ Ошибка upsert пользователя:', error);
+      return null;
+    }
+
+    console.log(`✅ Пользователь сохранен: ${username || telegramId} (profile_id: ${data})`);
+    return { profile_id: data, telegram_id: telegramId };
+  } catch (err) {
+    console.error('❌ Критическая ошибка upsert:', err);
+    return null;
+  }
+}
+
+/**
+ * Fallback метод если RPC функция не создана
+ * TODO: Удалить после применения миграции
+ */
+async function upsertUserFallback(telegramUser) {
+  const { id: telegramId, username, first_name, last_name } = telegramUser;
+
+  try {
     const { data: existing } = await supabase
       .from('profiles')
       .select('id')
@@ -22,7 +56,6 @@ async function upsertUser(telegramUser) {
       .single();
 
     if (existing) {
-      // Пользователь существует - обновляем только контактные данные
       const { data, error } = await supabase
         .from('profiles')
         .update({
@@ -38,11 +71,8 @@ async function upsertUser(telegramUser) {
         console.error('❌ Ошибка обновления пользователя:', error);
         return null;
       }
-
-      console.log(`✅ Пользователь сохранен: ${username || telegramId} (profile_id: ${data.id})`);
       return { profile_id: data.id, telegram_id: telegramId };
     } else {
-      // Новый пользователь - создаём с дефолтными значениями
       const { data, error } = await supabase
         .from('profiles')
         .insert({
@@ -62,12 +92,10 @@ async function upsertUser(telegramUser) {
         console.error('❌ Ошибка создания пользователя:', error);
         return null;
       }
-
-      console.log(`✅ Пользователь создан: ${username || telegramId} (profile_id: ${data.id})`);
       return { profile_id: data.id, telegram_id: telegramId };
     }
   } catch (err) {
-    console.error('❌ Критическая ошибка upsert:', err);
+    console.error('❌ Критическая ошибка fallback upsert:', err);
     return null;
   }
 }

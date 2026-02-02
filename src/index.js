@@ -220,8 +220,9 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
     // Логируем пользователя в файл
     logUser(msg.from);
 
-    // Регистрируем/обновляем пользователя в Supabase
-    await upsertUser(msg.from);
+    // Регистрируем/обновляем пользователя в Supabase (неблокирующий вызов)
+    // Не ждём ответа - показываем меню сразу
+    upsertUser(msg.from).catch(err => console.error('❌ Async upsert error:', err));
 
     // Проверяем, это возврат из платёжной системы?
     if (param && param.startsWith('payment_')) {
@@ -1600,24 +1601,24 @@ ${recentText}`;
             }).join('\n')
           : 'Нет пользователей';
 
-        const text = `👥 **Пользователи (Supabase)**
+        const text = `👥 <b>Пользователи (Supabase)</b>
 
-**📊 Общее:**
+<b>📊 Общее:</b>
 ├ Всего: ${totalUsers || 0}
 ├ PRO: ${proUsers || 0}
 ├ С балансом слайдов: ${usersWithBalance}
 └ Общий баланс: ${totalPhotoBalance || 0} слайдов
 
-**📈 Генерации:**
+<b>📈 Генерации:</b>
 └ Всего: ${totalGenerations || 0}
 
-**🆕 Последние:**
+<b>🆕 Последние:</b>
 ${recentText}`;
 
         await bot.editMessageText(text, {
           chat_id: chatId,
           message_id: messageId,
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
               [{ text: '🔄 Обновить', callback_data: 'admin_users' }],
