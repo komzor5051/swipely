@@ -580,11 +580,8 @@ bot.on('voice', async (msg) => {
           [
             { text: '3', callback_data: 'slides_3' },
             { text: '5', callback_data: 'slides_5' },
-            { text: '7', callback_data: 'slides_7' }
-          ],
-          [
-            { text: '10', callback_data: 'slides_10' },
-            { text: '12', callback_data: 'slides_12' }
+            { text: '7', callback_data: 'slides_7' },
+            { text: '10', callback_data: 'slides_10' }
           ]
         ]
       }
@@ -825,11 +822,8 @@ async function handleTextMessage(msg) {
           [
             { text: '3', callback_data: 'slides_3' },
             { text: '5', callback_data: 'slides_5' },
-            { text: '7', callback_data: 'slides_7' }
-          ],
-          [
-            { text: '10', callback_data: 'slides_10' },
-            { text: '12', callback_data: 'slides_12' }
+            { text: '7', callback_data: 'slides_7' },
+            { text: '10', callback_data: 'slides_10' }
           ]
         ]
       }
