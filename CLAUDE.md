@@ -4,316 +4,229 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Swipely Telegram Bot** - AI-powered Instagram carousel generator. Users send text or voice, bot generates viral-ready carousel slides (PNG images) using Google Gemini AI with professional design templates.
+**Swipely** - AI-powered Instagram carousel generator platform. This is a **monorepo** containing multiple interconnected projects.
 
-**Tech Stack:**
-- `node-telegram-bot-api` v0.67.0 (NOT Telegraf - migrated due to Node.js v24 issues)
-- Google Gemini API:
-  - `gemini-2.5-flash-lite` for content generation
-  - `gemini-3-pro-image-preview` for AI image generation (Photo Mode)
-- Puppeteer v23.11.1 for HTML → PNG rendering (1080x1350px Instagram format)
-- better-sqlite3 for local database (users, payments, generations)
-- Supabase for cloud backup and analytics
-- OpenAI Whisper (optional) for voice transcription
-- YooKassa for payment processing
-- Web Editor integration at edit.swipely.ai (optional)
+## Monorepo Structure
 
-## Development Commands
+```
+swipely/
+├── swipely-bot/          # Main Telegram bot (Node.js) - PRODUCTION
+├── swipely-editor/       # Web editor for carousels (React + Vite) - edit.swipely.ai
+├── swipely-api/          # Backend API for Mini App (Express) - api.swipely.ai
+├── swipely-nextjs/       # Next.js frontend (WIP SaaS boilerplate)
+└── src/                  # Duplicate of swipely-bot/src (keep in sync)
+```
 
+## Development Commands by Project
+
+### swipely-bot (Main Bot)
 ```bash
-npm install     # Install dependencies
-npm run dev     # Development mode (nodemon auto-reload)
-npm start       # Production mode
+cd swipely-bot
+npm install && npm run dev   # Development with nodemon
+npm start                    # Production
 ```
 
-Bot runs as long-lived process with polling. Check logs for emoji indicators: `✅🤖📊🎨💳`
-
-## Environment Setup
-
-Required `.env` variables:
-
-```env
-TELEGRAM_BOT_TOKEN=<from BotFather>
-GOOGLE_GEMINI_API_KEY=<from aistudio.google.com>
-SUPABASE_URL=<supabase project URL>
-SUPABASE_ANON_KEY=<service_role key>  # Use service_role, NOT anon
-OPENAI_API_KEY=<optional for voice>
-YOOKASSA_SHOP_ID=<from YooKassa>
-YOOKASSA_SECRET_KEY=<from YooKassa>
+### swipely-editor (Web Editor)
+```bash
+cd swipely-editor
+npm install && npm run dev   # Vite dev server (localhost:3001)
+npm run build                # Production build
 ```
 
-Optional:
-- `OPENROUTER_API_KEY` - fallback for content generation
-- `EDITOR_API_URL` - web editor URL (default: https://edit.swipely.ai)
-- `EDITOR_BOT_SECRET` - secret for web editor API authentication
-
-## Architecture
-
-### Two Generation Modes
-
-**Standard Mode (HTML Templates):**
-```
-User Input → Gemini Content → Puppeteer HTML→PNG → Telegram
-9 templates: minimal_pop, notebook, darkest, aurora, terminal, editorial, zen, memphis, luxe
+### swipely-api (Backend API)
+```bash
+cd swipely-api
+npm install && npm run dev   # Express server (localhost:3001)
 ```
 
-**Photo Mode (AI-Generated Images):**
-```
-User Input + Reference Photo → Gemini Content → Gemini Image Gen → Puppeteer overlay → Telegram
-Max 7 slides, styles: cartoon (Pixar/Disney), realistic (professional photography)
+### swipely-nextjs (Next.js App)
+```bash
+cd swipely-nextjs
+npm install && npm run dev   # Next.js dev (localhost:3000)
+npm run lint                 # ESLint
 ```
 
-### Core Files
+## Tech Stack Summary
+
+| Project | Stack |
+|---------|-------|
+| swipely-bot | Node.js, node-telegram-bot-api, Gemini AI, Puppeteer, SQLite, Supabase, YooKassa |
+| swipely-editor | React 18, TypeScript, Vite, Tailwind, html2canvas, Supabase, Vercel Edge Functions |
+| swipely-api | Express, Supabase, OpenRouter (Claude), Telegram initData verification |
+| swipely-nextjs | Next.js 16, React 19, Tailwind v4, Supabase SSR, Zustand, React Hook Form |
+
+---
+
+## swipely-bot Architecture (Main Product)
+
+### Generation Modes
+
+**Standard Mode:** `User Input → Gemini Content → Puppeteer HTML→PNG → Telegram`
+- 9 templates: minimal_pop, notebook, darkest, aurora, terminal, editorial, zen, memphis, luxe
+
+**Photo Mode:** `User Input + Photo → Gemini Content → Gemini Image Gen → Text Overlay → Telegram`
+- Styles: cartoon (Pixar/Disney), realistic (professional photography)
+- Max 7 slides, ~$0.04/image cost
+
+### Core Bot Files
 
 | File | Purpose |
 |------|---------|
-| `src/index.js` | Main bot logic, all Telegram handlers (~1500 lines) |
-| `src/services/gemini.js` | AI content generation with Gemini + OpenRouter fallback |
-| `src/services/imageGenerator.js` | AI image generation (Photo Mode) with 2K quality |
-| `src/services/renderer.js` | Puppeteer HTML→PNG pipeline with adaptive typography |
-| `src/services/database.js` | SQLite database with schema migrations |
-| `src/services/yookassa.js` | YooKassa payment integration |
-| `src/services/supabaseService.js` | Cloud backup and analytics |
-| `src/services/editorService.js` | Web editor integration (edit.swipely.ai) |
-| `src/config/pricing.js` | Pricing configuration with margin calculations |
-| `src/utils/copy.js` | All UI text (Russian) - single source of truth |
-| `src/templates/*.html` | 9 design templates with CSS-in-HTML |
-| `src/data/demoCarousel.js` | Static JSON for demo carousel |
+| `src/index.js` | Main bot logic, all Telegram handlers (~90KB) |
+| `src/services/gemini.js` | AI content generation with OpenRouter fallback |
+| `src/services/imageGenerator.js` | AI image generation (Photo Mode) |
+| `src/services/renderer.js` | Puppeteer HTML→PNG rendering |
+| `src/services/database.js` | SQLite with schema migrations |
+| `src/services/editorService.js` | Web editor integration |
+| `src/utils/copy.js` | All UI text (Russian) |
+| `src/templates/*.html` | Design templates with `{{TITLE}}`, `{{CONTENT}}` placeholders |
 
-### Session Management (In-Memory)
+### Session State (In-Memory)
 
 ```javascript
 sessions[userId] = {
-  transcription: string,      // User's text or voice
-  slideCount: number,         // 3, 5, 7, 10, or 12
-  format: string,             // 'square' (1080×1080) or 'portrait' (1080×1350)
-  generationMode: string,     // 'standard' or 'photo'
-  awaitingPhoto: boolean,     // Waiting for user photo (Photo Mode)
-  referencePhoto: string,     // Base64 of user's photo
-  imageStyle: string,         // 'cartoon' or 'realistic'
-  awaitingUsername: boolean   // Waiting for username input
+  transcription, slideCount, format, generationMode,
+  awaitingPhoto, referencePhoto, imageStyle, awaitingUsername
 }
 ```
 
-Sessions are cleared after carousel generation.
+### Callback Data Prefixes
 
-### Data Flow: Standard Mode
+`menu_*`, `slides_*`, `format_*`, `mode_*`, `style_*`, `imgstyle_*`, `buy_*`, `view_*`, `check_payment_*`, `pay_photo_*`, `topup_*`
 
-1. User sends text → stored in `sessions[userId].transcription`
-2. User selects slide count → `sessions[userId].slideCount`
-3. User selects format (square/portrait) → `sessions[userId].format`
-4. User selects template style → triggers generation:
-   - `gemini.generateCarouselContent()` → returns JSON with slides array
-   - `renderer.renderSlides()` → Puppeteer renders each slide to PNG
-   - Bot sends media group to Telegram
-   - `db.deductStandard()` decrements monthly limit
+---
 
-### Data Flow: Photo Mode
+## swipely-editor Architecture
 
-1. Steps 1-3 same as Standard
-2. User selects Photo Mode → checks `db.canGeneratePhoto()` for balance
-3. User selects image style (cartoon/realistic)
-4. User sends photo → `imageGenerator.downloadTelegramPhoto()` converts to base64
-5. `gemini.generateCarouselContent()` with `photo_mode` preset (shorter text)
-6. `imageGenerator.generateCarouselImages()` → Gemini generates AI images
-7. `renderer.renderSlidesWithImages()` → overlays text on AI images
-8. `db.deductPhotoSlides()` decrements slide balance
+### Flow
+```
+Bot generates carousel → Creates session via API (24h token) →
+User edits at edit.swipely.ai/{token} → Exports PNG via html2canvas
+```
 
-## Pricing Model
+### API Endpoints (Vercel Edge Functions)
+- `POST /api/sessions` - Create session (bot-only, requires Bearer token)
+- `GET /api/sessions/{token}` - Get session data
+- `PUT /api/sessions/{token}` - Update carousel data
 
-**Subscriptions:**
-- FREE: 3 Standard carousels/month, no Photo Mode
-- PRO (990₽/mo): Unlimited Standard, 20% discount on Photo Mode
+---
 
-**Photo Mode (Pay-per-use):**
-- 3 slides: 149₽ (FREE) / 119₽ (PRO)
-- 5 slides: 249₽ (FREE) / 199₽ (PRO)
-- 7 slides: 349₽ (FREE) / 279₽ (PRO)
+## swipely-api Architecture
 
-**Per-Slide Top-Up:** 49₽/slide (FREE) / 39₽/slide (PRO)
+Backend for Telegram Mini App. Handles:
+- Telegram initData verification (HMAC-SHA256)
+- AI generation via OpenRouter (Claude 3.5 Haiku)
+- Usage tracking in Supabase
 
-**Slide Packs:** 15 slides (490₽), 50 slides (1490₽), 150 slides (3990₽)
+### Endpoints
+- `POST /api/auth/telegram` - Verify initData, get/create profile
+- `POST /api/carousel/generate` - Generate carousel content
+- `GET /api/usage/check` - Check remaining generations
 
-**Referral Program:** Inviter gets 5 Photo slides, invited gets 3 Photo slides
+Auth header: `Authorization: tma <initData>`
 
-**Cost structure:** ~13.5₽/Photo slide, ~0.5₽/Standard carousel. Target margin ≥66%.
+---
 
-## Important Code Patterns
+## Critical Patterns
 
-### 1. Framework: node-telegram-bot-api (NOT Telegraf)
-
+### Telegram Bot Framework
 ```javascript
-// Correct:
+// CORRECT - node-telegram-bot-api
 const TelegramBot = require('node-telegram-bot-api');
 const bot = new TelegramBot(token, { polling: true });
 
-// Wrong (DO NOT USE):
-const { Telegraf } = require('telegraf');
+// WRONG - DO NOT USE Telegraf (Node.js v24 incompatibility)
 ```
 
-### 2. Callback Query Timeout Handling
-
-Long operations (15-20 seconds) cause Telegram timeout errors:
-
+### Callback Query Timeout
 ```javascript
 try {
   await bot.answerCallbackQuery(query.id);
 } catch (err) {
-  if (!err.message.includes('too old')) {
-    console.error(err.message);
-  }
+  if (!err.message.includes('too old')) console.error(err);
 }
 ```
 
-### 3. HTML Template Injection
-
-Templates use simple string replacement, NOT a template engine:
-
+### AI Response Parsing
+Always strip markdown wrappers before JSON.parse:
 ```javascript
-html = html.replace(/\{\{TITLE\}\}/g, slide.title || '');
-html = html.replace(/\{\{CONTENT\}\}/g, slide.content || '');
-html = html.replace(/\{\{SLIDE_NUMBER\}\}/g, slideNumber);
+cleanedContent = content.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
 ```
 
-### 4. Error Handling Pattern
+### Services Return null on Error
+Error messages come from `src/utils/copy.js`, not exceptions.
 
-Services return `null` on error instead of throwing exceptions. User-friendly error messages come from `src/utils/copy.js`.
+---
 
-### 5. Database Operations
+## Environment Variables
 
-Primary storage is SQLite (`src/services/database.js`). Supabase is used for cloud backup (`src/services/supabaseService.js`).
-
-Key database functions:
-- `db.init()` - Initialize tables with migrations
-- `db.getUserStatus(userId)` - Get user tier, limits, balance
-- `db.canGenerateStandard(userId)` - Check monthly limit
-- `db.canGeneratePhoto(userId, slideCount)` - Check Photo Mode balance
-- `db.processSuccessfulPayment(paymentId)` - Handle YooKassa callback
-- `db.resetMonthlyLimitsIfNeeded(userId)` - Auto-resets on new month
-
-### 6. AI Content Generation with Fallback
-
-```javascript
-// gemini.js tries Gemini first, then OpenRouter as fallback
-try {
-  content = await generateViaGemini(prompt, systemPrompt);
-} catch (error) {
-  content = await generateViaOpenRouter(prompt, systemPrompt);
-}
+### swipely-bot/.env
+```env
+TELEGRAM_BOT_TOKEN=
+GOOGLE_GEMINI_API_KEY=
+SUPABASE_URL=
+SUPABASE_ANON_KEY=        # Use service_role key!
+YOOKASSA_SHOP_ID=
+YOOKASSA_SECRET_KEY=
+OPENAI_API_KEY=           # Optional (voice)
+EDITOR_API_URL=           # https://edit.swipely.ai
+EDITOR_BOT_SECRET=
 ```
 
-### 7. AI Response Parsing
-
-Gemini responses may include markdown wrappers - always clean before parsing:
-
-```javascript
-let cleanedContent = content.trim();
-if (cleanedContent.startsWith('```json')) {
-  cleanedContent = cleanedContent.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '');
-}
-const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
+### swipely-editor/.env.local
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_KEY=
+EDITOR_BOT_SECRET=
 ```
 
-### 8. Image Format Sizes
-
-```javascript
-const FORMAT_SIZES = {
-  square: { width: 1080, height: 1080 },
-  portrait: { width: 1080, height: 1350 }
-};
+### swipely-api/.env
+```env
+TELEGRAM_BOT_TOKEN=
+OPENROUTER_API_KEY=
+SUPABASE_URL=
+SUPABASE_SERVICE_KEY=
 ```
 
-## User Flow
+---
 
-```
-/start → Main Menu
-    ├── ✨ Create Carousel → Text/Voice Input → Slide Count → Format → Mode
-    │       ├── Standard → Style Preview → Select Template → Generate
-    │       └── Photo Mode → Style (Cartoon/Realistic) → Send Photo → Generate
-    ├── 💳 Buy → Slide Packs or PRO subscription
-    ├── 👤 Account → Status, balance, subscription
-    ├── 👥 Referral → Referral link and stats
-    └── /username → Set display username (shows in corner of slides)
-```
+## Pricing Model
 
-## Callback Data Prefixes
+- **FREE:** 3 Standard carousels/month
+- **PRO (990₽/mo):** Unlimited Standard, 20% Photo Mode discount
+- **Photo Mode:** 149-349₽ per carousel (3-7 slides)
+- **Slide Packs:** 490₽ (15), 1490₽ (50), 3990₽ (150)
+- **Cost:** ~13.5₽/Photo slide, ~0.5₽/Standard carousel
 
-| Prefix | Purpose |
-|--------|---------|
-| `menu_*` | Main menu navigation (create, buy, account, main, referral, legal) |
-| `slides_*` | Slide count selection (3, 5, 7, 10, 12) |
-| `format_*` | Format selection (square, portrait) |
-| `mode_*` | Generation mode (standard, photo) |
-| `style_*` | HTML template selection (minimal_pop, notebook, etc.) |
-| `imgstyle_*` | Photo Mode image style (cartoon, realistic) |
-| `buy_*` | Purchase actions (pack_small, pack_medium, pro_month, etc.) |
-| `view_*` | View details (packs, pro, styles) |
-| `check_payment_*` | Payment status check |
-| `pay_photo_*` | Direct Photo Mode payment |
-| `topup_*` | Per-slide top-up purchase |
-
-## Common Issues
-
-### Callback Query Timeout
-**Symptom:** "query is too old and response timeout expired"
-**Solution:** Already handled - try-catch wrapper ignores timeout errors
-
-### Voice Input Not Working
-**Cause:** `OPENAI_API_KEY` missing
-**Solution:** Voice is optional - bot works with text only
-
-### Gemini API Errors
-- **429:** Quota exceeded, wait or upgrade
-- **503:** Server overloaded, retry logic handles this
-- **404:** Model name incorrect (content: `gemini-2.5-flash-lite`, images: `gemini-3-pro-image-preview`)
-
-### Payment Issues
-Check YooKassa credentials in `.env`. Bot creates payment → user pays externally → returns via deep link `/start payment_<id>` → bot checks status.
-
-### Puppeteer on Linux
-Requires system dependencies:
-```bash
-sudo apt-get install -y chromium-browser
-```
-Bot uses `--no-sandbox --disable-setuid-sandbox` flags.
-
-## File Locations
-
-- **Database:** `./data/swipely.db` (SQLite, auto-created)
-- **Output images:** `./output/` (temporary PNGs, sent to Telegram)
-- **Temp files:** `./temp/` (voice messages)
-- **Legal docs:** `./docs/*.pdf` (privacy policy, offer)
-
-## AI Prompts
-
-**Content Generation (`src/services/gemini.js`):**
-- System prompt: "Viral Visual Carousel SMM Content Architecture"
-- Role: Elite SMM strategist creating viral visual carousels
-- Hook patterns: CONTRARIAN, SHOCK DATA, PAIN MIRROR, PROMISE, FEAR, CURIOUS GAP
-- Constraints: 3-6 word titles, 25-50 words per slide (varies by style preset)
-- Output: Pure JSON with `slides` array (no markdown in text)
-
-**Image Generation (`src/services/imageGenerator.js`):**
-- Model: `gemini-3-pro-image-preview` (2K quality, ~$0.04/image)
-- Critical constraint: NO text/letters/typography in images
-- Composition: 20% top space + 25% bottom space for text overlay
-- Styles: `cartoon` (Pixar/Disney) or `realistic` (professional photography)
-
-## Testing
-
-No automated tests. Manual testing via Telegram:
-
-1. Send `/start` to bot
-2. Send text: "5 tips for productivity"
-3. Select slide count, format, mode
-4. Select style (Standard) or send photo (Photo Mode)
-5. Verify carousel generation + delivery
+---
 
 ## Adding New Templates
 
-1. Create `src/templates/{name}.html` with placeholders: `{{TITLE}}`, `{{CONTENT}}`, `{{SLIDE_NUMBER}}`, `{{TOTAL_SLIDES}}`
-2. Add style preset to `getDesignConfig()` in `src/services/gemini.js`
-3. Add style mapping in `generateSlideHTML()` in `src/services/renderer.js`
-4. Add callback data handling for `style_{name}` in `src/index.js`
-5. Update `styleDescriptions` in `src/utils/copy.js`
-6. Add preview image to `src/assets/previews/{name}.png`
+1. Create `src/templates/{name}.html` with placeholders
+2. Add preset to `getDesignConfig()` in `gemini.js`
+3. Add mapping in `generateSlideHTML()` in `renderer.js`
+4. Add callback handler for `style_{name}` in `index.js`
+5. Update `styleDescriptions` in `copy.js`
+6. Add preview to `previews/{name}.png`
+
+---
+
+## Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Callback timeout | Already handled - ignores "too old" errors |
+| Gemini 429 | Quota exceeded, wait or upgrade |
+| Gemini 503 | Server overloaded, retry logic handles |
+| Voice not working | OPENAI_API_KEY missing (optional feature) |
+| Puppeteer on Linux | Install chromium-browser, use --no-sandbox |
+
+---
+
+## File Locations
+
+- **Database:** `swipely-bot/data/swipely.db`
+- **Output:** `swipely-bot/output/` (temporary PNGs)
+- **Templates:** `swipely-bot/src/templates/`
+- **Supabase migration:** `supabase_migration.sql`
