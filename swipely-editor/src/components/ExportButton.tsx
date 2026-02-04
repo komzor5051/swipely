@@ -165,13 +165,13 @@ export default function ExportButton({
         onClick={exportSlides}
         disabled={exporting}
         className={`
-          btn-primary flex items-center gap-2
+          btn-primary flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base px-3 sm:px-5 py-2 sm:py-2.5
           ${exporting ? 'opacity-75 cursor-wait' : ''}
         `}
       >
         {exporting ? (
           <>
-            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle
                 className="opacity-25"
                 cx="12"
@@ -186,11 +186,12 @@ export default function ExportButton({
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span>Экспорт... {progress}%</span>
+            <span className="hidden xs:inline">Экспорт...</span>
+            <span>{progress}%</span>
           </>
         ) : (
           <>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -198,7 +199,8 @@ export default function ExportButton({
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            <span>Скачать PNG</span>
+            <span className="hidden xs:inline">Скачать</span>
+            <span className="hidden sm:inline">PNG</span>
           </>
         )}
       </button>

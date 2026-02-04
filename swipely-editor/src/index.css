@@ -22,6 +22,19 @@ body {
   font-family: 'Outfit', sans-serif;
   background-color: #f1f5f9;
   color: var(--color-charcoal);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent overscroll/bounce on mobile */
+html {
+  overscroll-behavior: none;
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: max(0px)) {
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
 }
 
 /* Custom scrollbar - thin and subtle */
