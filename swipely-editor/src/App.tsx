@@ -205,10 +205,10 @@ function App() {
         {/* Slides area */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-x-auto overflow-y-auto lg:overflow-y-hidden"
+          className="flex-1 overflow-x-auto overflow-y-auto lg:overflow-y-hidden flex items-start lg:items-center"
         >
           {/* Mobile: vertical scroll, Desktop: horizontal scroll */}
-          <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6 h-auto lg:h-full p-4 sm:px-8 sm:py-6" style={{ minWidth: 'max-content' }}>
+          <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6 min-h-full lg:h-full p-4 sm:px-8 sm:py-6" style={{ minWidth: 'max-content' }}>
             {session.carouselData.slides.map((slide, index) => (
               <SlideCard
                 key={index}
