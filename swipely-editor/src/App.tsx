@@ -16,6 +16,7 @@ function App() {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [selectedElement, setSelectedElement] = useState<ElementType>('title');
+  const [showEditPanel, setShowEditPanel] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -142,8 +143,6 @@ function App() {
 
   const totalSlides = session.carouselData.slides.length;
   const currentSlide = session.carouselData.slides[currentSlideIndex];
-
-  const [showEditPanel, setShowEditPanel] = useState(false);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-slate-100">
