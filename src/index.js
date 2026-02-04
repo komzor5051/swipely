@@ -651,11 +651,13 @@ async function startPhotoModeGeneration(chatId, userId) {
 
     // 1. Генерация контента
     await bot.sendMessage(chatId, copy.photoMode.progress.generatingContent);
+    const contentTone = session.contentTone || null;
     const carouselData = await generateCarouselContent(
       session.transcription,
       'photo_mode',
       slideCount,
-      null
+      null,
+      contentTone
     );
 
     // 2. Генерация AI-изображений
@@ -2074,6 +2076,36 @@ ${recentText}`;
         sessions[userId] = { format };
       }
 
+      // Показываем выбор тона контента
+      await bot.editMessageText(
+        copy.mainFlow.selectTone,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: copy.mainFlow.toneButtons.educational, callback_data: 'tone_educational' }],
+              [{ text: copy.mainFlow.toneButtons.entertaining, callback_data: 'tone_entertaining' }],
+              [{ text: copy.mainFlow.toneButtons.provocative, callback_data: 'tone_provocative' }],
+              [{ text: copy.mainFlow.toneButtons.motivational, callback_data: 'tone_motivational' }]
+            ]
+          }
+        }
+      );
+      return;
+    }
+
+    // ==================== ВЫБОР ТОНА КОНТЕНТА ====================
+    if (data.startsWith('tone_')) {
+      const contentTone = data.replace('tone_', '');
+
+      // Сохраняем тон в сессию
+      if (sessions[userId]) {
+        sessions[userId].contentTone = contentTone;
+      } else {
+        sessions[userId] = { contentTone };
+      }
+
       const slideCount = sessions[userId]?.slideCount || 5;
 
       // Показываем выбор режима генерации
@@ -2343,6 +2375,7 @@ ${recentText}`;
       const userText = sessions[userId]?.transcription;
       const slideCount = sessions[userId]?.slideCount || 5;
       const format = sessions[userId]?.format || 'portrait';
+      const contentTone = sessions[userId]?.contentTone || null;
 
       if (!userText) {
         return bot.sendMessage(chatId, '❌ Текст не найден. Начни сначала с /start');
@@ -2353,7 +2386,7 @@ ${recentText}`;
 
       // Генерация контента через Gemini
       await bot.sendMessage(chatId, copy.mainFlow.progress.analyzing);
-      const carouselData = await generateCarouselContent(userText, styleKey, slideCount, null);
+      const carouselData = await generateCarouselContent(userText, styleKey, slideCount, null, contentTone);
 
       // Рендеринг слайдов
       await bot.sendMessage(chatId, copy.mainFlow.progress.rendering);

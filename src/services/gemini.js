@@ -69,12 +69,12 @@ async function generateViaGemini(prompt, systemPrompt) {
 /**
  * Генерация контента карусели
  */
-async function generateCarouselContent(userText, stylePreset, slideCount = 5, toneGuidelines = null) {
+async function generateCarouselContent(userText, stylePreset, slideCount = 5, toneGuidelines = null, contentTone = null) {
   const startTime = Date.now();
-  console.log(`🤖 Генерация контента (стиль: ${stylePreset}, слайдов: ${slideCount}, входной текст: ${userText.length} символов)...`);
+  console.log(`🤖 Генерация контента (стиль: ${stylePreset}, слайдов: ${slideCount}, тон: ${contentTone || 'default'}, входной текст: ${userText.length} символов)...`);
 
   const designConfig = getDesignConfig(stylePreset);
-  const systemPrompt = buildSystemPrompt(designConfig, slideCount, toneGuidelines);
+  const systemPrompt = buildSystemPrompt(designConfig, slideCount, toneGuidelines, contentTone);
   const userPrompt = `Создай вирусную визуальную карусель на основе текста ниже.
 
 Условия:
@@ -229,8 +229,56 @@ function getDesignConfig(stylePreset) {
   return presets[stylePreset] || presets.notebook;
 }
 
-function buildSystemPrompt(designConfig, slideCount, toneGuidelines) {
+/**
+ * Конфигурация тонов контента
+ */
+function getContentToneConfig(contentTone) {
+  const tones = {
+    educational: {
+      name: 'Обучающий',
+      guidelines: `СТИЛЬ ПОДАЧИ: Обучающий, экспертный
+• Давай конкретную пользу и практические советы
+• Используй факты, статистику, примеры
+• Структурируй информацию (шаги, списки, чек-листы)
+• Позиционируй как эксперта, который делится знаниями
+• Избегай "воды" — каждое слово должно нести смысл`
+    },
+    entertaining: {
+      name: 'Развлекательный',
+      guidelines: `СТИЛЬ ПОДАЧИ: Развлекательный, лёгкий
+• Используй юмор, иронию, самоиронию
+• Пиши как будто рассказываешь другу за кофе
+• Добавляй неожиданные повороты и сравнения
+• Можно использовать сленг и разговорные выражения
+• Главное — чтобы было весело и цепляло`
+    },
+    provocative: {
+      name: 'Провокационный',
+      guidelines: `СТИЛЬ ПОДАЧИ: Провокационный, вызывающий
+• Ломай стереотипы и общепринятые мнения
+• Используй контрастные, спорные заявления
+• Задавай неудобные вопросы
+• Бросай вызов читателю
+• Главное — вызвать эмоцию и дискуссию`
+    },
+    motivational: {
+      name: 'Мотивационный',
+      guidelines: `СТИЛЬ ПОДАЧИ: Мотивационный, вдохновляющий
+• Используй истории успеха и трансформации
+• Говори о преодолении трудностей
+• Вдохновляй на действие
+• Используй сильные, энергичные формулировки
+• Покажи путь от проблемы к решению`
+    }
+  };
+  return tones[contentTone] || null;
+}
+
+function buildSystemPrompt(designConfig, slideCount, toneGuidelines, contentTone) {
   const toneSection = toneGuidelines ? `\nАДАПТИРУЙ ПОД СТИЛЬ АВТОРА:\n${toneGuidelines}\n` : '';
+
+  const contentToneConfig = getContentToneConfig(contentTone);
+  const contentToneSection = contentToneConfig ? `\n${contentToneConfig.guidelines}\n` : '';
 
   return `# Viral Visual Carousel SMM Content Architecture (RU)
 
@@ -242,8 +290,8 @@ function buildSystemPrompt(designConfig, slideCount, toneGuidelines) {
 
 КОНТЕКСТ:
 • ДИЗАЙН: ${designConfig.name}
-• ТОН: ${designConfig.tone}
-${toneSection}
+• ТОН ДИЗАЙНА: ${designConfig.tone}
+${toneSection}${contentToneSection}
 
 ПОВЕДЕНЧЕСКАЯ ЛОГИКА:
 • Пользователь сканирует, а не читает
