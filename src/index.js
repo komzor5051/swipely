@@ -696,7 +696,7 @@ async function startPhotoModeGeneration(chatId, userId) {
     const mediaGroup = finalImages.map((imgPath, idx) => ({
       type: 'photo',
       media: imgPath,
-      caption: idx === 0 ? `✨ AI-карусель в стиле "${styleName}"` : undefined
+      caption: idx === 0 ? `✨ Карусель в стиле "${styleName}"` : undefined
     }));
 
     await bot.sendMediaGroup(chatId, mediaGroup);
@@ -737,6 +737,12 @@ async function startPhotoModeGeneration(chatId, userId) {
         inline_keyboard: resultButtons
       }
     });
+
+    // Отправляем текст поста, если он сгенерирован
+    if (carouselData.post_caption) {
+      const postText = `${copy.mainFlow.postCaption}\n\n${carouselData.post_caption}`;
+      await bot.sendMessage(chatId, postText, { parse_mode: 'Markdown' });
+    }
 
     // Очищаем сессию
     delete sessions[userId];
@@ -2451,6 +2457,12 @@ ${recentText}`;
           inline_keyboard: resultButtons
         }
       });
+
+      // Отправляем текст поста, если он сгенерирован
+      if (carouselData.post_caption) {
+        const postText = `${copy.mainFlow.postCaption}\n\n${carouselData.post_caption}`;
+        await bot.sendMessage(chatId, postText, { parse_mode: 'Markdown' });
+      }
 
       // Очищаем сессию
       delete sessions[userId];
