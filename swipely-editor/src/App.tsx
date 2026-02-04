@@ -130,7 +130,7 @@ function App() {
           </div>
           <h2 className="text-xl font-semibold text-slate-800 mb-2">Ошибка</h2>
           <p className="text-slate-500">{error}</p>
-          <a href="https://t.me/swipely_bot" className="btn-primary inline-block mt-6">
+          <a href="https://t.me/swipelybot" className="btn-primary inline-block mt-6">
             Открыть бота
           </a>
         </div>

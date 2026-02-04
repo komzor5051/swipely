@@ -25,7 +25,7 @@ function HomePage() {
           Откройте ссылку редактирования из Telegram бота
         </p>
         <a
-          href="https://t.me/swipely_bot"
+          href="https://t.me/swipelybot"
           className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-medium hover:bg-primary-dark transition-colors"
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
