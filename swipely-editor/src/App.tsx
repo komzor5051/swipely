@@ -205,10 +205,10 @@ function App() {
         {/* Slides area */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-x-auto overflow-y-auto lg:overflow-y-hidden flex items-start lg:items-center"
+          className="flex-1 overflow-x-auto overflow-y-hidden flex items-center"
         >
-          {/* Mobile: vertical scroll, Desktop: horizontal scroll */}
-          <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6 min-h-full lg:h-full p-4 sm:px-8 sm:py-6" style={{ minWidth: 'max-content' }}>
+          {/* Horizontal scroll on all devices */}
+          <div className="flex flex-row items-center gap-4 lg:gap-6 h-full px-4 sm:px-8 py-4" style={{ minWidth: 'max-content' }}>
             {session.carouselData.slides.map((slide, index) => (
               <SlideCard
                 key={index}
@@ -450,10 +450,14 @@ function SlideCard({
   useEffect(() => {
     const updateScale = () => {
       const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
       if (screenWidth < 640) {
-        // Mobile: fit slide to ~90% of screen width
-        const mobileScale = (screenWidth * 0.85) / width;
-        setScale(Math.min(mobileScale, 0.35));
+        // Mobile: fit slide to screen height (minus header ~60px and padding)
+        const maxHeight = screenHeight - 120;
+        const heightScale = maxHeight / height;
+        const widthScale = (screenWidth * 0.8) / width;
+        setScale(Math.min(heightScale, widthScale, 0.35));
       } else if (screenWidth < 1024) {
         // Tablet
         setScale(0.38);
@@ -466,7 +470,7 @@ function SlideCard({
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
-  }, [width]);
+  }, [width, height]);
 
   const scaledWidth = width * scale;
   const scaledHeight = height * scale;
