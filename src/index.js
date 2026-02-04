@@ -40,6 +40,24 @@ const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
 // Simple in-memory session storage
 const sessions = {};
 
+// Cache for user status (5 min TTL)
+const userStatusCache = new Map();
+const USER_CACHE_TTL = 5 * 60 * 1000; // 5 минут
+
+async function getCachedUserStatus(userId) {
+  const cached = userStatusCache.get(userId);
+  if (cached && Date.now() - cached.timestamp < USER_CACHE_TTL) {
+    return cached.data;
+  }
+  const status = await db.getUserStatus(userId);
+  userStatusCache.set(userId, { data: status, timestamp: Date.now() });
+  return status;
+}
+
+function invalidateUserCache(userId) {
+  userStatusCache.delete(userId);
+}
+
 // Инициализация базы данных (async)
 (async () => {
   await db.init();
@@ -256,8 +274,8 @@ bot.onText(/\/(start|menu)(.*)/, async (msg, match) => {
       }
     }
 
-    // Получаем статус пользователя
-    const status = await db.getUserStatus(userId);
+    // Получаем статус пользователя (кэшированный для быстрого отклика)
+    const status = await getCachedUserStatus(userId);
 
     // Показываем главное меню
     const welcomeText = status
@@ -307,6 +325,7 @@ async function handlePaymentReturn(chatId, userId, paymentId) {
     if (paymentStatus.status === 'succeeded') {
       // Обрабатываем успешный платёж
       const result = await db.processSuccessfulPayment(paymentId);
+      invalidateUserCache(userId); // Сбрасываем кэш после оплаты
 
       if (!result) {
         // Платёж не найден в локальной БД (возможно бот перезапустился)
@@ -684,6 +703,7 @@ async function startPhotoModeGeneration(chatId, userId) {
 
     // 5. Списываем Photo слайды
     const deductResult = await db.deductPhotoSlides(userId, slideCount);
+    invalidateUserCache(userId); // Сбрасываем кэш после списания
     if (!deductResult.success) {
       console.error(`⚠️ Не удалось списать слайды для ${userId}: ${deductResult.error}`);
     }
@@ -856,8 +876,8 @@ bot.on('callback_query', async (query) => {
     }
   }
 
-  // Убеждаемся что пользователь существует в локальной БД
-  await db.createUser(userId, query.from.username || query.from.first_name);
+  // Создаём пользователя асинхронно (не блокируем UI)
+  db.createUser(userId, query.from.username || query.from.first_name).catch(() => {});
 
   try {
     // ==================== PRICING & PAYMENT CALLBACKS ====================
@@ -2403,6 +2423,7 @@ ${recentText}`;
 
       // Списываем лимит Standard
       const deductResult = await db.deductStandard(userId);
+      invalidateUserCache(userId); // Сбрасываем кэш после списания
       if (!deductResult.success) {
         console.error(`⚠️ Не удалось списать Standard генерацию для ${userId}`);
       }
