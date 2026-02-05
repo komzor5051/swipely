@@ -223,6 +223,7 @@ function getDesignConfig(stylePreset) {
     lime_checklist: { name: 'Lime Checklist', max_words_per_slide: 35, tone: 'benefit-focused, list-style, actionable tips, positive energy' },
     app_list: { name: 'App List', max_words_per_slide: 30, tone: 'service-oriented, professional, menu-style, clear offerings' },
     paper_image: { name: 'Paper Texture', max_words_per_slide: 30, tone: 'provocative, attention-grabbing, money/business focused, impactful' },
+    swipely: { name: 'Swipely', max_words_per_slide: 35, tone: 'modern, tech-savvy, energetic, startup vibe, bold statements' },
     // Режим с AI-аватарами - короткие тексты для overlay поверх изображений
     photo_mode: { name: 'AI Photo', max_words_per_slide: 25, tone: 'impactful, concise, visual-first' }
   };

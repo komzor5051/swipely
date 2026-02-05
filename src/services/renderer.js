@@ -175,6 +175,9 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
     case 'paper_image':
       templatePath = path.join(TEMPLATES_DIR, 'paper_image.html');
       break;
+    case 'swipely':
+      templatePath = path.join(TEMPLATES_DIR, 'swipely.html');
+      break;
     default:
       templatePath = path.join(TEMPLATES_DIR, 'notebook.html');
   }
@@ -238,7 +241,8 @@ function injectUsernameOverlay(html, username, stylePreset) {
     receipt: { text: '#1A1A1A', bg: 'rgba(255,255,255,0.95)' },
     lime_checklist: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.9)' },
     app_list: { text: '#0A0A0A', bg: 'rgba(255,255,255,0.9)' },
-    paper_image: { text: '#1A1A1A', bg: 'rgba(245,243,238,0.9)' }
+    paper_image: { text: '#1A1A1A', bg: 'rgba(245,243,238,0.9)' },
+    swipely: { text: '#FFFFFF', bg: 'rgba(10,132,255,0.3)' }
   };
 
   const colors = styleColors[stylePreset] || { text: '#FFFFFF', bg: 'rgba(0,0,0,0.5)' };
