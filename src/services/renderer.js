@@ -373,6 +373,17 @@ function getDefaultTemplate(stylePreset) {
       display: inline-block;
     }
 
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl {
+      display: inline;
+      background: #D4F542;
+      color: #0A0A0A;
+      padding: 6px 16px;
+      margin: 0 -6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
     /* Decorative circle */
     .deco-circle {
       position: absolute;
@@ -705,6 +716,18 @@ function generatePhotoSlideHTML(slide, slideNumber, totalSlides, imageBase64, op
       text-shadow:
         0 0 20px rgba(255,229,102,0.5),
         0 2px 8px rgba(0,0,0,0.9);
+    }
+
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl {
+      display: inline;
+      background: #D4F542;
+      color: #0A0A0A;
+      padding: 6px 16px;
+      margin: 0 -6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      text-shadow: none;
     }
 
     /* Декоративная линия-акцент */
