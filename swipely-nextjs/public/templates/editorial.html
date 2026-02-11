@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #141414;
+      --cream: #F8F5F0;
+      --red: #E63946;
+      --tan: #D4A574;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--cream);
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Large color block — signature */
+    .color-block {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 380px;
+      height: 100%;
+      background: var(--ink);
+      z-index: 1;
+    }
+
+    /* Red accent strip */
+    .accent-strip {
+      position: absolute;
+      top: 0;
+      right: 380px;
+      width: 20px;
+      height: 100%;
+      background: var(--red);
+      z-index: 2;
+    }
+
+    /* Main content area */
+    .content-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 400px;
+      height: 100%;
+      padding: 100px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 3;
+    }
+
+    /* Giant faded number */
+    .big-number {
+      position: absolute;
+      top: 60px;
+      left: 60px;
+      font-family: 'Playfair Display', serif;
+      font-size: 200px;
+      font-weight: 900;
+      color: var(--ink);
+      opacity: 0.06;
+      line-height: 1;
+      z-index: 4;
+    }
+
+    .slide-indicator {
+      position: absolute;
+      bottom: 80px;
+      left: 80px;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      z-index: 4;
+    }
+
+    /* HEADLINE — massive editorial serif */
+    .headline {
+      font-family: 'Playfair Display', serif;
+      font-size: 86px;
+      font-weight: 900;
+      line-height: 1.0;
+      color: var(--ink);
+      margin-bottom: 50px;
+      letter-spacing: -3px;
+      max-width: 580px;
+    }
+
+    /* CONTENT — readable sans */
+    .content {
+      font-family: 'Outfit', sans-serif;
+      font-size: 34px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--ink);
+      max-width: 540px;
+      letter-spacing: 0.2px;
+      opacity: 0.85;
+    }
+
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl {
+      display: inline;
+      background: var(--red);
+      color: var(--cream);
+      padding: 6px 16px;
+      margin: 0 -6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* Sidebar on dark block */
+    .sidebar {
+      position: absolute;
+      top: 50%;
+      right: 50px;
+      transform: translateY(-50%);
+      width: 280px;
+      z-index: 5;
+    }
+
+    .sidebar-text {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--cream);
+      opacity: 0.5;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* Large number on dark side */
+    .dark-number {
+      position: absolute;
+      bottom: 120px;
+      right: 60px;
+      font-family: 'Playfair Display', serif;
+      font-size: 320px;
+      font-weight: 900;
+      color: var(--cream);
+      opacity: 0.08;
+      line-height: 1;
+      z-index: 2;
+    }
+
+    /* Decorative lines */
+    .h-line {
+      position: absolute;
+      height: 2px;
+      background: var(--ink);
+      opacity: 0.12;
+    }
+
+    .line-1 {
+      top: 280px;
+      left: 80px;
+      width: 120px;
+    }
+
+    .line-2 {
+      bottom: 180px;
+      left: 80px;
+      width: 80px;
+    }
+
+    /* Dot pattern */
+    .dot-pattern {
+      position: absolute;
+      top: 120px;
+      right: 430px;
+      width: 80px;
+      height: 80px;
+      background-image: radial-gradient(var(--tan) 2.5px, transparent 2.5px);
+      background-size: 14px 14px;
+      opacity: 0.6;
+      z-index: 2;
+    }
+
+    /* Brand mark */
+    .brand-mark {
+      position: absolute;
+      top: 80px;
+      right: 430px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--red);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div class="color-block"></div>
+  <div class="accent-strip"></div>
+
+  <div class="content-area">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+
+  <div class="big-number">{{SLIDE_NUMBER}}</div>
+  <div class="slide-indicator">{{SLIDE_NUMBER}} — {{TOTAL_SLIDES}}</div>
+
+  <div class="sidebar">
+    <p class="sidebar-text">Swipely Editorial</p>
+  </div>
+
+  <div class="dark-number">{{SLIDE_NUMBER}}</div>
+
+  <div class="h-line line-1"></div>
+  <div class="h-line line-2"></div>
+  <div class="dot-pattern"></div>
+  <div class="brand-mark">Swipely</div>
+</body>
+</html>
