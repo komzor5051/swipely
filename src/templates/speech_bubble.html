@@ -162,6 +162,17 @@
       color: var(--orange);
     }
 
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl, .quote-text hl {
+      display: inline;
+      background: var(--orange);
+      color: var(--white);
+      padding: 4px 12px;
+      margin: 0 -4px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
     /* Footer */
     .footer {
       position: absolute;

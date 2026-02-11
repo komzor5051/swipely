@@ -137,6 +137,18 @@
       margin-left: 10px;
     }
 
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl {
+      display: inline;
+      background: var(--amber);
+      color: var(--bg);
+      padding: 4px 14px;
+      margin: 0 -4px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      text-shadow: none;
+    }
+
     /* CONTENT — readable mono */
     .content {
       font-family: 'JetBrains Mono', monospace;

@@ -143,6 +143,17 @@
       pointer-events: none;
     }
 
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl {
+      display: inline;
+      background: #D4F542;
+      color: var(--ink);
+      padding: 6px 16px;
+      margin: 0 -6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
     /* CONTENT — clean, readable */
     .content {
       font-family: 'Manrope', sans-serif;

@@ -223,6 +223,7 @@ function getDesignConfig(stylePreset) {
     lime_checklist: { name: 'Lime Checklist', max_words_per_slide: 35, tone: 'benefit-focused, list-style, actionable tips, positive energy' },
     app_list: { name: 'App List', max_words_per_slide: 30, tone: 'service-oriented, professional, menu-style, clear offerings' },
     paper_image: { name: 'Paper Texture', max_words_per_slide: 30, tone: 'provocative, attention-grabbing, money/business focused, impactful' },
+    swipely: { name: 'Swipely', max_words_per_slide: 35, tone: 'modern, tech-savvy, energetic, startup vibe, bold statements' },
     // Режим с AI-аватарами - короткие тексты для overlay поверх изображений
     photo_mode: { name: 'AI Photo', max_words_per_slide: 25, tone: 'impactful, concise, visual-first' }
   };
@@ -327,6 +328,9 @@ HOOK ENGINE (обязательно для первого слайда):
 • Без символов
 • Понятны за 1 секунду
 • Один чёткий смысл, без абстракций
+• ОБЯЗАТЕЛЬНО выдели 1-2 ключевых слова тегом <hl>слово</hl>
+• Хайлайт должен быть на самом важном слове или короткой фразе (1-3 слова)
+• Пример: "Как <hl>удвоить</hl> продажи" или "<hl>3 шага</hl> к успеху"
 
 СТРУКТУРА СЛАЙДОВ:
 1. hook — мгновенная остановка скролла
@@ -360,9 +364,8 @@ OUTPUT: Верни ТОЛЬКО валидный JSON строго по схем
   "slides": [
     {
       "type": "hook",
-      "title": "Заголовок",
-      "content": "Текст слайда",
-      "emphasize": ["ключ"]
+      "title": "Заголовок с <hl>ключевым</hl> словом",
+      "content": "Текст слайда"
     }
   ],
   "post_caption": "Текст поста для публикации под каруселью"

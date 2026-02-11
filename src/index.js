@@ -2044,7 +2044,8 @@ ${recentText}`;
             [{ text: '🧾 Receipt', callback_data: 'view_style_receipt' }],
             [{ text: '🍋 Lime Checklist', callback_data: 'view_style_lime_checklist' }],
             [{ text: '📱 App List', callback_data: 'view_style_app_list' }],
-            [{ text: '📜 Paper Texture', callback_data: 'view_style_paper_image' }]
+            [{ text: '📜 Paper Texture', callback_data: 'view_style_paper_image' }],
+            [{ text: '🔷 Swipely', callback_data: 'view_style_swipely' }]
           ]
         }
       });
@@ -2246,7 +2247,10 @@ ${recentText}`;
                 { text: '🍋 Lime Checklist', callback_data: 'style_lime_checklist' },
                 { text: '📱 App List', callback_data: 'style_app_list' }
               ],
-              [{ text: '📜 Paper Texture', callback_data: 'style_paper_image' }]
+              [
+                { text: '📜 Paper Texture', callback_data: 'style_paper_image' },
+                { text: '🔷 Swipely', callback_data: 'style_swipely' }
+              ]
             ]
           }
         }
