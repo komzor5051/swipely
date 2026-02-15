@@ -14,6 +14,17 @@ export interface Profile {
   photo_slides_balance: number;
   referral_code?: string;
   tov_guidelines?: string;
+  tov_profile?: {
+    sentence_length: string;
+    emoji_usage: string;
+    tone: string;
+    language_level: string;
+    vocabulary_style: string;
+    formatting_style: string;
+    source_url: string;
+    analyzed_at: string;
+  };
+  onboarding_completed?: boolean;
   created_at: string;
 }
 
@@ -48,7 +59,7 @@ export async function getProfile(
 export async function updateProfile(
   supabase: SupabaseClient,
   userId: string,
-  updates: Partial<Pick<Profile, "username" | "first_name" | "tov_guidelines">>
+  updates: Partial<Pick<Profile, "username" | "first_name" | "tov_guidelines" | "tov_profile" | "onboarding_completed">>
 ): Promise<Profile | null> {
   const { data, error } = await supabase
     .from("profiles")

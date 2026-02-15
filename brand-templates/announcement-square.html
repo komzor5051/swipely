@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0A84FF;
+      --primary-dark: #0066CC;
+      --lime: #D4F542;
+      --pink: #F9A8D4;
+      --charcoal: #1A1A2E;
+      --white: #FFFFFF;
+      --warm-white: #F8FAFC;
+      --gray: #64748B;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1080px;
+      background: var(--white);
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grid background */
+    .grid-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    /* Decorative elements */
+    .deco-lines {
+      position: absolute;
+      top: 60px;
+      right: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1;
+    }
+
+    .deco-line {
+      width: 80px;
+      height: 8px;
+      background: var(--lime);
+      border-radius: 4px;
+      transform: rotate(-25deg);
+    }
+
+    .deco-line:nth-child(2) { opacity: 0.7; width: 65px; }
+    .deco-line:nth-child(3) { opacity: 0.5; width: 50px; }
+
+    /* Blue accent corner */
+    .blue-corner {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(ellipse at bottom left, rgba(10, 132, 255, 0.12) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    /* Badge */
+    .badge {
+      position: absolute;
+      top: 80px;
+      left: 80px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--primary);
+      border-radius: 100px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+
+    .badge::before {
+      content: '✨';
+      font-size: 16px;
+    }
+
+    /* Main content */
+    .content-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 180px 80px 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 5;
+    }
+
+    /* Headline */
+    .headline {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--charcoal);
+      margin-bottom: 32px;
+      letter-spacing: -2px;
+    }
+
+    .headline .highlight {
+      display: inline;
+      background: var(--lime);
+      padding: 4px 16px;
+      position: relative;
+    }
+
+    .headline .highlight::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 10%;
+      width: 80%;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .headline .highlight-pink {
+      background: var(--pink);
+    }
+
+    .headline .highlight-pink::after {
+      display: none;
+    }
+
+    /* Subtext */
+    .subtext {
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--gray);
+      max-width: 800px;
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 60px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(10, 132, 255, 0.3);
+    }
+
+    .logo-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--charcoal);
+      letter-spacing: -0.5px;
+    }
+
+    .cta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 100px;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--white);
+      box-shadow: 0 8px 24px rgba(10, 132, 255, 0.35);
+    }
+
+    .cta svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* Decorative dots */
+    .dots {
+      position: absolute;
+      bottom: 200px;
+      right: 80px;
+      width: 120px;
+      height: 120px;
+      background-image: radial-gradient(var(--primary) 3px, transparent 3px);
+      background-size: 20px 20px;
+      opacity: 0.15;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="blue-corner"></div>
+
+  <div class="deco-lines">
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+  </div>
+
+  <div class="badge">Новое обновление</div>
+
+  <div class="content-wrapper">
+    <h1 class="headline">
+      Теперь можно<br>
+      <span class="highlight">редактировать</span><br>
+      карусели!
+    </h1>
+    <p class="subtext">
+      Встречай веб-редактор для тонкой настройки каждого слайда
+    </p>
+  </div>
+
+  <div class="dots"></div>
+
+  <div class="footer">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="white">
+          <path d="M8 10h16M8 16h16M8 22h10" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <span class="logo-text">Swipely</span>
+    </div>
+    <div class="cta">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+      </svg>
+      @swipelybot
+    </div>
+  </div>
+</body>
+</html>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,8 +14,8 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
   const supabase = createClient()
+  const router = useRouter()
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,43 +23,31 @@ export default function SignupPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      // Step 1: Create user via server API (auto-confirms email)
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       })
 
-      if (error) throw error
-      setSuccess(true)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+
+      // Step 2: Sign in with the new account
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) throw signInError
+
+      router.push('/dashboard')
+      router.refresh()
     } catch (error: any) {
       setError(error.message || 'Ошибка регистрации')
     } finally {
       setLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl">Проверьте почту</CardTitle>
-            <CardDescription>
-              Мы отправили письмо с подтверждением на {email}
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Link href="/login" className="w-full">
-              <Button variant="outline" className="w-full">
-                Вернуться к входу
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    )
   }
 
   return (

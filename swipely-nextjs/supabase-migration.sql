@@ -32,6 +32,8 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscription_end TIMESTAMPTZ;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS standard_used INTEGER DEFAULT 0;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS photo_slides_balance INTEGER DEFAULT 0;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS tov_guidelines TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS tov_profile JSONB;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT false;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
 
 -- ==================== GENERATIONS TABLE ====================
@@ -73,21 +75,30 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ==================== AUTO-CREATE PROFILE ON SIGNUP ====================
 
-CREATE OR REPLACE FUNCTION handle_new_user()
+-- telegram_id must be nullable — web users sign up via email, not Telegram
+ALTER TABLE profiles ALTER COLUMN telegram_id DROP NOT NULL;
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, email, subscription_tier, standard_used, photo_slides_balance)
+  -- IMPORTANT: use public.profiles (fully qualified) — supabase_auth_admin
+  -- does not have 'public' in search_path, so unqualified 'profiles' fails
+  INSERT INTO public.profiles (id, email, subscription_tier, standard_used, photo_slides_balance, onboarding_completed)
   VALUES (
     NEW.id,
     NEW.email,
     'free',
     0,
-    0
+    0,
+    false
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- IMPORTANT: reload PostgREST schema cache after any ALTER TABLE
+NOTIFY pgrst, 'reload schema';
 
 -- Drop and recreate trigger (safe)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;

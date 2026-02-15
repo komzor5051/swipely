@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0A84FF;
+      --primary-dark: #0066CC;
+      --primary-light: #3D9FFF;
+      --lime: #D4F542;
+      --pink: #F9A8D4;
+      --white: #FFFFFF;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(165deg, var(--primary) 0%, var(--primary-dark) 100%);
+      font-family: 'Outfit', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle grid pattern */
+    .grid-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: 1;
+    }
+
+    /* Top glow */
+    .glow-top {
+      position: absolute;
+      top: -150px;
+      right: -80px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(61, 159, 255, 0.4) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* Bottom glow */
+    .glow-bottom {
+      position: absolute;
+      bottom: -100px;
+      left: -80px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(0, 102, 204, 0.5) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* Lime accent glow */
+    .glow-lime {
+      position: absolute;
+      bottom: 200px;
+      right: -40px;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(ellipse, rgba(212, 245, 66, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* Decorative diagonal lines */
+    .deco-lines {
+      position: absolute;
+      top: 50px;
+      right: 50px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .deco-line {
+      width: 100px;
+      height: 8px;
+      background: var(--lime);
+      border-radius: 4px;
+      transform: rotate(-25deg);
+      transform-origin: right center;
+    }
+
+    .deco-line:nth-child(2) { width: 80px; opacity: 0.7; }
+    .deco-line:nth-child(3) { width: 60px; opacity: 0.5; }
+    .deco-line:nth-child(4) { width: 40px; opacity: 0.3; }
+
+    /* Dot pattern */
+    .dots-pattern {
+      position: absolute;
+      bottom: 150px;
+      left: 50px;
+      width: 120px;
+      height: 120px;
+      background-image: radial-gradient(rgba(255,255,255,0.25) 3px, transparent 3px);
+      background-size: 20px 20px;
+      z-index: 2;
+    }
+
+    /* Circle decorations */
+    .deco-circle {
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
+    }
+
+    .circle-1 {
+      width: 160px;
+      height: 160px;
+      top: 200px;
+      left: -60px;
+    }
+
+    .circle-2 {
+      width: 100px;
+      height: 100px;
+      bottom: 300px;
+      right: 60px;
+    }
+
+    .circle-3 {
+      width: 60px;
+      height: 60px;
+      top: 140px;
+      right: 200px;
+      border-color: rgba(212, 245, 66, 0.3);
+    }
+
+    /* Logo area */
+    .logo-area {
+      position: absolute;
+      top: 55px;
+      left: 55px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 10;
+    }
+
+    .logo-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--white);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    .logo-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.5px;
+    }
+
+    /* Floating shapes */
+    .float-shape {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .shape-1 {
+      width: 16px;
+      height: 16px;
+      background: var(--lime);
+      border-radius: 50%;
+      top: 320px;
+      right: 100px;
+      opacity: 0.6;
+    }
+
+    .shape-2 {
+      width: 12px;
+      height: 12px;
+      background: var(--pink);
+      border-radius: 50%;
+      top: 240px;
+      left: 180px;
+      opacity: 0.5;
+    }
+
+    .shape-3 {
+      width: 20px;
+      height: 20px;
+      background: rgba(255,255,255,0.3);
+      transform: rotate(45deg);
+      bottom: 280px;
+      right: 160px;
+    }
+
+    /* Wave decoration */
+    .wave {
+      position: absolute;
+      bottom: 120px;
+      right: 55px;
+      z-index: 2;
+    }
+
+    .wave svg {
+      width: 150px;
+      height: 50px;
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 55px;
+      left: 55px;
+      right: 55px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .cta-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 100px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .cta-badge svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .swipe-hint {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background elements -->
+  <div class="grid-pattern"></div>
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+  <div class="glow-lime"></div>
+
+  <!-- Logo -->
+  <div class="logo-area">
+    <div class="logo-icon">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M8 10h16M8 16h16M8 22h10" stroke="#0A84FF" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-text">Swipely</span>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="cta-badge">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+      </svg>
+      @swipelybot
+    </div>
+    <div class="swipe-hint">swipely.ai</div>
+  </div>
+</body>
+</html>

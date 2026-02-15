@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { checkLimit, saveGeneration, incrementUsage } from "@/lib/supabase/queries";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY;
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
@@ -47,9 +47,10 @@ const contentTones: Record<string, string> = {
 • Вдохновляй на действие`,
 };
 
-function buildSystemPrompt(templateId: string, slideCount: number, tone?: string): string {
+function buildSystemPrompt(templateId: string, slideCount: number, tone?: string, tovGuidelines?: string): string {
   const design = designPresets[templateId] || designPresets.notebook;
   const toneSection = tone && contentTones[tone] ? `\n${contentTones[tone]}\n` : "";
+  const tovSection = tovGuidelines ? `\nАДАПТИРУЙ ПОД СТИЛЬ АВТОРА:\n${tovGuidelines}\n` : "";
 
   return `# Viral Visual Carousel SMM Content Architecture (RU)
 
@@ -63,7 +64,7 @@ function buildSystemPrompt(templateId: string, slideCount: number, tone?: string
 • ДИЗАЙН: ${design.name}
 • ТОН ДИЗАЙНА: ${design.tone}
 ${toneSection}
-
+${tovSection}
 ПОВЕДЕНЧЕСКАЯ ЛОГИКА:
 • Пользователь сканирует, а не читает
 • Если мысль не ясна сразу — слайд пролистывают
@@ -173,9 +174,43 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Admin client for DB operations (bypasses RLS)
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch (e) {
+    return NextResponse.json(
+      { error: "DB config error", detail: String(e) },
+      { status: 500 }
+    );
+  }
+
+  // ─── Ensure profile exists ───
+  const { data: profile, error: profileErr } = await admin
+    .from("profiles")
+    .select("id, subscription_tier, standard_used, tov_guidelines")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile && !profileErr?.message?.includes("multiple")) {
+    const { error: createErr } = await admin.from("profiles").insert({
+      id: user.id,
+      email: user.email,
+      subscription_tier: "free",
+      standard_used: 0,
+      onboarding_completed: false,
+    });
+    if (createErr) {
+      console.error("Create profile error:", createErr);
+    }
+  }
+
   // ─── Usage limit check ───
-  const canGenerate = await checkLimit(supabase, user.id);
-  if (!canGenerate) {
+  const tier = profile?.subscription_tier || "free";
+  const used = profile?.standard_used || 0;
+  const limit = tier === "pro" ? -1 : 3;
+
+  if (limit !== -1 && used >= limit) {
     return NextResponse.json(
       { error: "Лимит генераций исчерпан. Перейди на PRO для безлимита." },
       { status: 429 }
@@ -212,7 +247,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const systemPrompt = buildSystemPrompt(template, slideCount, tone);
+  const tovGuidelines = profile?.tov_guidelines as string | undefined;
+  const systemPrompt = buildSystemPrompt(template, slideCount, tone, tovGuidelines);
 
   const userPrompt = `Создай вирусную визуальную карусель на основе текста ниже.
 
@@ -296,20 +332,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ─── Save generation + increment usage ───
-    await saveGeneration(supabase, {
-      user_id: user.id,
-      template,
-      slide_count: slideCount,
-      format: format || "portrait",
-      tone,
-      input_text: text,
-      output_json: carouselData,
+    // ─── Save generation + increment usage (admin client, bypasses RLS) ───
+    const { data: savedGen, error: saveErr } = await admin
+      .from("generations")
+      .insert({
+        user_id: user.id,
+        template,
+        slide_count: slideCount,
+        format: format || "portrait",
+        tone,
+        input_text: text,
+        output_json: carouselData,
+      })
+      .select("id")
+      .single();
+
+    if (saveErr) {
+      console.error("Save generation error:", saveErr);
+    }
+
+    const { error: rpcErr } = await admin.rpc("increment_standard_used", {
+      user_id_param: user.id,
     });
 
-    await incrementUsage(supabase, user.id);
-
-    return NextResponse.json(carouselData);
+    return NextResponse.json({
+      ...carouselData,
+      _debug: {
+        saved: !!savedGen,
+        saveError: saveErr?.message || null,
+        rpcError: rpcErr?.message || null,
+        userId: user.id,
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      },
+    });
   } catch (error) {
     console.error("Generation error:", error);
     return NextResponse.json(

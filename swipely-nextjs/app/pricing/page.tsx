@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   Package,
 } from "lucide-react";
+import { ProButton } from "./ProButton";
 
 /* ─── Main Plans ─── */
 function MainPlans() {
@@ -108,14 +109,7 @@ function MainPlans() {
               ))}
             </ul>
 
-            <Link href="/signup">
-              <Button
-                className="w-full rounded-full bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)]"
-                size="lg"
-              >
-                Попробовать PRO
-              </Button>
-            </Link>
+            <ProButton productId="pro_monthly" />
           </div>
         </div>
       </div>
@@ -170,9 +164,9 @@ function PhotoModePricing() {
 /* ─── Slide Packs ─── */
 function SlidePacks() {
   const packs = [
-    { name: "15 слайдов", slides: 15, price: 490, perSlide: "~33₽", savings: "10%" },
-    { name: "50 слайдов", slides: 50, price: 1490, perSlide: "~30₽", savings: "20%", popular: true },
-    { name: "150 слайдов", slides: 150, price: 3990, perSlide: "~27₽", savings: "30%" },
+    { name: "15 слайдов", slides: 15, price: 490, perSlide: "~33₽", savings: "10%", productId: "pack_15" },
+    { name: "50 слайдов", slides: 50, price: 1490, perSlide: "~30₽", savings: "20%", popular: true, productId: "pack_50" },
+    { name: "150 слайдов", slides: 150, price: 3990, perSlide: "~27₽", savings: "30%", productId: "pack_150" },
   ];
 
   return (
@@ -184,7 +178,7 @@ function SlidePacks() {
             Пакеты слайдов
           </div>
           <h2 className="text-3xl font-bold mt-4">
-            Предоплаченные пакеты Photo Mode
+            Пакеты генераций
           </h2>
           <p className="text-muted-foreground mt-3">
             Чем больше пакет — тем дешевле каждый слайд
@@ -213,17 +207,13 @@ function SlidePacks() {
               <div className="text-sm text-muted-foreground mb-2">
                 {p.perSlide}/слайд
               </div>
-              <div className="inline-block bg-[var(--swipely-lime)] text-[var(--swipely-charcoal)] text-xs font-bold px-3 py-1 rounded-full">
+              <div className="inline-block bg-[var(--swipely-lime)] text-[var(--swipely-charcoal)] text-xs font-bold px-3 py-1 rounded-full mb-4">
                 −{p.savings}
               </div>
+              <ProButton productId={p.productId} label={`Купить за ${p.price.toLocaleString("ru-RU")}₽`} />
             </div>
           ))}
         </div>
-
-        <p className="text-center text-sm text-muted-foreground mt-8">
-          Поштучная докупка: <span className="font-semibold">49₽/слайд</span>{" "}
-          (Free) или <span className="font-semibold">39₽/слайд</span> (PRO)
-        </p>
       </div>
     </section>
   );

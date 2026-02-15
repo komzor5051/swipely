@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0A84FF;
+      --primary-dark: #0066CC;
+      --lime: #D4F542;
+      --pink: #F9A8D4;
+      --charcoal: #1A1A2E;
+      --white: #FFFFFF;
+      --warm-white: #FAFAFA;
+      --gray: #64748B;
+      --light-gray: #E2E8F0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--warm-white);
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grid background */
+    .grid-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    /* Decorative lime lines */
+    .deco-lines {
+      position: absolute;
+      top: 80px;
+      right: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1;
+    }
+
+    .deco-line {
+      width: 100px;
+      height: 12px;
+      background: var(--lime);
+      border-radius: 6px;
+      transform: rotate(-25deg);
+    }
+
+    .deco-line:nth-child(2) { opacity: 0.7; width: 75px; }
+    .deco-line:nth-child(3) { opacity: 0.5; width: 55px; }
+
+    /* Number indicator */
+    .number-indicator {
+      position: absolute;
+      top: 90px;
+      left: 80px;
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gray);
+      letter-spacing: 3px;
+      z-index: 10;
+    }
+
+    /* Main content */
+    .content-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 180px 80px 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 5;
+    }
+
+    /* Title with highlight */
+    .title {
+      font-size: 76px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--charcoal);
+      margin-bottom: 40px;
+      letter-spacing: -2px;
+    }
+
+    .title .highlight {
+      display: inline;
+      background: var(--lime);
+      padding: 6px 20px;
+      position: relative;
+    }
+
+    .title .highlight::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 10%;
+      width: 80%;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .title .highlight-pink {
+      background: var(--pink);
+    }
+
+    .title .highlight-pink::after {
+      display: none;
+    }
+
+    /* Content text */
+    .content-text {
+      font-size: 34px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--gray);
+      max-width: 850px;
+      margin-bottom: 50px;
+    }
+
+    /* Steps list */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 28px 32px;
+      background: var(--white);
+      border-radius: 20px;
+      border: 1px solid var(--light-gray);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .step-number {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--gray);
+      line-height: 1.4;
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 80px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(10, 132, 255, 0.3);
+    }
+
+    .logo-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--charcoal);
+      letter-spacing: -0.5px;
+    }
+
+    .swipe-hint {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--gray);
+    }
+
+    .swipe-hint svg {
+      width: 28px;
+      height: 28px;
+      color: var(--primary);
+    }
+
+    /* Decorative dots */
+    .dots {
+      position: absolute;
+      top: 280px;
+      right: 80px;
+      width: 120px;
+      height: 120px;
+      background-image: radial-gradient(var(--primary) 3px, transparent 3px);
+      background-size: 20px 20px;
+      opacity: 0.1;
+      z-index: 1;
+    }
+
+    /* Blue glow */
+    .blue-glow {
+      position: absolute;
+      bottom: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(10, 132, 255, 0.1) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    /* Pink accent */
+    .pink-accent {
+      position: absolute;
+      top: 350px;
+      left: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(249, 168, 212, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="blue-glow"></div>
+  <div class="pink-accent"></div>
+
+  <div class="deco-lines">
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+  </div>
+
+  <div class="number-indicator">02 / 05</div>
+
+  <div class="content-wrapper">
+    <h1 class="title">
+      <span class="highlight-pink">3 шага</span> к<br>
+      идеальной<br>
+      карусели
+    </h1>
+    <p class="content-text">
+      Формула, которая работает для любой ниши
+    </p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <div class="step-title">Зацепи внимание</div>
+          <div class="step-desc">Первый слайд = интрига без спойлеров</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <div class="step-title">Дай ценность</div>
+          <div class="step-desc">Конкретика вместо воды — цифры, факты</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <div class="step-title">Призыв к действию</div>
+          <div class="step-desc">Сохрани / подпишись / напиши в комменты</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dots"></div>
+
+  <div class="footer">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="white">
+          <path d="M8 10h16M8 16h16M8 22h10" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <span class="logo-text">Swipely</span>
+    </div>
+    <div class="swipe-hint">
+      <span>Свайпай</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

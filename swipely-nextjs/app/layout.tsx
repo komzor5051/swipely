@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit, Space_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -37,6 +38,15 @@ export default function RootLayout({
         className={`${outfit.variable} ${spaceMono.variable} antialiased font-[family-name:var(--font-body)]`}
       >
         {children}
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              borderRadius: "12px",
+              fontSize: "14px",
+            },
+          }}
+        />
       </body>
     </html>
   );
