@@ -111,9 +111,9 @@ function App() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-slate-100">
+      <div className="h-screen flex items-center justify-center blueprint-bg">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-[#D4F542] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-500">Загрузка...</p>
         </div>
       </div>
@@ -122,10 +122,10 @@ function App() {
 
   if (error) {
     return (
-      <div className="h-screen flex items-center justify-center bg-slate-100">
+      <div className="h-screen flex items-center justify-center blueprint-bg">
         <div className="text-center card p-8 max-w-md">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-[#D4F542]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-[#D4F542]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
@@ -145,36 +145,36 @@ function App() {
   const currentSlide = session.carouselData.slides[currentSlideIndex];
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-slate-100">
+    <div className="h-screen flex flex-col overflow-hidden blueprint-bg">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-3 sm:px-6 py-2 sm:py-3 flex-shrink-0">
+      <header className="bg-[#0D0D14] border-b border-white/10 px-3 sm:px-6 py-2 sm:py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             <img src="/logo.png" alt="Swipely" className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg" />
-            <h1 className="text-base sm:text-lg font-semibold text-slate-800 hidden xs:block">Swipely Editor</h1>
-            <span className="text-xs sm:text-sm text-slate-400 hidden sm:block">
+            <h1 className="text-base sm:text-lg font-semibold text-white hidden xs:block">Swipely Editor</h1>
+            <span className="text-xs sm:text-sm text-white/40 hidden sm:block">
               {saving ? 'Сохранение...' : lastSaved ? `Сохранено ${formatTime(lastSaved)}` : ''}
             </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Navigation - compact on mobile */}
-            <div className="flex items-center gap-1 sm:gap-2 bg-slate-100 rounded-lg p-0.5 sm:p-1">
+            <div className="flex items-center gap-1 sm:gap-2 bg-white/10 rounded-lg p-0.5 sm:p-1">
               <button
                 onClick={() => scrollToSlide(Math.max(0, currentSlideIndex - 1))}
                 disabled={currentSlideIndex === 0}
-                className="p-1.5 sm:p-2 rounded hover:bg-white disabled:opacity-30 transition-colors"
+                className="p-1.5 sm:p-2 rounded hover:bg-white/20 disabled:opacity-30 transition-colors text-white"
               >
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <span className="px-2 sm:px-3 text-xs sm:text-sm font-medium text-slate-600">
+              <span className="px-2 sm:px-3 text-xs sm:text-sm font-medium text-white">
                 {currentSlideIndex + 1}/{totalSlides}
               </span>
               <button
                 onClick={() => scrollToSlide(Math.min(totalSlides - 1, currentSlideIndex + 1))}
                 disabled={currentSlideIndex === totalSlides - 1}
-                className="p-1.5 sm:p-2 rounded hover:bg-white disabled:opacity-30 transition-colors"
+                className="p-1.5 sm:p-2 rounded hover:bg-white/20 disabled:opacity-30 transition-colors text-white"
               >
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -184,7 +184,7 @@ function App() {
             {/* Edit button - mobile only */}
             <button
               onClick={() => setShowEditPanel(!showEditPanel)}
-              className="lg:hidden p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
