@@ -3,14 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #0A84FF;
-  --color-primary-dark: #0066CC;
-  --color-primary-light: #3D9FFF;
-  --color-teal: #1E3A5F;
-  --color-teal-light: #4A6B8A;
+  --color-primary: #D4F542;
+  --color-primary-dark: #B8D928;
+  --color-primary-light: #E8FF6E;
+  --color-ink: #0D0D14;
   --color-charcoal: #1A1A2E;
-  --color-warm-white: #F8FAFC;
-  --color-cream: #E8F4FC;
+  --color-warm-white: #FAFAF9;
 }
 
 html, body, #root {
@@ -20,17 +18,14 @@ html, body, #root {
 
 body {
   font-family: 'Outfit', sans-serif;
-  background-color: #f1f5f9;
   color: var(--color-charcoal);
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Prevent overscroll/bounce on mobile */
 html {
   overscroll-behavior: none;
 }
 
-/* Safe area insets for notched phones */
 @supports (padding: max(0px)) {
   .safe-bottom {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -56,11 +51,22 @@ html {
   background: rgba(0, 0, 0, 0.25);
 }
 
-/* Button styles */
+/* Blueprint grid background — shared visual language with landing and main app */
+.blueprint-bg {
+  background-color: #FAFAF9;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.055) 1px, transparent 1px),
+    linear-gradient(rgba(0,0,0,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.10) 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+}
+
+/* Lime primary button — dark text because lime is a light color */
 .btn-primary {
-  @apply px-5 py-2.5 bg-primary text-white font-medium rounded-xl;
-  @apply shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30;
-  @apply transition-all duration-200 hover:bg-primary-dark;
+  @apply px-5 py-2.5 bg-[#D4F542] text-[#0D0D14] font-medium rounded-xl;
+  @apply shadow-lg shadow-[#D4F542]/20 hover:shadow-xl hover:shadow-[#D4F542]/30;
+  @apply transition-all duration-200 hover:bg-[#C8E830];
 }
 
 .btn-secondary {
@@ -69,12 +75,10 @@ html {
   @apply transition-all duration-200;
 }
 
-/* Card styles */
 .card {
   @apply bg-white rounded-2xl border border-slate-200 shadow-sm;
 }
 
-/* Loading animation */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

@@ -15,14 +15,12 @@ export default {
     },
     extend: {
       colors: {
-        primary: '#0A84FF',
-        'primary-dark': '#0066CC',
-        'primary-light': '#3D9FFF',
-        teal: '#1E3A5F',
-        'teal-light': '#4A6B8A',
+        primary: '#D4F542',
+        'primary-dark': '#B8D928',
+        'primary-light': '#E8FF6E',
+        ink: '#0D0D14',
         charcoal: '#1A1A2E',
-        'warm-white': '#F8FAFC',
-        cream: '#E8F4FC',
+        'warm-white': '#FAFAF9',
       },
       fontFamily: {
         display: ['DM Serif Display', 'serif'],
