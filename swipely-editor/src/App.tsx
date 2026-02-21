@@ -264,7 +264,7 @@ function App() {
                 onClick={() => setSelectedElement('title')}
                 className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedElement === 'title'
-                    ? 'bg-primary text-white'
+                    ? 'bg-[#D4F542] text-[#0D0D14]'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
@@ -274,7 +274,7 @@ function App() {
                 onClick={() => setSelectedElement('content')}
                 className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedElement === 'content'
-                    ? 'bg-primary text-white'
+                    ? 'bg-[#D4F542] text-[#0D0D14]'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
@@ -297,7 +297,7 @@ function App() {
                 };
                 handleSlideUpdate(currentSlideIndex, updatedSlide);
               }}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#D4F542]/50"
               rows={selectedElement === 'title' ? 2 : 3}
             />
           </div>
@@ -318,7 +318,7 @@ function App() {
                   const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
                   handleStyleChange(selectedElement, { ...currentStyles, fontSize: Number(e.target.value) });
                 }}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#D4F542]"
               />
             </div>
 
@@ -335,7 +335,7 @@ function App() {
                     }}
                     className={`flex-1 px-2 py-1.5 rounded-lg text-sm transition-colors ${
                       (selectedElement === 'title' ? currentSlide.titleStyles?.textAlign : currentSlide.contentStyles?.textAlign) === align
-                        ? 'bg-primary text-white'
+                        ? 'bg-[#D4F542] text-[#0D0D14]'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
@@ -360,7 +360,7 @@ function App() {
                 className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg cursor-pointer border border-slate-200"
               />
               <div className="flex gap-1.5 sm:gap-2">
-                {['#FFFFFF', '#000000', '#0A84FF', '#FF6B6B', '#FFE66D'].map((c) => (
+                {['#FFFFFF', '#000000', '#0D0D14', '#D4F542', '#FF6B6B'].map((c) => (
                   <button
                     key={c}
                     onClick={() => {
@@ -621,11 +621,11 @@ function SlideCard({
           transition: outline 0.15s ease;
         }
         .editable-element:hover {
-          outline: 2px dashed rgba(10, 132, 255, 0.5) !important;
+          outline: 2px dashed rgba(212, 245, 66, 0.6) !important;
           outline-offset: 8px;
         }
         .editable-element.selected {
-          outline: 2px solid #0A84FF !important;
+          outline: 2px solid #D4F542 !important;
           outline-offset: 8px;
         }
       `;
@@ -656,7 +656,7 @@ function SlideCard({
       className={`
         relative flex-shrink-0 rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer transition-all duration-300
         ${isActive
-          ? 'ring-2 sm:ring-4 ring-primary shadow-xl sm:shadow-2xl shadow-primary/20 scale-100'
+          ? 'ring-2 sm:ring-4 ring-[#D4F542] shadow-xl sm:shadow-2xl shadow-[#D4F542]/20 scale-100'
           : 'ring-1 ring-slate-200 shadow-md sm:shadow-lg opacity-70 sm:opacity-60 scale-[0.98] sm:scale-95 hover:opacity-80 hover:scale-[0.99] sm:hover:scale-[0.97]'
         }
       `}
