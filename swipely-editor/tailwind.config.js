@@ -16,16 +16,15 @@ export default {
     extend: {
       colors: {
         primary: '#D4F542',
-        'primary-dark': '#B8D928',
+        'primary-dark': '#c8e83a',
         'primary-light': '#E8FF6E',
         ink: '#0D0D14',
         charcoal: '#1A1A2E',
         'warm-white': '#FAFAF9',
       },
       fontFamily: {
-        display: ['DM Serif Display', 'serif'],
         body: ['Outfit', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        mono: ['Space Mono', 'monospace'],
       },
     },
   },

@@ -4,7 +4,7 @@
 
 :root {
   --color-primary: #D4F542;
-  --color-primary-dark: #B8D928;
+  --color-primary-dark: #c8e83a;
   --color-primary-light: #E8FF6E;
   --color-ink: #0D0D14;
   --color-charcoal: #1A1A2E;
@@ -18,8 +18,13 @@ html, body, #root {
 
 body {
   font-family: 'Outfit', sans-serif;
-  color: var(--color-charcoal);
+  color: var(--color-ink);
   -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(212, 245, 66, 0.25);
+  color: inherit;
 }
 
 html {
@@ -66,7 +71,7 @@ html {
 .btn-primary {
   @apply px-5 py-2.5 bg-[#D4F542] text-[#0D0D14] font-medium rounded-xl;
   @apply shadow-lg shadow-[#D4F542]/20 hover:shadow-xl hover:shadow-[#D4F542]/30;
-  @apply transition-all duration-200 hover:bg-[#C8E830];
+  @apply transition-all duration-200 hover:bg-[#c8e83a];
 }
 
 .btn-secondary {
