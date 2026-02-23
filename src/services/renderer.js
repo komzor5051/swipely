@@ -178,6 +178,9 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
     case 'swipely':
       templatePath = path.join(TEMPLATES_DIR, 'swipely.html');
       break;
+    case 'street':
+      templatePath = path.join(TEMPLATES_DIR, 'street.html');
+      break;
     default:
       templatePath = path.join(TEMPLATES_DIR, 'notebook.html');
   }

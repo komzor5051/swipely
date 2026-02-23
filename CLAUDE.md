@@ -14,8 +14,11 @@ swipely/
 ├── swipely-editor/       # Web editor for carousels (React + Vite) - edit.swipely.ai
 ├── swipely-api/          # Backend API for Mini App (Express) - api.swipely.ai
 ├── swipely-nextjs/       # Next.js frontend (WIP SaaS boilerplate)
-└── src/                  # Duplicate of swipely-bot/src (keep in sync)
+└── src/                  # ⚠️ STALE DUPLICATE of swipely-bot/src — DO NOT EDIT
 ```
+
+### ⚠️ Git Repos Warning
+This is NOT a standard monorepo. `swipely-bot/`, `swipely-nextjs/`, and `landing/` each have their own `.git`. Always `cd` into the correct directory before committing. The root `src/` and root `package.json` are stale copies — always work in `swipely-bot/src/`.
 
 ## Development Commands by Project
 
@@ -62,7 +65,7 @@ npm run lint                 # ESLint
 ### Generation Modes
 
 **Standard Mode:** `User Input → Gemini Content → Puppeteer HTML→PNG → Telegram`
-- 9 templates: minimal_pop, notebook, darkest, aurora, terminal, editorial, zen, memphis, luxe
+- 16 templates in `src/templates/`: app_list, aurora, backspace, editorial, grid_multi, lime_checklist, luxe, notebook, paper_image, purple_accent, quote_doodle, receipt, speech_bubble, star_highlight, swipely, terminal
 
 **Photo Mode:** `User Input + Photo → Gemini Content → Gemini Image Gen → Text Overlay → Telegram`
 - Styles: cartoon (Pixar/Disney), realistic (professional photography)

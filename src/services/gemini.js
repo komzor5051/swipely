@@ -225,7 +225,8 @@ function getDesignConfig(stylePreset) {
     paper_image: { name: 'Paper Texture', max_words_per_slide: 30, tone: 'provocative, attention-grabbing, money/business focused, impactful' },
     swipely: { name: 'Swipely', max_words_per_slide: 35, tone: 'modern, tech-savvy, energetic, startup vibe, bold statements' },
     // Режим с AI-аватарами - короткие тексты для overlay поверх изображений
-    photo_mode: { name: 'AI Photo', max_words_per_slide: 25, tone: 'impactful, concise, visual-first' }
+    photo_mode: { name: 'AI Photo', max_words_per_slide: 25, tone: 'impactful, concise, visual-first' },
+    street: { name: 'Street', max_words_per_slide: 25, tone: 'bold, raw, street culture, all-caps energy, high contrast statements. КРИТИЧЕСКИ ВАЖНО: заголовки — максимум 3-4 коротких слова, как названия дропов (JUST DO IT, STAY RAW, НОВЫЕ ПРАВИЛА). Никаких длинных предложений в заголовке.' }
   };
   return presets[stylePreset] || presets.notebook;
 }
