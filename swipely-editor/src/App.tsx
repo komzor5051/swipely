@@ -7,6 +7,25 @@ import { FORMAT_SIZES, type SessionResponse, type Slide, type CarouselData, type
 
 type ElementType = 'title' | 'content';
 
+const TEMPLATE_LIST = [
+  { id: 'notebook', name: 'Тетрадь', color: '#FEF9E7' },
+  { id: 'aurora', name: 'Аврора', color: '#7c3aed' },
+  { id: 'terminal', name: 'Терминал', color: '#0d120a' },
+  { id: 'editorial', name: 'Редакция', color: '#f5f0e8' },
+  { id: 'luxe', name: 'Люкс', color: '#0d0b12' },
+  { id: 'photo_overlay', name: 'Фото', color: '#1a1a2e' },
+  { id: 'backspace', name: 'Бэкспейс', color: '#e8f0fe' },
+  { id: 'star_highlight', name: 'Звезда', color: '#1a1a1a' },
+  { id: 'purple_accent', name: 'Пурпур', color: '#6b21a8' },
+  { id: 'quote_doodle', name: 'Цитата', color: '#fff8f0' },
+  { id: 'speech_bubble', name: 'Пузырь', color: '#ff7a45' },
+  { id: 'grid_multi', name: 'Сетка', color: '#0D0D14' },
+  { id: 'receipt', name: 'Чек', color: '#fafaf7' },
+  { id: 'lime_checklist', name: 'Чеклист', color: '#D4F542' },
+  { id: 'app_list', name: 'Приложение', color: '#ffffff' },
+  { id: 'paper_image', name: 'Бумага', color: '#f5f3ef' },
+];
+
 function App() {
   const { token } = useParams<{ token: string }>();
   const [session, setSession] = useState<SessionResponse | null>(null);
@@ -16,7 +35,8 @@ function App() {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [selectedElement, setSelectedElement] = useState<ElementType>('title');
-  const [showEditPanel, setShowEditPanel] = useState(false);
+  const [activeTab, setActiveTab] = useState<'text' | 'template' | null>(null);
+  const [localStylePreset, setLocalStylePreset] = useState('');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,6 +47,11 @@ function App() {
     }
     loadSession(token);
   }, [token]);
+
+  // Sync localStylePreset when session loads
+  useEffect(() => {
+    if (session) setLocalStylePreset(session.stylePreset);
+  }, [session?.stylePreset]);
 
   // Preload images
   useEffect(() => {
@@ -39,9 +64,9 @@ function App() {
     });
   }, [session?.images]);
 
-  async function loadSession(token: string) {
+  async function loadSession(tok: string) {
     setLoading(true);
-    const data = await getSession(token);
+    const data = await getSession(tok);
     if (!data) {
       setError('Сессия не найдена или истекла');
       setLoading(false);
@@ -97,6 +122,16 @@ function App() {
     handleSlideUpdate(currentSlideIndex, updatedSlide);
   }, [session, currentSlideIndex, handleSlideUpdate]);
 
+  const handleTemplateChange = useCallback(async (newPreset: string) => {
+    if (!session || !token) return;
+    setLocalStylePreset(newPreset);
+    setSession({ ...session, stylePreset: newPreset });
+    setSaving(true);
+    const success = await updateSession(token, session.carouselData, newPreset);
+    setSaving(false);
+    if (success) setLastSaved(new Date());
+  }, [session, token]);
+
   const scrollToSlide = (index: number) => {
     setCurrentSlideIndex(index);
     const container = scrollContainerRef.current;
@@ -108,6 +143,161 @@ function App() {
       });
     }
   };
+
+  const renderEditControls = () => {
+    if (!session) return null;
+    const currentSlide = session.carouselData.slides[currentSlideIndex];
+    return (
+      <>
+        {/* Element selector */}
+        <div className="mb-4 sm:mb-5">
+          <label className="block text-sm text-white/50 mb-2">Выбрано</label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSelectedElement('title')}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedElement === 'title'
+                  ? 'bg-[#D4F542] text-[#0D0D14]'
+                  : 'bg-white/10 text-white/60 hover:bg-white/15'
+              }`}
+            >
+              Заголовок
+            </button>
+            <button
+              onClick={() => setSelectedElement('content')}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedElement === 'content'
+                  ? 'bg-[#D4F542] text-[#0D0D14]'
+                  : 'bg-white/10 text-white/60 hover:bg-white/15'
+              }`}
+            >
+              Контент
+            </button>
+          </div>
+        </div>
+
+        {/* Text editing */}
+        <div className="mb-4 sm:mb-5">
+          <label className="block text-sm text-white/50 mb-2">
+            {selectedElement === 'title' ? 'Заголовок' : 'Текст'}
+          </label>
+          <textarea
+            value={selectedElement === 'title' ? currentSlide.title : currentSlide.content}
+            onChange={(e) => {
+              const updatedSlide = {
+                ...currentSlide,
+                [selectedElement]: e.target.value
+              };
+              handleSlideUpdate(currentSlideIndex, updatedSlide);
+            }}
+            className="w-full px-3 py-2 border border-white/10 bg-white/5 text-white rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#D4F542]/50 placeholder:text-white/30"
+            rows={selectedElement === 'title' ? 2 : 3}
+          />
+        </div>
+
+        {/* Font size & Alignment - side by side on mobile */}
+        <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 mb-4 sm:mb-5">
+          {/* Font size */}
+          <div>
+            <label className="block text-sm text-white/50 mb-2">
+              Размер: {(selectedElement === 'title' ? currentSlide.titleStyles?.fontSize : currentSlide.contentStyles?.fontSize) || (selectedElement === 'title' ? 48 : 24)}px
+            </label>
+            <input
+              type="range"
+              min={12}
+              max={120}
+              value={(selectedElement === 'title' ? currentSlide.titleStyles?.fontSize : currentSlide.contentStyles?.fontSize) || (selectedElement === 'title' ? 48 : 24)}
+              onChange={(e) => {
+                const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
+                handleStyleChange(selectedElement, { ...currentStyles, fontSize: Number(e.target.value) });
+              }}
+              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#D4F542]"
+            />
+          </div>
+
+          {/* Alignment */}
+          <div>
+            <label className="block text-sm text-white/50 mb-2">Выравнивание</label>
+            <div className="flex gap-1">
+              {(['left', 'center', 'right'] as const).map((align) => (
+                <button
+                  key={align}
+                  onClick={() => {
+                    const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
+                    handleStyleChange(selectedElement, { ...currentStyles, textAlign: align });
+                  }}
+                  className={`flex-1 px-2 py-1.5 rounded-lg text-sm transition-colors ${
+                    (selectedElement === 'title' ? currentSlide.titleStyles?.textAlign : currentSlide.contentStyles?.textAlign) === align
+                      ? 'bg-[#D4F542] text-[#0D0D14]'
+                      : 'bg-white/10 text-white/60 hover:bg-white/15'
+                  }`}
+                >
+                  {align === 'left' ? '←' : align === 'center' ? '↔' : '→'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Color */}
+        <div className="mb-4 sm:mb-5">
+          <label className="block text-sm text-white/50 mb-2">Цвет текста</label>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <input
+              type="color"
+              value={(selectedElement === 'title' ? currentSlide.titleStyles?.color : currentSlide.contentStyles?.color) || '#FFFFFF'}
+              onChange={(e) => {
+                const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
+                handleStyleChange(selectedElement, { ...currentStyles, color: e.target.value });
+              }}
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg cursor-pointer border border-white/10 bg-transparent"
+            />
+            <div className="flex gap-1.5 sm:gap-2">
+              {['#FFFFFF', '#000000', '#0D0D14', '#D4F542', '#FF6B6B'].map((c) => (
+                <button
+                  key={c}
+                  onClick={() => {
+                    const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
+                    handleStyleChange(selectedElement, { ...currentStyles, color: c });
+                  }}
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded border border-white/15 hover:scale-110 transition-transform"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10 pt-3 sm:pt-4 mt-1">
+          <p className="text-xs text-white/30">
+            Перетаскивайте текст на активном слайде для изменения позиции
+          </p>
+        </div>
+      </>
+    );
+  };
+
+  const renderTemplatePicker = () => (
+    <div className="grid grid-cols-4 gap-2">
+      {TEMPLATE_LIST.map(t => (
+        <button
+          key={t.id}
+          onClick={() => handleTemplateChange(t.id)}
+          className={`rounded-xl p-2 flex flex-col items-center gap-1 border transition-all ${
+            localStylePreset === t.id
+              ? 'border-[#D4F542] bg-[#D4F542]/10'
+              : 'border-white/10 bg-white/5 hover:bg-white/10'
+          }`}
+        >
+          <div
+            className="w-full h-8 rounded-lg"
+            style={{ backgroundColor: t.color }}
+          />
+          <span className="text-[10px] text-white/60 text-center leading-tight">{t.name}</span>
+        </button>
+      ))}
+    </div>
+  );
 
   if (loading) {
     return (
@@ -142,7 +332,6 @@ function App() {
   if (!session) return null;
 
   const totalSlides = session.carouselData.slides.length;
-  const currentSlide = session.carouselData.slides[currentSlideIndex];
 
   return (
     <div className="h-screen flex flex-col overflow-hidden blueprint-bg">
@@ -157,7 +346,7 @@ function App() {
             </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Navigation - compact on mobile */}
+            {/* Navigation */}
             <div className="flex items-center gap-1 sm:gap-2 bg-white/10 rounded-lg p-0.5 sm:p-1">
               <button
                 onClick={() => scrollToSlide(Math.max(0, currentSlideIndex - 1))}
@@ -181,18 +370,9 @@ function App() {
                 </svg>
               </button>
             </div>
-            {/* Edit button - mobile only */}
-            <button
-              onClick={() => setShowEditPanel(!showEditPanel)}
-              className="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </button>
             <ExportButton
               slides={session.carouselData.slides}
-              stylePreset={session.stylePreset}
+              stylePreset={localStylePreset}
               format={session.format}
               username={session.username}
             />
@@ -202,12 +382,13 @@ function App() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Slides area */}
+        {/* Slides area — margin accounts for bottom tab bar + sheet on mobile */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-x-auto overflow-y-hidden flex items-center"
+          className={`flex-1 overflow-x-auto overflow-y-hidden flex items-center transition-all duration-300 ${
+            activeTab ? 'mb-[calc(56px+50vh)]' : 'mb-[56px]'
+          } lg:mb-0`}
         >
-          {/* Horizontal scroll on all devices */}
           <div className="flex flex-row items-center gap-4 lg:gap-6 h-full px-4 sm:px-8 py-4" style={{ minWidth: 'max-content' }}>
             {session.carouselData.slides.map((slide, index) => (
               <SlideCard
@@ -216,7 +397,7 @@ function App() {
                 index={index}
                 totalSlides={totalSlides}
                 isActive={index === currentSlideIndex}
-                stylePreset={session.stylePreset}
+                stylePreset={localStylePreset}
                 format={session.format}
                 image={session.images?.[index]}
                 selectedElement={selectedElement}
@@ -229,166 +410,74 @@ function App() {
           </div>
         </div>
 
-        {/* Edit panel - Bottom sheet on mobile, sidebar on desktop */}
-        <div className={`
-          ${showEditPanel ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}
-          fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto
-          w-full lg:w-80 max-h-[70vh] lg:max-h-none
-          bg-[#0D0D14] border-t lg:border-t-0 lg:border-l border-white/10
-          rounded-t-2xl lg:rounded-none shadow-2xl lg:shadow-none
-          p-4 sm:p-5 overflow-y-auto flex-shrink-0
-          transition-transform duration-300 ease-out z-50
-        `}>
-          {/* Mobile drag handle */}
-          <div className="lg:hidden flex justify-center mb-3">
-            <div className="w-10 h-1 bg-white/20 rounded-full"></div>
-          </div>
-
-          {/* Close button - mobile only */}
-          <button
-            onClick={() => setShowEditPanel(false)}
-            className="lg:hidden absolute top-3 right-3 p-2 rounded-full hover:bg-white/10"
-          >
-            <svg className="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
+        {/* Desktop sidebar only */}
+        <div className="hidden lg:flex flex-col w-80 bg-[#0D0D14] border-l border-white/10 overflow-y-auto flex-shrink-0 p-5">
           <h3 className="font-semibold text-white mb-3 sm:mb-4">Редактирование</h3>
+          {renderEditControls()}
+        </div>
+      </div>
 
-          {/* Element selector */}
-          <div className="mb-4 sm:mb-5">
-            <label className="block text-sm text-white/50 mb-2">Выбрано</label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSelectedElement('title')}
-                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedElement === 'title'
-                    ? 'bg-[#D4F542] text-[#0D0D14]'
-                    : 'bg-white/10 text-white/60 hover:bg-white/15'
-                }`}
-              >
-                Заголовок
-              </button>
-              <button
-                onClick={() => setSelectedElement('content')}
-                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedElement === 'content'
-                    ? 'bg-[#D4F542] text-[#0D0D14]'
-                    : 'bg-white/10 text-white/60 hover:bg-white/15'
-                }`}
-              >
-                Контент
-              </button>
-            </div>
+      {/* Bottom sheet — mobile only */}
+      {activeTab && (
+        <div className="fixed bottom-[56px] left-0 right-0 max-h-[50vh] bg-[#0D0D14] border-t border-white/10 rounded-t-2xl z-30 overflow-y-auto lg:hidden">
+          <div className="flex justify-center pt-3 pb-1 sticky top-0 bg-[#0D0D14]">
+            <div className="w-10 h-1 bg-white/20 rounded-full" />
           </div>
-
-          {/* Text editing */}
-          <div className="mb-4 sm:mb-5">
-            <label className="block text-sm text-white/50 mb-2">
-              {selectedElement === 'title' ? 'Заголовок' : 'Текст'}
-            </label>
-            <textarea
-              value={selectedElement === 'title' ? currentSlide.title : currentSlide.content}
-              onChange={(e) => {
-                const updatedSlide = {
-                  ...currentSlide,
-                  [selectedElement]: e.target.value
-                };
-                handleSlideUpdate(currentSlideIndex, updatedSlide);
-              }}
-              className="w-full px-3 py-2 border border-white/10 bg-white/5 text-white rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#D4F542]/50 placeholder:text-white/30"
-              rows={selectedElement === 'title' ? 2 : 3}
-            />
+          <div className="flex items-center justify-between px-4 py-2 sticky top-6 bg-[#0D0D14]">
+            <h3 className="font-semibold text-white">
+              {activeTab === 'text' ? 'Текст' : 'Шаблон'}
+            </h3>
+            <button onClick={() => setActiveTab(null)} className="p-1 rounded-lg hover:bg-white/10">
+              <svg className="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-
-          {/* Font size & Color - side by side on mobile */}
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 mb-4 sm:mb-5">
-            {/* Font size */}
-            <div>
-              <label className="block text-sm text-white/50 mb-2">
-                Размер: {(selectedElement === 'title' ? currentSlide.titleStyles?.fontSize : currentSlide.contentStyles?.fontSize) || (selectedElement === 'title' ? 48 : 24)}px
-              </label>
-              <input
-                type="range"
-                min={12}
-                max={120}
-                value={(selectedElement === 'title' ? currentSlide.titleStyles?.fontSize : currentSlide.contentStyles?.fontSize) || (selectedElement === 'title' ? 48 : 24)}
-                onChange={(e) => {
-                  const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
-                  handleStyleChange(selectedElement, { ...currentStyles, fontSize: Number(e.target.value) });
-                }}
-                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#D4F542]"
-              />
-            </div>
-
-            {/* Alignment */}
-            <div>
-              <label className="block text-sm text-white/50 mb-2">Выравнивание</label>
-              <div className="flex gap-1">
-                {(['left', 'center', 'right'] as const).map((align) => (
-                  <button
-                    key={align}
-                    onClick={() => {
-                      const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
-                      handleStyleChange(selectedElement, { ...currentStyles, textAlign: align });
-                    }}
-                    className={`flex-1 px-2 py-1.5 rounded-lg text-sm transition-colors ${
-                      (selectedElement === 'title' ? currentSlide.titleStyles?.textAlign : currentSlide.contentStyles?.textAlign) === align
-                        ? 'bg-[#D4F542] text-[#0D0D14]'
-                        : 'bg-white/10 text-white/60 hover:bg-white/15'
-                    }`}
-                  >
-                    {align === 'left' ? '←' : align === 'center' ? '↔' : '→'}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Color */}
-          <div className="mb-4 sm:mb-5">
-            <label className="block text-sm text-white/50 mb-2">Цвет текста</label>
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <input
-                type="color"
-                value={(selectedElement === 'title' ? currentSlide.titleStyles?.color : currentSlide.contentStyles?.color) || '#FFFFFF'}
-                onChange={(e) => {
-                  const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
-                  handleStyleChange(selectedElement, { ...currentStyles, color: e.target.value });
-                }}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg cursor-pointer border border-white/10 bg-transparent"
-              />
-              <div className="flex gap-1.5 sm:gap-2">
-                {['#FFFFFF', '#000000', '#0D0D14', '#D4F542', '#FF6B6B'].map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => {
-                      const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
-                      handleStyleChange(selectedElement, { ...currentStyles, color: c });
-                    }}
-                    className="w-6 h-6 sm:w-7 sm:h-7 rounded border border-white/15 hover:scale-110 transition-transform"
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-white/10 pt-3 sm:pt-4 mt-3 sm:mt-4 hidden lg:block">
-            <p className="text-xs text-white/30">
-              Перетаскивайте текст на активном слайде для изменения позиции
-            </p>
+          <div className="px-4 pb-6">
+            {activeTab === 'text' && renderEditControls()}
+            {activeTab === 'template' && renderTemplatePicker()}
           </div>
         </div>
+      )}
 
-        {/* Mobile edit panel backdrop */}
-        {showEditPanel && (
-          <div
-            className="fixed inset-0 bg-black/30 z-40 lg:hidden"
-            onClick={() => setShowEditPanel(false)}
-          />
-        )}
+      {/* Bottom tab bar — mobile only */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0D0D14] border-t border-white/10 z-40 lg:hidden">
+        <div className="flex items-stretch h-14">
+          {([
+            {
+              id: 'template' as const,
+              label: 'Шаблон',
+              icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <rect x="3" y="3" width="8" height="8" rx="1" />
+                  <rect x="13" y="3" width="8" height="8" rx="1" />
+                  <rect x="3" y="13" width="8" height="8" rx="1" />
+                  <rect x="13" y="13" width="8" height="8" rx="1" />
+                </svg>
+              ),
+            },
+            {
+              id: 'text' as const,
+              label: 'Текст',
+              icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h8m-8 6h16" />
+                </svg>
+              ),
+            },
+          ] as const).map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(activeTab === tab.id ? null : tab.id)}
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors ${
+                activeTab === tab.id ? 'text-[#D4F542]' : 'text-white/40'
+              }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
