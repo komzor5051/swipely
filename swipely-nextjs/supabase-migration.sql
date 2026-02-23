@@ -57,6 +57,8 @@ ALTER TABLE generations ADD COLUMN IF NOT EXISTS template TEXT;
 ALTER TABLE generations ADD COLUMN IF NOT EXISTS slide_count INTEGER;
 ALTER TABLE generations ADD COLUMN IF NOT EXISTS format TEXT;
 ALTER TABLE generations ADD COLUMN IF NOT EXISTS tone TEXT;
+ALTER TABLE generations ADD COLUMN IF NOT EXISTS platform TEXT;
+ALTER TABLE generations ADD COLUMN IF NOT EXISTS goal TEXT;
 ALTER TABLE generations ADD COLUMN IF NOT EXISTS output_json JSONB;
 
 CREATE INDEX IF NOT EXISTS idx_generations_user_id ON generations(user_id);
@@ -145,6 +147,62 @@ CREATE POLICY "Users can delete own generations" ON generations
 GRANT ALL ON profiles TO authenticated;
 GRANT ALL ON generations TO authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+
+-- ==================== MONTHLY RESET + REFERRAL SYSTEM ====================
+-- Safe to run on existing DB (idempotent)
+
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS last_month_reset TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS referred_by UUID REFERENCES profiles(id);
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS referral_count INTEGER DEFAULT 0;
+
+-- RPC: reset standard_used if calendar month has changed (lazy reset on access)
+CREATE OR REPLACE FUNCTION reset_monthly_if_needed(user_id_param UUID)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+DECLARE
+  current_month TEXT := to_char(NOW(), 'YYYY-MM');
+  user_last_reset TEXT;
+BEGIN
+  SELECT last_month_reset INTO user_last_reset FROM profiles WHERE id = user_id_param;
+  IF user_last_reset IS DISTINCT FROM current_month THEN
+    UPDATE profiles
+      SET standard_used = 0, last_month_reset = current_month
+      WHERE id = user_id_param;
+  END IF;
+END;
+$$;
+
+-- RPC: grant referral bonus slides to both parties
+CREATE OR REPLACE FUNCTION grant_referral_bonus(new_user_id UUID, referrer_id UUID)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+BEGIN
+  -- 3 bonus slides to new user
+  UPDATE profiles
+    SET photo_slides_balance = photo_slides_balance + 3,
+        referred_by = referrer_id
+    WHERE id = new_user_id;
+  -- 5 bonus slides to referrer + increment their referral count
+  UPDATE profiles
+    SET photo_slides_balance = photo_slides_balance + 5,
+        referral_count = COALESCE(referral_count, 0) + 1
+    WHERE id = referrer_id;
+END;
+$$;
+
+-- RPC: safely decrement photo_slides_balance (floor at 0)
+CREATE OR REPLACE FUNCTION decrement_photo_balance(user_id_param UUID, amount INTEGER)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE profiles
+    SET photo_slides_balance = GREATEST(0, photo_slides_balance - amount)
+    WHERE id = user_id_param;
+END;
+$$;
 
 -- ============================================
 -- VERIFY: run these to check

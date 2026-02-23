@@ -4,6 +4,8 @@ import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, getSlideDimensions } from "../utils";
 
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap');`;
+
 export default function StarHighlightSlide({
   slide,
   slideNumber,
@@ -11,8 +13,7 @@ export default function StarHighlightSlide({
   format,
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
-
-  const isHook = slide.type === "hook";
+  const isHook = slideNumber === 1;
 
   const highlightStyle: React.CSSProperties = {
     display: "inline",
@@ -24,205 +25,261 @@ export default function StarHighlightSlide({
     WebkitBoxDecorationBreak: "clone" as const,
   };
 
+  const hookHighlight: React.CSSProperties = {
+    display: "inline",
+    background: "#FFF59D",
+    color: "#0A0A0A",
+    padding: "4px 16px",
+    margin: "0 -6px",
+    boxDecorationBreak: "clone" as const,
+    WebkitBoxDecorationBreak: "clone" as const,
+  };
+
+  const StarIcon = ({ size, color }: { size: number; color: string }) => (
+    <svg viewBox="0 0 100 100" width={size} height={size} fill={color}>
+      <polygon points="50,0 54,42 100,50 54,58 50,100 46,58 0,50 46,42" />
+    </svg>
+  );
+
+  /* ── HOOK — тёмный фон, большая звезда, центрированный ── */
+  if (isHook) {
+    return (
+      <div
+        style={{
+          width,
+          height,
+          background: "#0F0F0F",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "80px 90px",
+          position: "relative",
+          overflow: "hidden",
+          boxSizing: "border-box",
+        }}
+      >
+        <style>{FONTS}</style>
+
+        {/* Фоновые звёзды */}
+        <div style={{ position: "absolute", top: 60, left: 80, opacity: 0.06 }}>
+          <StarIcon size={120} color="#FFF59D" />
+        </div>
+        <div style={{ position: "absolute", bottom: 80, right: 70, opacity: 0.04 }}>
+          <StarIcon size={180} color="#FFF59D" />
+        </div>
+
+        {/* Counter */}
+        <div
+          style={{
+            position: "absolute",
+            top: 60,
+            right: 80,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 18,
+            fontWeight: 500,
+            letterSpacing: 3,
+            color: "rgba(255,255,255,0.15)",
+          }}
+        >
+          01 / {String(totalSlides).padStart(2, "0")}
+        </div>
+
+        {/* Центральная звезда */}
+        <div style={{ marginBottom: 48 }}>
+          <StarIcon size={64} color="#FFF59D" />
+        </div>
+
+        {/* Заголовок */}
+        <h1
+          style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 96,
+            fontWeight: 800,
+            lineHeight: 1.1,
+            letterSpacing: -1,
+            color: "#FFFFFF",
+            textAlign: "center",
+            marginBottom: 40,
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
+            maxWidth: 860,
+          }}
+        >
+          {renderTitle(slide.title, hookHighlight)}
+        </h1>
+
+        {/* Контент в жёлтом блоке */}
+        <div
+          style={{
+            background: "rgba(255,245,157,0.08)",
+            border: "1px solid rgba(255,245,157,0.15)",
+            borderRadius: 12,
+            padding: "20px 36px",
+            maxWidth: 800,
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 34,
+              fontWeight: 300,
+              lineHeight: 1.65,
+              color: "rgba(255,255,255,0.55)",
+              textAlign: "center",
+            }}
+          >
+            {slide.content}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── CONTENT SLIDES — белый фон, звезда сверху ── */
   return (
     <div
       style={{
         width,
         height,
         background: "#FFFFFF",
-        fontFamily: "'Playfair Display', Georgia, serif",
-        position: "relative",
-        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 80,
+        padding: "72px 88px",
+        position: "relative",
+        overflow: "hidden",
+        boxSizing: "border-box",
       }}
     >
-      {/* Google Fonts */}
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
+      <style>{FONTS}</style>
 
-      {/* Category tag */}
+      {/* Декоративная звезда фоном */}
       <div
         style={{
           position: "absolute",
-          top: 60,
-          left: "50%",
-          transform: "translateX(-50%)",
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 18,
-          fontWeight: 600,
-          color: "#0A0A0A",
-          letterSpacing: 2,
-          textTransform: "uppercase" as const,
+          bottom: 60,
+          right: 70,
+          opacity: 0.04,
         }}
       >
-        [ {slide.type} ]
+        <StarIcon size={220} color="#0A0A0A" />
       </div>
 
-      {/* Slide counter */}
-      <div
-        style={{
-          position: "absolute",
-          top: 60,
-          right: 80,
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 16,
-          fontWeight: 500,
-          color: "#666666",
-          letterSpacing: 1,
-        }}
-      >
-        {slideNumber}/{totalSlides}
-      </div>
-
-      {/* Main content */}
+      {/* Счётчик + мини-звезда */}
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "space-between",
           alignItems: "center",
-          textAlign: "center" as const,
-          maxWidth: 900,
+          marginBottom: 56,
+          flexShrink: 0,
         }}
       >
-        {/* Star icon */}
-        <div style={{ width: 80, height: 80, marginBottom: 40 }}>
-          <svg
-            viewBox="0 0 100 100"
-            xmlns="http://www.w3.org/2000/svg"
-            width={80}
-            height={80}
-            fill="#0A0A0A"
-          >
-            <polygon points="50,0 54,42 100,50 54,58 50,100 46,58 0,50 46,42" />
-          </svg>
+        <div style={{ opacity: 0.35 }}>
+          <StarIcon size={28} color="#0A0A0A" />
         </div>
-
-        {/* Headline */}
-        <h1
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: isHook ? 88 : 78,
-            fontWeight: 500,
-            lineHeight: 1.15,
-            color: "#0A0A0A",
-            letterSpacing: -1,
-            marginBottom: 30,
-            textAlign: "center" as const,
-          }}
-        >
-          {renderTitle(slide.title, highlightStyle)}
-        </h1>
-
-        {/* Highlighted subtitle / content */}
         <span
           style={{
-            display: "inline",
-            background: "#FFF59D",
-            padding: "4px 16px",
             fontFamily: "'Inter', sans-serif",
-            fontSize: 32,
+            fontSize: 18,
             fontWeight: 500,
-            color: "#0A0A0A",
-            letterSpacing: 1,
+            letterSpacing: 3,
+            color: "#AAAAAA",
           }}
         >
-          {"[ "}
-          {slide.content}
-          {" ]"}
+          {String(slideNumber).padStart(2, "0")}&nbsp;/&nbsp;{String(totalSlides).padStart(2, "0")}
         </span>
       </div>
 
-      {/* Arrow at bottom */}
+      {/* Заголовок */}
+      <h1
+        style={{
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontSize: 80,
+          fontWeight: 700,
+          lineHeight: 1.12,
+          letterSpacing: -0.5,
+          color: "#0A0A0A",
+          marginBottom: 40,
+          overflowWrap: "anywhere",
+          wordBreak: "break-word",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {renderTitle(slide.title, highlightStyle)}
+      </h1>
+
+      {/* Разделитель */}
       <div
         style={{
-          position: "absolute",
-          bottom: 180,
-          left: "50%",
-          transform: "translateX(-50%)",
+          width: "100%",
+          height: 1,
+          background: "#F0F0F0",
+          marginBottom: 36,
+          flexShrink: 0,
+        }}
+      />
+
+      {/* Контент */}
+      <p
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 36,
+          fontWeight: 400,
+          lineHeight: 1.7,
+          color: "#444444",
+          flex: 1,
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {slide.content}
+      </p>
+
+      {/* Стрелка снизу */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginTop: 36,
+          flexShrink: 0,
         }}
       >
         <div
           style={{
-            width: 120,
+            width: 80,
             height: 2,
             background: "#0A0A0A",
             position: "relative",
           }}
         >
-          {/* Arrow head */}
           <div
             style={{
               position: "absolute",
               right: -2,
-              top: -6,
-              width: 14,
-              height: 14,
+              top: -5,
+              width: 12,
+              height: 12,
               borderRight: "2px solid #0A0A0A",
               borderTop: "2px solid #0A0A0A",
               transform: "rotate(45deg)",
             }}
           />
         </div>
-      </div>
-
-      {/* Corner decorative icons */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 80,
-          right: 80,
-          display: "flex",
-          flexDirection: "column" as const,
-          gap: 15,
-        }}
-      >
-        <div
+        <span
           style={{
-            width: 40,
-            height: 40,
-            border: "2px solid #0A0A0A",
-            borderRadius: 8,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 16,
+            fontWeight: 500,
+            color: "#AAAAAA",
+            letterSpacing: 2,
+            textTransform: "uppercase",
           }}
         >
-          <svg
-            viewBox="0 0 24 24"
-            width={20}
-            height={20}
-            stroke="#0A0A0A"
-            fill="none"
-            strokeWidth={2}
-          >
-            <path d="M7 17L17 7M17 7H7M17 7V17" />
-          </svg>
-        </div>
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            border: "2px solid #0A0A0A",
-            borderRadius: 8,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width={20}
-            height={20}
-            stroke="#0A0A0A"
-            fill="none"
-            strokeWidth={2}
-          >
-            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </div>
+          дальше
+        </span>
       </div>
     </div>
   );

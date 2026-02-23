@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { processReferral } from "@/lib/supabase/queries";
 
 // Admin client with service_role key — can auto-confirm users
 const supabaseAdmin = createClient(
@@ -9,7 +10,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, referralCode } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -41,6 +42,13 @@ export async function POST(request: Request) {
         );
       }
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    // Apply referral bonus if code provided (non-critical — don't fail signup)
+    if (referralCode && data.user) {
+      await processReferral(supabaseAdmin, data.user.id, referralCode).catch(
+        (e) => console.error("Referral processing failed:", e)
+      );
     }
 
     return NextResponse.json({ user: data.user });

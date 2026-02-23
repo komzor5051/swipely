@@ -12,6 +12,8 @@ import {
   Menu,
   X,
   CreditCard,
+  Gift,
+  Layers,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -22,6 +24,8 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Дашборд" },
   { href: "/generate", icon: Sparkles, label: "Создать" },
   { href: "/history", icon: Clock, label: "История" },
+  { href: "/dashboard/pricing", icon: Layers, label: "Тарифы" },
+  { href: "/referral", icon: Gift, label: "Пригласи друга" },
   { href: "/dashboard/settings", icon: Settings, label: "Настройки" },
 ];
 
@@ -48,7 +52,7 @@ function Sidebar({
 
   return (
     <aside
-      className={`w-64 bg-[var(--swipely-blue)] text-white p-6 flex flex-col ${className}`}
+      className={`w-64 bg-[#0D0D14] text-white p-6 flex flex-col ${className}`}
     >
       {/* Logo */}
       <div className="mb-8">
@@ -57,7 +61,7 @@ function Sidebar({
             <svg viewBox="0 0 32 32" fill="none" width={24} height={24}>
               <path
                 d="M10 12h12M10 16h12M10 20h8"
-                stroke="#0A84FF"
+                stroke="#D4F542"
                 strokeWidth="2.5"
                 strokeLinecap="round"
               />
@@ -68,22 +72,22 @@ function Sidebar({
       </div>
 
       {/* Balance card */}
-      <div className="mb-6 rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
-        <div className="text-xs text-white/60 mb-1">Генерации</div>
-        <div className="text-2xl font-bold font-[family-name:var(--font-mono)]">
+      <div className="mb-6 rounded-2xl bg-[#D4F542] p-4">
+        <div className="text-xs text-[#0D0D14]/60 mb-1">Генерации</div>
+        <div className="text-2xl font-bold font-[family-name:var(--font-mono)] text-[#0D0D14]">
           {loading ? "—" : remaining}{" "}
-          <span className="text-sm font-normal text-white/60">
+          <span className="text-sm font-normal text-[#0D0D14]/50">
             / {loading ? "—" : limitLabel}
           </span>
         </div>
-        <div className="text-xs text-white/50 mt-1">
+        <div className="text-xs text-[#0D0D14]/50 mt-1">
           {tier === "pro" ? "PRO тариф" : "Бесплатный тариф"}
         </div>
         {tier !== "pro" && (
-          <Link href="/pricing">
+          <Link href="/dashboard/pricing">
             <Button
               size="sm"
-              className="w-full mt-3 rounded-full bg-white text-[var(--swipely-blue)] hover:bg-white/90 active:scale-[0.98] text-xs font-semibold transition-all"
+              className="w-full mt-3 rounded-full bg-[#0D0D14] text-white hover:bg-[#1A1A2E] active:scale-[0.98] text-xs font-semibold transition-all"
             >
               <CreditCard className="h-3 w-3 mr-1.5" />
               Перейти на PRO
@@ -104,14 +108,14 @@ function Sidebar({
               <div
                 className={`relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-white/20 text-white"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "bg-[#D4F542]/15 text-[#D4F542]"
+                    : "text-white/50 hover:bg-white/10 hover:text-white/90"
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="sidebar-active"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-full"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#D4F542] rounded-full"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}
@@ -124,9 +128,9 @@ function Sidebar({
       </nav>
 
       {/* User section */}
-      <div className="mt-auto pt-4 border-t border-white/15">
+      <div className="mt-auto pt-4 border-t border-white/10">
         <div className="mb-3 px-2">
-          <p className="text-xs text-white/50">Вход как:</p>
+          <p className="text-xs text-white/40">Вход как:</p>
           <p className="text-sm font-medium truncate">
             {loading ? "..." : email || "—"}
           </p>
@@ -296,7 +300,7 @@ export default function DashboardLayout({
             <Link href="/generate">
               <Button
                 size="sm"
-                className="rounded-full bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)] active:scale-[0.98] transition-all shadow-sm hover:shadow-md"
+                className="rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] active:scale-[0.98] transition-all shadow-sm hover:shadow-md font-semibold"
               >
                 <Sparkles className="h-3.5 w-3.5 mr-1.5" />
                 Создать карусель
@@ -305,7 +309,7 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <main className="flex-1 p-6 md:p-8 bg-muted/30">{children}</main>
+        <main className="flex-1 p-6 md:p-8 bg-grid">{children}</main>
       </div>
     </div>
   );

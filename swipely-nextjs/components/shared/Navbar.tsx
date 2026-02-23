@@ -55,7 +55,7 @@ export function Navbar() {
           <Link href="/signup">
             <Button
               size="sm"
-              className="rounded-full px-6 bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)]"
+              className="rounded-full px-6 bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] shadow-[0_2px_12px_rgba(212,245,66,0.3)] hover:shadow-[0_4px_20px_rgba(212,245,66,0.4)] transition-all duration-200"
             >
               Начать бесплатно
             </Button>
@@ -92,7 +92,7 @@ export function Navbar() {
                 </Button>
               </Link>
               <Link href="/signup" className="flex-1">
-                <Button className="w-full rounded-full bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)]">
+                <Button className="w-full rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] transition-all duration-200">
                   Начать
                 </Button>
               </Link>

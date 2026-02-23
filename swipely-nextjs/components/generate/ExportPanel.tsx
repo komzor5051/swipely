@@ -34,34 +34,14 @@ export default function ExportPanel({
       const container = containerRef.current;
       if (!container) return;
 
-      // Render each slide at full resolution
+      const previewSlides = container.querySelectorAll("[data-slide-export]");
+
       for (let i = 0; i < slides.length; i++) {
-        // Create temporary off-screen element at full resolution
-        const wrapper = document.createElement("div");
-        wrapper.style.position = "fixed";
-        wrapper.style.left = "-9999px";
-        wrapper.style.top = "0";
-        document.body.appendChild(wrapper);
-
-        // Render slide at full size (1080px)
-        const slideEl = document.createElement("div");
-        const width = 1080;
-        const height = format === "square" ? 1080 : 1350;
-        slideEl.style.width = `${width}px`;
-        slideEl.style.height = `${height}px`;
-        wrapper.appendChild(slideEl);
-
-        // Use html2canvas on the hidden full-res preview
-        // We need to find the actual rendered slide in the hidden container
-        // Instead, capture from the visible previews scaled up
-        const previewSlides = container.querySelectorAll("[data-slide-export]");
         if (previewSlides[i]) {
           const canvas = await html2canvas(previewSlides[i] as HTMLElement, {
-            scale: 1080 / (previewSlides[i] as HTMLElement).offsetWidth,
+            scale: 1,
             useCORS: true,
             backgroundColor: null,
-            width: (previewSlides[i] as HTMLElement).offsetWidth,
-            height: (previewSlides[i] as HTMLElement).offsetHeight,
           });
 
           // Download
@@ -70,8 +50,6 @@ export default function ExportPanel({
           link.href = canvas.toDataURL("image/png");
           link.click();
         }
-
-        document.body.removeChild(wrapper);
 
         // Small delay between downloads
         if (i < slides.length - 1) {
@@ -91,7 +69,11 @@ export default function ExportPanel({
   return (
     <div className="space-y-4">
       {/* Hidden full-resolution slide renders for export */}
-      <div ref={containerRef} className="sr-only" aria-hidden="true">
+      <div
+        ref={containerRef}
+        aria-hidden="true"
+        style={{ position: "fixed", left: "-9999px", top: 0 }}
+      >
         {slides.map((slide, i) => (
           <div key={i} data-slide-export>
             <SlideRenderer

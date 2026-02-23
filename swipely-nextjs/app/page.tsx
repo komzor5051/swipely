@@ -44,7 +44,7 @@ function Hero() {
             <Link href="/signup">
               <Button
                 size="lg"
-                className="rounded-full px-8 text-base bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)] shadow-[0_4px_24px_rgba(10,132,255,0.4)] hover:shadow-[0_8px_32px_rgba(10,132,255,0.5)] hover:-translate-y-0.5 transition-all"
+                className="rounded-full px-8 text-base bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] shadow-[0_4px_24px_rgba(212,245,66,0.3)] hover:shadow-[0_8px_32px_rgba(212,245,66,0.4)] hover:-translate-y-0.5 transition-all"
               >
                 Начать бесплатно
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -69,7 +69,7 @@ function Hero() {
               { value: "0₽", label: "старт" },
             ].map((stat) => (
               <div key={stat.label}>
-                <div className="text-2xl font-bold text-[var(--swipely-blue)] font-[family-name:var(--font-mono)]">
+                <div className="text-2xl font-bold text-[#D4F542] font-[family-name:var(--font-mono)]">
                   {stat.value}
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -172,12 +172,12 @@ function HowItWorks() {
           {steps.map((step, i) => (
             <div
               key={step.title}
-              className="relative bg-card rounded-3xl p-8 border border-border hover:border-[var(--swipely-blue)]/30 hover:shadow-lg transition-all group"
+              className="relative bg-card rounded-3xl p-8 border border-border hover:border-[#D4F542]/30 hover:shadow-lg transition-all group"
             >
-              <div className="absolute -top-4 -left-2 w-8 h-8 rounded-full bg-[var(--swipely-blue)] text-white text-sm font-bold flex items-center justify-center font-[family-name:var(--font-mono)]">
+              <div className="absolute -top-4 -left-2 w-8 h-8 rounded-full bg-[#D4F542] text-[#0D0D14] text-sm font-bold flex items-center justify-center font-[family-name:var(--font-mono)]">
                 {i + 1}
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-[var(--swipely-blue)]/10 flex items-center justify-center text-[var(--swipely-blue)] mb-5 group-hover:bg-[var(--swipely-blue)] group-hover:text-white transition-colors">
+              <div className="w-14 h-14 rounded-2xl bg-[#D4F542]/15 flex items-center justify-center text-[#0D0D14] mb-5 group-hover:bg-[#D4F542] group-hover:text-[#0D0D14] transition-colors">
                 {step.icon}
               </div>
               <h3 className="text-xl font-bold mb-3">{step.title}</h3>
@@ -304,9 +304,9 @@ function Benefits() {
           {benefits.map((b) => (
             <div
               key={b.title}
-              className="text-center p-8 rounded-3xl border border-border hover:border-[var(--swipely-blue)]/20 hover:shadow-md transition-all"
+              className="text-center p-8 rounded-3xl border border-border hover:border-[#D4F542]/20 hover:shadow-md transition-all"
             >
-              <div className="w-14 h-14 rounded-2xl bg-[var(--swipely-blue)]/10 flex items-center justify-center text-[var(--swipely-blue)] mx-auto mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-[#D4F542]/15 flex items-center justify-center text-[#0D0D14] mx-auto mb-4">
                 {b.icon}
               </div>
               <h3 className="text-lg font-bold mb-2">{b.title}</h3>
@@ -386,7 +386,7 @@ function PricingPreview() {
                 "PNG экспорт",
               ].map((f) => (
                 <li key={f} className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-[var(--swipely-blue)]" />
+                  <Check className="h-4 w-4 text-[#0D0D14]" />
                   {f}
                 </li>
               ))}
@@ -399,8 +399,8 @@ function PricingPreview() {
           </div>
 
           {/* PRO */}
-          <div className="rounded-3xl border-2 border-[var(--swipely-blue)] p-8 bg-card relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-[var(--swipely-blue)] text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl">
+          <div className="rounded-3xl border-2 border-[#D4F542] p-8 bg-card relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-[#D4F542] text-[#0D0D14] text-xs font-bold px-4 py-1.5 rounded-bl-xl">
               PRO
             </div>
             <h3 className="text-xl font-bold mb-1">PRO</h3>
@@ -424,13 +424,13 @@ function PricingPreview() {
                 "Без водяного знака",
               ].map((f) => (
                 <li key={f} className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-[var(--swipely-blue)]" />
+                  <Check className="h-4 w-4 text-[#0D0D14]" />
                   {f}
                 </li>
               ))}
             </ul>
             <Link href="/signup">
-              <Button className="w-full rounded-full bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)]">
+              <Button className="w-full rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a]">
                 Попробовать PRO
               </Button>
             </Link>
@@ -440,7 +440,7 @@ function PricingPreview() {
         <div className="text-center mt-8">
           <Link
             href="/pricing"
-            className="text-sm text-[var(--swipely-blue)] hover:underline font-medium"
+            className="text-sm text-[#0D0D14] hover:underline font-medium"
           >
             Все тарифы и пакеты слайдов →
           </Link>
@@ -482,7 +482,7 @@ function FAQ() {
               key={faq.q}
               className="group rounded-2xl border border-border bg-card overflow-hidden"
             >
-              <summary className="flex items-center justify-between p-6 cursor-pointer font-semibold text-base hover:text-[var(--swipely-blue)] transition-colors">
+              <summary className="flex items-center justify-between p-6 cursor-pointer font-semibold text-base hover:text-[#D4F542] transition-colors">
                 {faq.q}
                 <ChevronDown className="h-5 w-5 text-muted-foreground group-open:rotate-180 transition-transform" />
               </summary>
@@ -512,7 +512,7 @@ function CTA() {
           <Link href="/signup">
             <Button
               size="lg"
-              className="rounded-full px-10 text-base bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)] shadow-[0_4px_24px_rgba(10,132,255,0.4)]"
+              className="rounded-full px-10 text-base bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] shadow-[0_4px_24px_rgba(212,245,66,0.3)]"
             >
               Начать бесплатно
               <ArrowRight className="ml-2 h-4 w-4" />

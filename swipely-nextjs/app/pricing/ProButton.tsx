@@ -4,13 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ProButtonProps {
   productId: string;
   label?: string;
+  className?: string;
+  size?: "sm" | "default" | "lg";
 }
 
-export function ProButton({ productId, label = "Перейти на PRO" }: ProButtonProps) {
+export function ProButton({ productId, label = "Перейти на PRO", className, size = "lg" }: ProButtonProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -27,8 +30,8 @@ export function ProButton({ productId, label = "Перейти на PRO" }: ProB
       const data = await res.json();
 
       if (res.status === 401) {
-        // Not logged in — redirect to signup first
-        router.push("/signup");
+        // Not logged in — redirect to login, then back to pricing
+        router.push("/login?redirect=/pricing");
         return;
       }
 
@@ -37,7 +40,7 @@ export function ProButton({ productId, label = "Перейти на PRO" }: ProB
         return;
       }
 
-      // Redirect to YooKassa payment page
+      // Redirect to AuraPay payment page
       window.location.href = data.confirmationUrl;
     } catch {
       alert("Ошибка сети. Попробуйте позже.");
@@ -50,8 +53,11 @@ export function ProButton({ productId, label = "Перейти на PRO" }: ProB
     <Button
       onClick={handlePurchase}
       disabled={loading}
-      className="w-full rounded-full bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)]"
-      size="lg"
+      className={cn(
+        "w-full rounded-full bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)]",
+        className
+      )}
+      size={size}
     >
       {loading ? (
         <>

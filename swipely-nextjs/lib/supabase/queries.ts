@@ -13,6 +13,9 @@ export interface Profile {
   standard_used: number;
   photo_slides_balance: number;
   referral_code?: string;
+  last_month_reset?: string;
+  referral_bonus_applied?: boolean;
+  referral_count?: number;
   tov_guidelines?: string;
   tov_profile?: {
     sentence_length: string;
@@ -165,4 +168,96 @@ export async function getGenerationCount(
 
   if (error) return 0;
   return count ?? 0;
+}
+
+// ─── Monthly Reset ───
+
+/**
+ * Calls reset_monthly_if_needed RPC — resets standard_used to 0
+ * if the current calendar month differs from last_month_reset.
+ * Safe to call on every generate request (no-op within same month).
+ */
+export async function resetMonthlyIfNeeded(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<void> {
+  await supabase.rpc("reset_monthly_if_needed", { user_id_param: userId });
+}
+
+// ─── Subscription Expiry ───
+
+/**
+ * Checks if a PRO subscription has expired.
+ * If expired: downgrades profile to 'free' in DB and returns 'free'.
+ * If active or not PRO: returns current tier unchanged.
+ */
+export async function checkSubscriptionExpiry(
+  supabase: SupabaseClient,
+  userId: string,
+  profile: Pick<Profile, "subscription_tier" | "subscription_end">
+): Promise<"free" | "pro"> {
+  if (profile.subscription_tier !== "pro") return profile.subscription_tier;
+  if (!profile.subscription_end) return "pro";
+
+  const expiry = new Date(profile.subscription_end);
+  if (expiry > new Date()) return "pro";
+
+  // Expired — downgrade in DB
+  await supabase
+    .from("profiles")
+    .update({ subscription_tier: "free" })
+    .eq("id", userId);
+
+  return "free";
+}
+
+// ─── Referral Queries ───
+
+export interface ReferralStats {
+  code: string | null;
+  count: number;
+  totalBonusEarned: number; // 5 slides per referral
+}
+
+export async function getReferralStats(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<ReferralStats> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("referral_code, referral_count")
+    .eq("id", userId)
+    .single();
+
+  const count = data?.referral_count ?? 0;
+  return {
+    code: data?.referral_code ?? null,
+    count,
+    totalBonusEarned: count * 5,
+  };
+}
+
+/**
+ * Finds referrer by referral_code and calls grant_referral_bonus RPC.
+ * Returns true on success, false if referral code is invalid or self-referral.
+ */
+export async function processReferral(
+  supabase: SupabaseClient,
+  newUserId: string,
+  referralCode: string
+): Promise<boolean> {
+  const { data: referrer } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("referral_code", referralCode)
+    .single();
+
+  if (!referrer || referrer.id === newUserId) return false;
+
+  const { error } = await supabase.rpc("grant_referral_bonus", {
+    new_user_id: newUserId,
+    referrer_id: referrer.id,
+  });
+
+  return !error;
 }

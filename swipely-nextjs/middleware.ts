@@ -41,7 +41,8 @@ export async function middleware(request: NextRequest) {
     (pathname.startsWith("/dashboard") ||
       pathname.startsWith("/generate") ||
       pathname.startsWith("/history") ||
-      pathname.startsWith("/editor"))
+      pathname.startsWith("/editor") ||
+      pathname.startsWith("/referral"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -65,7 +66,10 @@ export const config = {
     "/generate/:path*",
     "/history/:path*",
     "/editor/:path*",
+    "/referral/:path*",
+    "/referral",
     "/login",
     "/signup",
   ],
 };
+// Note: /dashboard/pricing is already protected by the /dashboard/:path* matcher

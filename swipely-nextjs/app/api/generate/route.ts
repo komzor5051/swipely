@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resetMonthlyIfNeeded, checkSubscriptionExpiry } from "@/lib/supabase/queries";
 
 const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY;
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
@@ -9,22 +10,18 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GE
 // ─── Design Config (from swipely-bot/src/services/gemini.js) ───
 
 const designPresets: Record<string, { name: string; max_words_per_slide: number; tone: string }> = {
-  notebook: { name: "Notebook Sketch", max_words_per_slide: 45, tone: "personal, educational, handwritten-feel" },
-  aurora: { name: "Aurora", max_words_per_slide: 45, tone: "ethereal, modern, dreamy" },
-  terminal: { name: "Terminal", max_words_per_slide: 40, tone: "technical, retro-computer, hacker" },
-  editorial: { name: "Editorial", max_words_per_slide: 45, tone: "high-fashion, magazine, bold" },
-  luxe: { name: "Luxe", max_words_per_slide: 40, tone: "premium, luxury, elegant" },
-  backspace: { name: "Backspace", max_words_per_slide: 40, tone: "modern agency, bold typography, minimalist" },
-  star_highlight: { name: "Star Highlight", max_words_per_slide: 25, tone: "elegant, sophisticated, designer-focused, serif typography" },
+  swipely: { name: "Swipely", max_words_per_slide: 35, tone: "modern, tech-savvy, energetic, startup vibe, bold statements" },
+  grid_multi: { name: "Grid Multi", max_words_per_slide: 30, tone: "data-driven, statistics, educational, engaging hooks" },
   purple_accent: { name: "Purple Accent", max_words_per_slide: 35, tone: "bold, modern branding, professional, impactful statements" },
+  receipt: { name: "Receipt", max_words_per_slide: 25, tone: "bold statements, brand messaging, manifesto-style, concise" },
   quote_doodle: { name: "Quote Doodle", max_words_per_slide: 30, tone: "thoughtful, question-based, conversational, insightful" },
   speech_bubble: { name: "Speech Bubble", max_words_per_slide: 20, tone: "quotable, memorable, wisdom-based, attribution-style" },
-  grid_multi: { name: "Grid Multi", max_words_per_slide: 30, tone: "data-driven, statistics, educational, engaging hooks" },
-  receipt: { name: "Receipt", max_words_per_slide: 25, tone: "bold statements, brand messaging, manifesto-style, concise" },
-  lime_checklist: { name: "Lime Checklist", max_words_per_slide: 35, tone: "benefit-focused, list-style, actionable tips, positive energy" },
-  app_list: { name: "App List", max_words_per_slide: 30, tone: "service-oriented, professional, menu-style, clear offerings" },
-  paper_image: { name: "Paper Texture", max_words_per_slide: 30, tone: "provocative, attention-grabbing, money/business focused, impactful" },
-  swipely: { name: "Swipely", max_words_per_slide: 35, tone: "modern, tech-savvy, energetic, startup vibe, bold statements" },
+  star_highlight: { name: "Star Highlight", max_words_per_slide: 25, tone: "elegant, sophisticated, designer-focused, serif typography" },
+  photo_mode: { name: "AI Photo", max_words_per_slide: 25, tone: "impactful, concise, visual-first" },
+  street: { name: "Street", max_words_per_slide: 25, tone: "bold, raw, street culture, all-caps energy, high contrast statements. КРИТИЧЕСКИ ВАЖНО: заголовки — максимум 3-4 коротких слова, как названия дропов (JUST DO IT, STAY RAW, НОВЫЕ ПРАВИЛА). Никаких длинных предложений в заголовке." },
+  chapter: { name: "Chapter", max_words_per_slide: 35, tone: "editorial, literary, thoughtful. Заголовки как названия глав книги — ёмкие, значимые, без лишних слов. Первый слайд — сильный тезис, который останавливает." },
+  dispatch: { name: "Dispatch", max_words_per_slide: 30, tone: "newsletter, analytical, direct. Заголовки как темы выпусков — конкретные и интригующие. Контент структурирован, информативен, без воды." },
+  frame: { name: "Frame", max_words_per_slide: 30, tone: "premium, refined, poetic. Заголовки лаконичные и образные, как подписи к арт-объектам. Первый слайд — центральная идея, которая завораживает." },
 };
 
 const contentTones: Record<string, string> = {
@@ -47,10 +44,114 @@ const contentTones: Record<string, string> = {
 • Вдохновляй на действие`,
 };
 
-function buildSystemPrompt(templateId: string, slideCount: number, tone?: string, tovGuidelines?: string): string {
+function buildPlatformSection(platform: string): string {
+  const sections: Record<string, string> = {
+    instagram: `ПЛАТФОРМА: Instagram
+• Целевая механика: сохранения и поделиться
+• Первый слайд — абсолютный стоп-скролл (конкурент — Reels)
+• Текст на слайде: минимальный, читается за 3 секунды
+• CTA: сохрани / поделись
+• post_caption: 100–150 слов, без хэштегов`,
+
+    linkedin: `ПЛАТФОРМА: LinkedIn
+• Целевая механика: комментарии и репосты профессиональной аудитории
+• Тон: профессиональный, сторителлинг, экспертность
+• Первый слайд: конкретный data point или личная история
+• CTA: напиши в комментах / поделись с командой
+• post_caption: 200–400 слов, без хэштегов, личная история + профессиональный вывод`,
+
+    threads: `ПЛАТФОРМА: Threads
+• Целевая механика: дискуссия, ответы в треде
+• Тон: опинионейтед, разговорный, провокационный
+• CTA: как думаешь? / поспорим?
+• post_caption: 80–120 слов, заканчивается открытым вопросом`,
+
+    tiktok: `ПЛАТФОРМА: TikTok
+• Целевая механика: досмотры, комментарии, подписки
+• Текст на слайде: 10–15 слов максимум, ультра-динамично
+• CTA: подпишись / сохрани
+• post_caption: 50–80 слов`,
+
+    telegram: `ПЛАТФОРМА: Telegram
+• Целевая механика: переслать, сохранить в Избранное
+• Тон: информативный, экспертный, канальный
+• CTA: перешли тем, кому нужно / подпишись на канал
+• post_caption: 200–300 слов, структурированный`,
+
+    vk: `ПЛАТФОРМА: VK
+• Целевая механика: лайки и репосты в сообщества
+• Тон: доступный, близкий, сообщество
+• CTA: поделись с друзьями / подпишись
+• post_caption: 200–300 слов, без хэштегов`,
+
+    pinterest: `ПЛАТФОРМА: Pinterest
+• Целевая механика: сохранения на доску
+• Тон: вдохновение, how-to, практичность
+• Структура слайдов: инструктивная (шаги, советы)
+• CTA: сохрани на доску
+• post_caption: 50–100 слов`,
+
+    facebook: `ПЛАТФОРМА: Facebook
+• Целевая механика: шеры в группах и комментарии
+• Тон: сообщество, сторителлинг, доступный
+• CTA: поделись с теми, кому нужно / оставь комментарий
+• post_caption: 150–250 слов, вопрос в конце для вовлечения`,
+  };
+  return sections[platform] ? `\n${sections[platform]}\n` : "";
+}
+
+function buildGoalSection(goal: string): string {
+  const sections: Record<string, string> = {
+    viral: `ЦЕЛЬ: Виральность
+• Создавай контент, который хочется переслать прямо сейчас
+• Неожиданные инсайты — момент когда читатель думает "я об этом не думал"
+• Спорные, но обоснованные тезисы = дискуссия = охват
+• Финальный слайд: провокационный вопрос или смелое утверждение
+• post_caption: заканчивай вопросом, провоцирующим ответить`,
+
+    personal_brand: `ЦЕЛЬ: Личный бренд
+• Каждый слайд усиливает экспертную позицию автора
+• Личный опыт, ошибки, конкретные кейсы — не общие советы
+• Уникальная точка зрения важнее общеизвестных фактов
+• CTA: подпишись, чтобы получать больше таких инсайтов
+• post_caption: личная история + профессиональный вывод`,
+
+    sales: `ЦЕЛЬ: Продажи
+• Структура нарратива: Боль → Усиление боли → Решение → Оффер
+• Каждый слайд приближает к покупке
+• Конкретные результаты и цифры вместо абстракций
+• CTA: конкретное действие (записаться, написать, перейти)
+• post_caption: оффер + снятие возражений + призыв к действию`,
+
+    networking: `ЦЕЛЬ: Нетворкинг
+• Контент, ценный для профессиональной аудитории
+• Открытые вопросы для дискуссии в каждом слайде
+• Экспертность через кейсы, а не декларации
+• CTA: кто делал похожее? напишем в комментах
+• post_caption: твоё мнение + призыв к профессиональному обсуждению`,
+
+    lead_gen: `ЦЕЛЬ: Лидогенерация
+• Каждый слайд добавляет желание получить больше
+• Создавай ощущение, что лучшее — впереди (недосказанность)
+• CTA: конкретный следующий шаг (написать в Директ, кликнуть по ссылке)
+• post_caption: чёткий оффер + что получит человек + как получить`,
+
+    education: `ЦЕЛЬ: Образование
+• Каждый слайд = одна конкретная идея с примером
+• Данные, факты, статистика усиливают доверие
+• Структура: от простого к сложному
+• CTA: сохрани, чтобы не забыть / поделись с тем, кому это нужно
+• post_caption: краткое резюме ключевых выводов + вопрос для закрепления`,
+  };
+  return sections[goal] ? `\n${sections[goal]}\n` : "";
+}
+
+function buildSystemPrompt(templateId: string, slideCount: number, tone?: string, tovGuidelines?: string, platform?: string, goal?: string): string {
   const design = designPresets[templateId] || designPresets.notebook;
   const toneSection = tone && contentTones[tone] ? `\n${contentTones[tone]}\n` : "";
   const tovSection = tovGuidelines ? `\nАДАПТИРУЙ ПОД СТИЛЬ АВТОРА:\n${tovGuidelines}\n` : "";
+  const platformSection = platform ? buildPlatformSection(platform) : "";
+  const goalSection = goal ? buildGoalSection(goal) : "";
 
   return `# Viral Visual Carousel SMM Content Architecture (RU)
 
@@ -64,7 +165,7 @@ function buildSystemPrompt(templateId: string, slideCount: number, tone?: string
 • ДИЗАЙН: ${design.name}
 • ТОН ДИЗАЙНА: ${design.tone}
 ${toneSection}
-${tovSection}
+${tovSection}${platformSection}${goalSection}
 ПОВЕДЕНЧЕСКАЯ ЛОГИКА:
 • Пользователь сканирует, а не читает
 • Если мысль не ясна сразу — слайд пролистывают
@@ -188,7 +289,7 @@ export async function POST(request: NextRequest) {
   // ─── Ensure profile exists ───
   const { data: profile, error: profileErr } = await admin
     .from("profiles")
-    .select("id, subscription_tier, standard_used, tov_guidelines")
+    .select("id, subscription_tier, subscription_end, standard_used, tov_guidelines")
     .eq("id", user.id)
     .single();
 
@@ -205,9 +306,24 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // ─── Monthly reset (lazy: resets counter on first request of new month) ───
+  await resetMonthlyIfNeeded(admin, user.id);
+
+  // ─── Subscription expiry check ───
+  const effectiveTier = profile
+    ? await checkSubscriptionExpiry(admin, user.id, profile)
+    : "free";
+
+  // Re-fetch standard_used after potential monthly reset
+  const { data: freshProfile } = await admin
+    .from("profiles")
+    .select("standard_used")
+    .eq("id", user.id)
+    .single();
+
   // ─── Usage limit check ───
-  const tier = profile?.subscription_tier || "free";
-  const used = profile?.standard_used || 0;
+  const tier = effectiveTier;
+  const used = freshProfile?.standard_used ?? profile?.standard_used ?? 0;
   const limit = tier === "pro" ? -1 : 3;
 
   if (limit !== -1 && used >= limit) {
@@ -223,6 +339,8 @@ export async function POST(request: NextRequest) {
     slideCount: number;
     format?: string;
     tone?: string;
+    platform?: string;
+    goal?: string;
   };
 
   try {
@@ -231,7 +349,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { text, template, slideCount, format, tone } = body;
+  const { text, template, slideCount, format, tone, platform, goal } = body;
 
   if (!text || !template || !slideCount) {
     return NextResponse.json(
@@ -248,7 +366,7 @@ export async function POST(request: NextRequest) {
   }
 
   const tovGuidelines = profile?.tov_guidelines as string | undefined;
-  const systemPrompt = buildSystemPrompt(template, slideCount, tone, tovGuidelines);
+  const systemPrompt = buildSystemPrompt(template, slideCount, tone, tovGuidelines, platform, goal);
 
   const userPrompt = `Создай вирусную визуальную карусель на основе текста ниже.
 
@@ -341,6 +459,8 @@ export async function POST(request: NextRequest) {
         slide_count: slideCount,
         format: format || "portrait",
         tone,
+        platform,
+        goal,
         input_text: text,
         output_json: carouselData,
       })

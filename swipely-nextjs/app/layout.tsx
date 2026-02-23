@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit, Space_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -14,6 +14,12 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Swipely — AI-генератор каруселей для Instagram",
   description:
@@ -24,6 +30,9 @@ export const metadata: Metadata = {
       "Отправь текст — получи готовую карусель для соцсетей. 16 шаблонов, бесплатный старт.",
     locale: "ru_RU",
     siteName: "Swipely",
+  },
+  other: {
+    aurapay: "69958482b246d",
   },
 };
 

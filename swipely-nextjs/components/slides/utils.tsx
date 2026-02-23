@@ -12,8 +12,17 @@ export function renderTitle(
   return parts.map((part, i) => {
     const match = part.match(/^<hl>(.*?)<\/hl>$/);
     if (match) {
+      // inline-block ensures html2canvas correctly positions the background
+      // (inline spans with background get displaced at large font sizes)
       return (
-        <span key={i} style={highlightStyle}>
+        <span
+          key={i}
+          style={{
+            ...highlightStyle,
+            display: "inline-block",
+            verticalAlign: "baseline",
+          }}
+        >
           {match[1]}
         </span>
       );

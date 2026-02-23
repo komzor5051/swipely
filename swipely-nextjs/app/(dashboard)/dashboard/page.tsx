@@ -12,6 +12,8 @@ import {
   ArrowRight,
   BarChart3,
   CreditCard,
+  Gift,
+  AlertTriangle,
 } from "lucide-react";
 import { FadeIn, StaggerList, StaggerItem } from "@/components/ui/motion";
 
@@ -70,27 +72,34 @@ export default function DashboardPage() {
   const limit = tier === "pro" ? "∞" : "3";
   const remaining = tier === "pro" ? "∞" : Math.max(0, 3 - used);
 
+  const daysUntilExpiry = (() => {
+    if (tier !== "pro" || !profile?.subscription_end) return null;
+    const diff = new Date(profile.subscription_end).getTime() - Date.now();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  })();
+  const showExpiryWarning = daysUntilExpiry !== null && daysUntilExpiry <= 7;
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <FadeIn>
-        <h1 className="text-2xl font-bold mb-1">
+        <h1 className="text-3xl font-bold mb-1 text-[#0D0D14]">
           Привет{profile?.first_name ? `, ${profile.first_name}` : ""}!
         </h1>
-        <p className="text-muted-foreground">Обзор твоего аккаунта Swipely</p>
+        <p className="text-[#6B7280]">Обзор твоего аккаунта Swipely</p>
       </FadeIn>
 
       {/* Stats Grid */}
       <StaggerList className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" delay={0.1}>
         <StaggerItem>
-          <div className="rounded-2xl border border-border bg-card p-5 hover:shadow-sm transition-shadow">
+          <div className="rounded-2xl border border-[#E8E8E4] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">Генерации</span>
-              <div className="w-8 h-8 rounded-lg bg-[var(--swipely-blue)]/10 flex items-center justify-center">
-                <BarChart3 className="h-4 w-4 text-[var(--swipely-blue)]" />
+              <div className="w-8 h-8 rounded-lg bg-[#D4F542]/20 flex items-center justify-center">
+                <BarChart3 className="h-4 w-4 text-[#0D0D14]" />
               </div>
             </div>
-            <div className="text-3xl font-bold font-[family-name:var(--font-mono)]">
+            <div className="text-3xl font-bold font-[family-name:var(--font-mono)] text-[#0D0D14]">
               {loading ? "—" : remaining}
               <span className="text-sm font-normal text-muted-foreground">
                 {" "}
@@ -102,7 +111,7 @@ export default function DashboardPage() {
         </StaggerItem>
 
         <StaggerItem>
-          <div className="rounded-2xl border border-border bg-card p-5 hover:shadow-sm transition-shadow">
+          <div className="rounded-2xl border border-[#E8E8E4] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">Всего создано</span>
               <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
@@ -117,7 +126,7 @@ export default function DashboardPage() {
         </StaggerItem>
 
         <StaggerItem>
-          <div className="rounded-2xl border border-border bg-card p-5 hover:shadow-sm transition-shadow">
+          <div className="rounded-2xl border border-[#E8E8E4] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">Тариф</span>
               <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
@@ -129,8 +138,8 @@ export default function DashboardPage() {
             </div>
             {tier !== "pro" && (
               <Link
-                href="/pricing"
-                className="text-xs text-[var(--swipely-blue)] hover:underline mt-1 inline-block"
+                href="/dashboard/pricing"
+                className="text-xs text-[#0D0D14] hover:text-[#374151] underline underline-offset-2 mt-1 inline-block font-medium"
               >
                 Перейти на PRO →
               </Link>
@@ -145,7 +154,7 @@ export default function DashboardPage() {
         </StaggerItem>
 
         <StaggerItem>
-          <div className="rounded-2xl border border-border bg-card p-5 hover:shadow-sm transition-shadow">
+          <div className="rounded-2xl border border-[#E8E8E4] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">Photo-слайды</span>
               <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
@@ -155,18 +164,50 @@ export default function DashboardPage() {
             <div className="text-3xl font-bold font-[family-name:var(--font-mono)]">
               {loading ? "—" : profile?.photo_slides_balance || 0}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">в балансе</p>
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-xs text-muted-foreground">в балансе</p>
+              <Link
+                href="/dashboard/pricing"
+                className="text-xs font-semibold text-amber-600 hover:text-amber-800 transition-colors"
+              >
+                Купить →
+              </Link>
+            </div>
           </div>
         </StaggerItem>
       </StaggerList>
 
+      {/* PRO expiry warning */}
+      {!loading && showExpiryWarning && (
+        <FadeIn delay={0.25}>
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-amber-800">
+                {daysUntilExpiry! <= 0
+                  ? "Подписка PRO истекла"
+                  : `Подписка PRO истекает через ${daysUntilExpiry} ${daysUntilExpiry === 1 ? "день" : daysUntilExpiry! <= 4 ? "дня" : "дней"}`}
+              </p>
+              <p className="text-xs text-amber-600 mt-0.5">
+                Продли, чтобы не потерять безлимитные генерации
+              </p>
+            </div>
+            <Link href="/dashboard/pricing">
+              <button className="text-xs font-semibold text-amber-700 hover:text-amber-900 whitespace-nowrap transition-colors">
+                Продлить →
+              </button>
+            </Link>
+          </div>
+        </FadeIn>
+      )}
+
       {/* Quick Actions */}
       <FadeIn delay={0.3}>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link href="/generate">
-            <div className="rounded-2xl border border-[var(--swipely-blue)]/20 bg-[var(--swipely-blue)]/5 p-6 hover:bg-[var(--swipely-blue)]/10 hover:shadow-sm transition-all cursor-pointer group">
+            <div className="rounded-2xl border border-[#D4F542]/30 bg-[#D4F542]/10 p-6 hover:bg-[#D4F542]/15 hover:shadow-sm transition-all cursor-pointer group">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[var(--swipely-blue)] text-white flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-[#D4F542] text-[#0D0D14] flex items-center justify-center shadow-sm">
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
@@ -175,13 +216,13 @@ export default function DashboardPage() {
                     Текст → AI → готовые слайды
                   </p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-[var(--swipely-blue)] group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-5 w-5 text-[#0D0D14] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
           </Link>
 
-          <Link href="/pricing">
-            <div className="rounded-2xl border border-border p-6 hover:border-[var(--swipely-blue)]/20 hover:shadow-sm transition-all cursor-pointer group">
+          <Link href="/dashboard/pricing">
+            <div className="rounded-2xl border border-[#E8E8E4] p-6 hover:border-[#D4F542]/30 hover:shadow-sm transition-all cursor-pointer group">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
                   <CreditCard className="h-5 w-5 text-muted-foreground" />
@@ -196,6 +237,23 @@ export default function DashboardPage() {
               </div>
             </div>
           </Link>
+
+          <Link href="/referral">
+            <div className="rounded-2xl border border-green-200/60 bg-green-50/50 p-6 hover:bg-green-50 hover:shadow-sm transition-all cursor-pointer group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                  <Gift className="h-5 w-5 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">Пригласи друга</h3>
+                  <p className="text-sm text-muted-foreground">
+                    +5 Photo-слайдов за каждого
+                  </p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-green-600 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
         </div>
       </FadeIn>
 
@@ -206,7 +264,7 @@ export default function DashboardPage() {
           {recentGenerations.length > 0 && (
             <Link
               href="/history"
-              className="text-sm text-[var(--swipely-blue)] hover:underline"
+              className="text-sm text-[#0D0D14] hover:text-[#374151] underline underline-offset-2 font-medium"
             >
               Все →
             </Link>
@@ -239,7 +297,7 @@ export default function DashboardPage() {
             <Link href="/generate">
               <Button
                 size="sm"
-                className="rounded-full bg-[var(--swipely-blue)] hover:bg-[var(--swipely-blue-dark)] active:scale-[0.98] transition-all"
+                className="rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] active:scale-[0.98] transition-all font-semibold"
               >
                 Создать первую
               </Button>
@@ -249,9 +307,9 @@ export default function DashboardPage() {
           <StaggerList className="space-y-3">
             {recentGenerations.map((gen) => (
               <StaggerItem key={gen.id}>
-                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-4 hover:border-[var(--swipely-blue)]/20 hover:shadow-sm transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-[var(--swipely-blue)]/10 flex items-center justify-center shrink-0">
-                    <span className="text-sm font-bold font-[family-name:var(--font-mono)] text-[var(--swipely-blue)]">
+                <div className="rounded-xl border border-[#E8E8E4] bg-white p-4 flex items-center gap-4 hover:border-[#D4F542]/30 hover:shadow-sm transition-all">
+                  <div className="w-10 h-10 rounded-lg bg-[#D4F542]/15 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-bold font-[family-name:var(--font-mono)] text-[#0D0D14]">
                       {gen.slide_count}
                     </span>
                   </div>
