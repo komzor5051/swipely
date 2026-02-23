@@ -234,38 +234,38 @@ function App() {
           ${showEditPanel ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}
           fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto
           w-full lg:w-80 max-h-[70vh] lg:max-h-none
-          bg-white border-t lg:border-t-0 lg:border-l border-slate-200
+          bg-[#0D0D14] border-t lg:border-t-0 lg:border-l border-white/10
           rounded-t-2xl lg:rounded-none shadow-2xl lg:shadow-none
           p-4 sm:p-5 overflow-y-auto flex-shrink-0
           transition-transform duration-300 ease-out z-50
         `}>
           {/* Mobile drag handle */}
           <div className="lg:hidden flex justify-center mb-3">
-            <div className="w-10 h-1 bg-slate-300 rounded-full"></div>
+            <div className="w-10 h-1 bg-white/20 rounded-full"></div>
           </div>
 
           {/* Close button - mobile only */}
           <button
             onClick={() => setShowEditPanel(false)}
-            className="lg:hidden absolute top-3 right-3 p-2 rounded-full hover:bg-slate-100"
+            className="lg:hidden absolute top-3 right-3 p-2 rounded-full hover:bg-white/10"
           >
-            <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
-          <h3 className="font-semibold text-slate-800 mb-3 sm:mb-4">Редактирование</h3>
+          <h3 className="font-semibold text-white mb-3 sm:mb-4">Редактирование</h3>
 
           {/* Element selector */}
           <div className="mb-4 sm:mb-5">
-            <label className="block text-sm text-slate-500 mb-2">Выбрано</label>
+            <label className="block text-sm text-white/50 mb-2">Выбрано</label>
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedElement('title')}
                 className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedElement === 'title'
                     ? 'bg-[#D4F542] text-[#0D0D14]'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : 'bg-white/10 text-white/60 hover:bg-white/15'
                 }`}
               >
                 Заголовок
@@ -275,7 +275,7 @@ function App() {
                 className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedElement === 'content'
                     ? 'bg-[#D4F542] text-[#0D0D14]'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : 'bg-white/10 text-white/60 hover:bg-white/15'
                 }`}
               >
                 Контент
@@ -285,7 +285,7 @@ function App() {
 
           {/* Text editing */}
           <div className="mb-4 sm:mb-5">
-            <label className="block text-sm text-slate-500 mb-2">
+            <label className="block text-sm text-white/50 mb-2">
               {selectedElement === 'title' ? 'Заголовок' : 'Текст'}
             </label>
             <textarea
@@ -297,7 +297,7 @@ function App() {
                 };
                 handleSlideUpdate(currentSlideIndex, updatedSlide);
               }}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#D4F542]/50"
+              className="w-full px-3 py-2 border border-white/10 bg-white/5 text-white rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#D4F542]/50 placeholder:text-white/30"
               rows={selectedElement === 'title' ? 2 : 3}
             />
           </div>
@@ -306,7 +306,7 @@ function App() {
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 mb-4 sm:mb-5">
             {/* Font size */}
             <div>
-              <label className="block text-sm text-slate-500 mb-2">
+              <label className="block text-sm text-white/50 mb-2">
                 Размер: {(selectedElement === 'title' ? currentSlide.titleStyles?.fontSize : currentSlide.contentStyles?.fontSize) || (selectedElement === 'title' ? 48 : 24)}px
               </label>
               <input
@@ -318,13 +318,13 @@ function App() {
                   const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
                   handleStyleChange(selectedElement, { ...currentStyles, fontSize: Number(e.target.value) });
                 }}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#D4F542]"
+                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#D4F542]"
               />
             </div>
 
             {/* Alignment */}
             <div>
-              <label className="block text-sm text-slate-500 mb-2">Выравнивание</label>
+              <label className="block text-sm text-white/50 mb-2">Выравнивание</label>
               <div className="flex gap-1">
                 {(['left', 'center', 'right'] as const).map((align) => (
                   <button
@@ -336,7 +336,7 @@ function App() {
                     className={`flex-1 px-2 py-1.5 rounded-lg text-sm transition-colors ${
                       (selectedElement === 'title' ? currentSlide.titleStyles?.textAlign : currentSlide.contentStyles?.textAlign) === align
                         ? 'bg-[#D4F542] text-[#0D0D14]'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        : 'bg-white/10 text-white/60 hover:bg-white/15'
                     }`}
                   >
                     {align === 'left' ? '←' : align === 'center' ? '↔' : '→'}
@@ -348,7 +348,7 @@ function App() {
 
           {/* Color */}
           <div className="mb-4 sm:mb-5">
-            <label className="block text-sm text-slate-500 mb-2">Цвет текста</label>
+            <label className="block text-sm text-white/50 mb-2">Цвет текста</label>
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <input
                 type="color"
@@ -357,7 +357,7 @@ function App() {
                   const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
                   handleStyleChange(selectedElement, { ...currentStyles, color: e.target.value });
                 }}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg cursor-pointer border border-slate-200"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg cursor-pointer border border-white/10 bg-transparent"
               />
               <div className="flex gap-1.5 sm:gap-2">
                 {['#FFFFFF', '#000000', '#0D0D14', '#D4F542', '#FF6B6B'].map((c) => (
@@ -367,7 +367,7 @@ function App() {
                       const currentStyles = selectedElement === 'title' ? currentSlide.titleStyles : currentSlide.contentStyles;
                       handleStyleChange(selectedElement, { ...currentStyles, color: c });
                     }}
-                    className="w-6 h-6 sm:w-7 sm:h-7 rounded border border-slate-200 hover:scale-110 transition-transform"
+                    className="w-6 h-6 sm:w-7 sm:h-7 rounded border border-white/15 hover:scale-110 transition-transform"
                     style={{ backgroundColor: c }}
                   />
                 ))}
@@ -375,8 +375,8 @@ function App() {
             </div>
           </div>
 
-          <div className="border-t border-slate-200 pt-3 sm:pt-4 mt-3 sm:mt-4 hidden lg:block">
-            <p className="text-xs text-slate-400">
+          <div className="border-t border-white/10 pt-3 sm:pt-4 mt-3 sm:mt-4 hidden lg:block">
+            <p className="text-xs text-white/30">
               Перетаскивайте текст на активном слайде для изменения позиции
             </p>
           </div>
@@ -657,7 +657,7 @@ function SlideCard({
         relative flex-shrink-0 rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer transition-all duration-300
         ${isActive
           ? 'ring-2 sm:ring-4 ring-[#D4F542] shadow-xl sm:shadow-2xl shadow-[#D4F542]/20 scale-100'
-          : 'ring-1 ring-slate-200 shadow-md sm:shadow-lg opacity-70 sm:opacity-60 scale-[0.98] sm:scale-95 hover:opacity-80 hover:scale-[0.99] sm:hover:scale-[0.97]'
+          : 'ring-1 ring-white/10 shadow-md sm:shadow-lg opacity-70 sm:opacity-60 scale-[0.98] sm:scale-95 hover:opacity-80 hover:scale-[0.99] sm:hover:scale-[0.97]'
         }
       `}
       style={{
