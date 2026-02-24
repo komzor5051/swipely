@@ -132,6 +132,24 @@ function App() {
     if (success) setLastSaved(new Date());
   }, [session, token]);
 
+  const handleContainerScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const cards = Array.from(container.querySelectorAll('[data-slide-index]')) as HTMLElement[];
+    const containerCenter = container.scrollLeft + container.clientWidth / 2;
+    let closest = 0;
+    let closestDist = Infinity;
+    cards.forEach((card) => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const dist = Math.abs(cardCenter - containerCenter);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = parseInt(card.dataset.slideIndex || '0', 10);
+      }
+    });
+    setCurrentSlideIndex(closest);
+  }, []);
+
   const scrollToSlide = (index: number) => {
     setCurrentSlideIndex(index);
     const container = scrollContainerRef.current;
@@ -385,7 +403,8 @@ function App() {
         {/* Slides area — margin accounts for bottom tab bar + sheet on mobile */}
         <div
           ref={scrollContainerRef}
-          className={`flex-1 overflow-x-auto overflow-y-hidden flex items-center transition-all duration-300 ${
+          onScroll={handleContainerScroll}
+          className={`flex-1 overflow-x-auto overflow-y-hidden flex items-center transition-all duration-300 snap-x snap-mandatory ${
             activeTab ? 'mb-[calc(56px+50vh)]' : 'mb-[56px]'
           } lg:mb-0`}
         >
@@ -664,6 +683,23 @@ function SlideCard({
           el.style.cursor = 'grabbing';
           onSelectElement(elementType);
         });
+
+        el.addEventListener('touchstart', (e: TouchEvent) => {
+          if (!isActive) return;
+          e.preventDefault();
+          const touch = e.touches[0];
+          dragStateRef.current = {
+            isDragging: true,
+            element: el,
+            elementType,
+            startX: touch.clientX,
+            startY: touch.clientY,
+            initialLeft: parseFloat(el.style.left) || 50,
+            initialTop: parseFloat(el.style.top) || 50,
+          };
+          el.style.cursor = 'grabbing';
+          onSelectElement(elementType);
+        }, { passive: false });
       };
 
       if (headlineEl) setupElement(headlineEl, 'title');
@@ -693,6 +729,37 @@ function SlideCard({
         state.element.style.cursor = 'move';
         onPositionChange(state.elementType, { x: newX, y: newY });
 
+        dragStateRef.current = {
+          isDragging: false,
+          element: null,
+          elementType: null,
+          startX: 0,
+          startY: 0,
+          initialLeft: 0,
+          initialTop: 0,
+        };
+      });
+
+      iframeDoc.addEventListener('touchmove', (e: TouchEvent) => {
+        const state = dragStateRef.current;
+        if (!state.isDragging || !state.element) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const deltaX = ((touch.clientX - state.startX) / scale / width) * 100;
+        const deltaY = ((touch.clientY - state.startY) / scale / height) * 100;
+        const newX = Math.max(10, Math.min(90, state.initialLeft + deltaX));
+        const newY = Math.max(5, Math.min(95, state.initialTop + deltaY));
+        state.element.style.left = `${newX}%`;
+        state.element.style.top = `${newY}%`;
+      }, { passive: false });
+
+      iframeDoc.addEventListener('touchend', () => {
+        const state = dragStateRef.current;
+        if (!state.isDragging || !state.element || !state.elementType) return;
+        const newX = parseFloat(state.element.style.left);
+        const newY = parseFloat(state.element.style.top);
+        state.element.style.cursor = 'move';
+        onPositionChange(state.elementType, { x: newX, y: newY });
         dragStateRef.current = {
           isDragging: false,
           element: null,
@@ -741,9 +808,10 @@ function SlideCard({
   return (
     <div
       ref={containerRef}
+      data-slide-index={index}
       onClick={onSelect}
       className={`
-        relative flex-shrink-0 rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer transition-all duration-300
+        snap-center relative flex-shrink-0 rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer transition-all duration-300
         ${isActive
           ? 'ring-2 sm:ring-4 ring-[#D4F542] shadow-xl sm:shadow-2xl shadow-[#D4F542]/20 scale-100'
           : 'ring-1 ring-white/10 shadow-md sm:shadow-lg opacity-70 sm:opacity-60 scale-[0.98] sm:scale-95 hover:opacity-80 hover:scale-[0.99] sm:hover:scale-[0.97]'
