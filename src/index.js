@@ -66,6 +66,30 @@ function invalidateUserCache(userId) {
 console.log('🤖 Swipely Bot запускается...');
 
 // ============================================
+// ЗАГЛУШКА: БОТ ПЕРЕЕХАЛ НА SWIPELY.RU
+// ============================================
+const MIGRATION_TEXT = `Бот больше не работает здесь 🚀\n\nМы переехали на веб-приложение:\n👉 https://swipely.ru\n\nСоздавай карусели прямо в браузере — удобнее, быстрее, больше возможностей.`;
+
+bot.on('message', async (msg) => {
+  // Игнорируем служебные сообщения (платежи и т.д.)
+  if (msg.successful_payment || msg.invoice) return;
+  try {
+    await bot.sendMessage(msg.chat.id, MIGRATION_TEXT, { disable_web_page_preview: true });
+  } catch (err) {
+    console.error('Migration stub error:', err.message);
+  }
+});
+
+bot.on('callback_query', async (query) => {
+  try {
+    await bot.answerCallbackQuery(query.id);
+    await bot.sendMessage(query.message.chat.id, MIGRATION_TEXT, { disable_web_page_preview: true });
+  } catch (err) {
+    console.error('Migration stub callback error:', err.message);
+  }
+});
+
+// ============================================
 // TELEGRAM STARS PAYMENTS
 // ============================================
 
