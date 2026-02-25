@@ -1,26 +1,39 @@
-import type { Metadata } from "next";
-import { DM_Serif_Display, Outfit, JetBrains_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Outfit, Space_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
-
-const dmSerifDisplay = DM_Serif_Display({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: "400",
-});
 
 const outfit = Outfit({
   variable: "--font-body",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const spaceMono = Space_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: "Swipely.ai - AI Генератор Каруселей для Instagram",
-  description: "Создавай вирусные карусели для Instagram за секунды с помощью AI",
+  title: "Swipely — AI-генератор каруселей для Instagram",
+  description:
+    "Создавай вирусные карусели для Instagram за секунды с помощью AI. 16 дизайн-шаблонов, бесплатный старт.",
+  openGraph: {
+    title: "Swipely — AI-генератор каруселей для Instagram",
+    description:
+      "Отправь текст — получи готовую карусель для соцсетей. 16 шаблонов, бесплатный старт.",
+    locale: "ru_RU",
+    siteName: "Swipely",
+  },
+  other: {
+    aurapay: "69958482b246d",
+  },
 };
 
 export default function RootLayout({
@@ -31,9 +44,18 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body
-        className={`${dmSerifDisplay.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased font-body`}
+        className={`${outfit.variable} ${spaceMono.variable} antialiased font-[family-name:var(--font-body)]`}
       >
         {children}
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              borderRadius: "12px",
+              fontSize: "14px",
+            },
+          }}
+        />
       </body>
     </html>
   );

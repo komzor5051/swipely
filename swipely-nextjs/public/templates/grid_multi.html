@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAFA;
+      --ink: #0A0A0A;
+      --pink: #F9A8D4;
+      --lime: #D4F542;
+      --blue: #60A5FA;
+      --gray: #888888;
+      --white: #FFFFFF;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Grid pattern background */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    /* Decorative lines in top-right */
+    .deco-lines {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      width: 180px;
+      height: 180px;
+      z-index: 1;
+    }
+
+    .deco-line {
+      position: absolute;
+      width: 200px;
+      height: 12px;
+      background: var(--lime);
+      border-radius: 6px;
+      transform-origin: right center;
+    }
+
+    .deco-line:nth-child(1) { top: 0; transform: rotate(-25deg); }
+    .deco-line:nth-child(2) { top: 25px; transform: rotate(-25deg); }
+    .deco-line:nth-child(3) { top: 50px; transform: rotate(-25deg); }
+    .deco-line:nth-child(4) { top: 75px; transform: rotate(-25deg); opacity: 0.5; }
+
+    /* Header with avatar */
+    .header {
+      position: absolute;
+      top: 60px;
+      left: 70px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--lime) 100%);
+      border: 4px solid var(--white);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .author-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .author-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .author-handle {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+    }
+
+    /* Main content */
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 200px 70px 250px;
+      position: relative;
+      z-index: 5;
+    }
+
+    /* Headline with multiple highlights */
+    .headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 88px;
+      font-weight: 800;
+      line-height: 1.05;
+      color: var(--ink);
+      letter-spacing: -3px;
+      max-width: 850px;
+    }
+
+    /* Pink highlight badge */
+    .highlight-pink {
+      display: inline-block;
+      background: var(--pink);
+      padding: 6px 20px;
+      border-radius: 8px;
+      margin-right: 10px;
+    }
+
+    /* Lime highlight badge with underline - tilted */
+    .highlight-lime {
+      display: inline-block;
+      background: var(--lime);
+      padding: 8px 24px;
+      transform: rotate(-3deg);
+      position: relative;
+      margin-left: 10px;
+    }
+
+    .highlight-lime::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 10%;
+      width: 80%;
+      height: 4px;
+      background: var(--blue);
+      border-radius: 2px;
+    }
+
+    /* Accent class for auto-highlighting */
+    .accent {
+      display: inline-block;
+      background: var(--lime);
+      padding: 4px 16px;
+      transform: rotate(-2deg);
+      position: relative;
+    }
+
+    .accent::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 15%;
+      width: 70%;
+      height: 3px;
+      background: var(--blue);
+      border-radius: 2px;
+    }
+
+    /* Content subtitle */
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--gray);
+      margin-top: 50px;
+      max-width: 700px;
+    }
+
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl {
+      display: inline;
+      background: var(--pink);
+      color: var(--ink);
+      padding: 6px 16px;
+      margin: 0 -6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 60px;
+      left: 70px;
+      right: 70px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .swipe-button {
+      display: inline-flex;
+      align-items: center;
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: 50px;
+      padding: 16px 32px;
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+
+    .footer-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+
+    .footer-handle {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .footer-cta {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Slide counter */
+    .slide-counter {
+      position: absolute;
+      top: 65px;
+      right: 250px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+      opacity: 0;
+    }
+
+    /* Corner icons */
+    .corner-icons {
+      position: absolute;
+      bottom: 55px;
+      right: 70px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .corner-icon {
+      width: 45px;
+      height: 45px;
+      background: var(--white);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .corner-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <!-- Decorative lines -->
+  <div class="deco-lines">
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+  </div>
+
+  <!-- Header with avatar -->
+  <div class="header">
+    <div class="avatar">S</div>
+    <div class="author-info">
+      <span class="author-name">Swipely</span>
+      <span class="author-handle">@swipely</span>
+    </div>
+  </div>
+
+  <!-- Slide counter -->
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+
+  <!-- Main content -->
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-right">
+      <span class="footer-handle">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</span>
+      <span class="footer-cta">Follow for more</span>
+    </div>
+  </div>
+</body>
+</html>

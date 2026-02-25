@@ -30,10 +30,17 @@ export async function getSession(token: string): Promise<SessionResponse | null>
 /**
  * Сохранение изменений в сессии
  */
-export async function updateSession(token: string, carouselData: CarouselData): Promise<boolean> {
+export async function updateSession(token: string, carouselData: CarouselData, stylePreset?: string): Promise<boolean> {
+  const updateData: { carousel_data: CarouselData; style_preset?: string } = {
+    carousel_data: carouselData,
+  };
+  if (stylePreset !== undefined) {
+    updateData.style_preset = stylePreset;
+  }
+
   const { error } = await supabase
     .from('carousel_edit_sessions')
-    .update({ carousel_data: carouselData })
+    .update(updateData)
     .eq('token', token)
     .gt('expires_at', new Date().toISOString());
 

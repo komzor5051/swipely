@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,12 +10,22 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
+  )
+}
+
+function SignupForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
   const supabase = createClient()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const referralCode = searchParams.get('ref')
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,43 +33,31 @@ export default function SignupPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      // Step 1: Create user via server API (auto-confirms email)
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, ...(referralCode ? { referralCode } : {}) }),
       })
 
-      if (error) throw error
-      setSuccess(true)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+
+      // Step 2: Sign in with the new account
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) throw signInError
+
+      router.push('/dashboard')
+      router.refresh()
     } catch (error: any) {
       setError(error.message || 'Ошибка регистрации')
     } finally {
       setLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl">Проверьте почту</CardTitle>
-            <CardDescription>
-              Мы отправили письмо с подтверждением на {email}
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Link href="/login" className="w-full">
-              <Button variant="outline" className="w-full">
-                Вернуться к входу
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    )
   }
 
   return (
@@ -70,6 +69,11 @@ export default function SignupPage() {
         </CardHeader>
         <form onSubmit={handleSignup}>
           <CardContent className="space-y-4">
+            {referralCode && (
+              <div className="p-3 text-sm text-green-700 bg-green-50 rounded-md border border-green-200">
+                Тебя пригласил друг — после регистрации получишь +3 Photo-слайда!
+              </div>
+            )}
             {error && (
               <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">
                 {error}

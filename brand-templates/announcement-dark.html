@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0A84FF;
+      --primary-light: #3D9FFF;
+      --lime: #D4F542;
+      --pink: #F9A8D4;
+      --charcoal: #0A0A0F;
+      --dark-gray: #1A1A24;
+      --white: #FFFFFF;
+      --gray: #8B8B9A;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1080px;
+      background: var(--charcoal);
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle grid */
+    .grid-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    /* Blue glow */
+    .blue-glow {
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(10, 132, 255, 0.2) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* Lime glow */
+    .lime-glow {
+      position: absolute;
+      bottom: -150px;
+      left: -150px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(212, 245, 66, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* Decorative lines */
+    .deco-lines {
+      position: absolute;
+      top: 60px;
+      right: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1;
+    }
+
+    .deco-line {
+      width: 80px;
+      height: 8px;
+      background: var(--lime);
+      border-radius: 4px;
+      transform: rotate(-25deg);
+    }
+
+    .deco-line:nth-child(2) { opacity: 0.7; width: 60px; }
+    .deco-line:nth-child(3) { opacity: 0.5; width: 45px; }
+
+    /* Badge */
+    .badge {
+      position: absolute;
+      top: 80px;
+      left: 80px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 100px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 8px 32px rgba(10, 132, 255, 0.4);
+      z-index: 10;
+    }
+
+    .badge::before {
+      content: '🎉';
+      font-size: 16px;
+    }
+
+    /* Main content */
+    .content-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 180px 80px 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 5;
+    }
+
+    /* Headline */
+    .headline {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 32px;
+      letter-spacing: -2px;
+    }
+
+    .headline .highlight {
+      display: inline;
+      background: var(--lime);
+      color: var(--charcoal);
+      padding: 4px 16px;
+      position: relative;
+    }
+
+    .headline .highlight-blue {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    /* Subtext */
+    .subtext {
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--gray);
+      max-width: 800px;
+    }
+
+    /* Stats row */
+    .stats {
+      display: flex;
+      gap: 60px;
+      margin-top: 50px;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--gray);
+      margin-top: 8px;
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 60px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(10, 132, 255, 0.4);
+    }
+
+    .logo-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.5px;
+    }
+
+    .cta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 32px;
+      background: var(--lime);
+      border-radius: 100px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--charcoal);
+      box-shadow: 0 8px 24px rgba(212, 245, 66, 0.3);
+    }
+
+    .cta svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* Decorative circle */
+    .deco-circle {
+      position: absolute;
+      bottom: 200px;
+      right: 100px;
+      width: 120px;
+      height: 120px;
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      opacity: 0.2;
+      z-index: 1;
+    }
+
+    .deco-circle::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 80px;
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="blue-glow"></div>
+  <div class="lime-glow"></div>
+
+  <div class="deco-lines">
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+    <div class="deco-line"></div>
+  </div>
+
+  <div class="badge">Итоги месяца</div>
+
+  <div class="content-wrapper">
+    <h1 class="headline">
+      <span class="highlight">10 000+</span><br>
+      каруселей<br>
+      создано!
+    </h1>
+    <p class="subtext">
+      Спасибо, что выбираете Swipely для создания контента
+    </p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">15</div>
+        <div class="stat-label">стилей дизайна</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">30с</div>
+        <div class="stat-label">среднее время</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">98%</div>
+        <div class="stat-label">довольны</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="deco-circle"></div>
+
+  <div class="footer">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="white">
+          <path d="M8 10h16M8 16h16M8 22h10" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <span class="logo-text">Swipely</span>
+    </div>
+    <div class="cta">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+      </svg>
+      Попробовать
+    </div>
+  </div>
+</body>
+</html>

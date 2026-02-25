@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Mockups — Essay & Block</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Anton&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; font-family: system-ui; padding: 48px 40px; }
+  
+  h2 { color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 24px; opacity: 0.4; }
+  
+  .row { display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 64px; }
+  
+  /* === SLIDE WRAPPER === */
+  .slide {
+    width: 324px;
+    height: 405px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  /* ============================
+     ESSAY TEMPLATE
+  ============================ */
+  .essay {
+    background: #FAFAF8;
+    padding: 48px 44px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .essay .chapter-mark {
+    width: 28px;
+    height: 1px;
+    background: #0D0D14;
+    opacity: 0.4;
+    margin-bottom: 40px;
+  }
+
+  .essay .counter {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 3px;
+    color: #0D0D14;
+    opacity: 0.3;
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 28px;
+    right: 36px;
+  }
+
+  .essay .username {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    color: #0D0D14;
+    opacity: 0.25;
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 28px;
+    left: 44px;
+  }
+
+  .essay h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px;
+    font-weight: 300;
+    line-height: 1.18;
+    color: #0D0D14;
+    letter-spacing: -0.5px;
+    margin-bottom: 28px;
+    flex: 1;
+  }
+
+  .essay h1 em {
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .essay .hl {
+    font-style: normal;
+    border-bottom: 1px solid #0D0D14;
+    padding-bottom: 1px;
+  }
+
+  .essay p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.8;
+    color: #0D0D14;
+    opacity: 0.55;
+    letter-spacing: 0.3px;
+    max-width: 260px;
+    margin-bottom: 40px;
+  }
+
+  /* Essay hook slide variant */
+  .essay.hook h1 {
+    font-size: 46px;
+    font-weight: 300;
+    line-height: 1.1;
+  }
+
+  /* ============================
+     BLOCK TEMPLATE
+  ============================ */
+  .block {
+    display: flex;
+    flex-direction: column;
+    padding: 36px 40px 32px;
+  }
+
+  .block.dark { background: #0A0A0A; }
+  .block.light { background: #F5F5F3; }
+
+  .block .counter {
+    font-family: 'Anton', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    margin-bottom: auto;
+    align-self: flex-end;
+  }
+  .block.dark .counter { color: rgba(255,255,255,0.2); }
+  .block.light .counter { color: rgba(0,0,0,0.2); }
+
+  .block h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: 72px;
+    line-height: 0.93;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    word-break: break-word;
+    margin-top: 16px;
+    margin-bottom: 20px;
+  }
+  .block.dark h1 { color: #F5F5F3; }
+  .block.light h1 { color: #0A0A0A; }
+
+  .block .hl-dark {
+    color: #0A0A0A;
+    background: #F5F5F3;
+    padding: 0 4px;
+  }
+  .block .hl-light {
+    color: #F5F5F3;
+    background: #0A0A0A;
+    padding: 0 4px;
+  }
+
+  .block .divider {
+    height: 4px;
+    margin-bottom: 18px;
+  }
+  .block.dark .divider { background: rgba(245,245,243,0.15); }
+  .block.light .divider { background: rgba(10,10,10,0.12); }
+
+  .block p {
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.3px;
+    line-height: 1.55;
+    text-transform: uppercase;
+  }
+  .block.dark p { color: rgba(245,245,243,0.45); }
+  .block.light p { color: rgba(10,10,10,0.45); }
+
+  .block .username {
+    font-family: 'Anton', sans-serif;
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: auto;
+    padding-top: 12px;
+  }
+  .block.dark .username { color: rgba(255,255,255,0.15); }
+  .block.light .username { color: rgba(0,0,0,0.15); }
+</style>
+</head>
+<body>
+
+  <!-- ESSAY -->
+  <h2>Essay — Шёпот</h2>
+  <div class="row">
+
+    <!-- Hook -->
+    <div class="slide essay hook">
+      <div class="chapter-mark"></div>
+      <h1>Ты работаешь<br>больше всех —<br>и <span class="hl">зарабатываешь</span><br>меньше всех</h1>
+      <p>Это не совпадение. Это система, которую надо сломать.</p>
+      <span class="username">@username</span>
+      <span class="counter">1 / 6</span>
+    </div>
+
+    <!-- Value -->
+    <div class="slide essay">
+      <div class="chapter-mark"></div>
+      <h1>95% людей<br>продают<br><em>время.</em><br>5% — продают<br><span class="hl">результат</span></h1>
+      <p>Пока ты считаешь часы, умные считают выручку.</p>
+      <span class="username">@username</span>
+      <span class="counter">3 / 6</span>
+    </div>
+
+    <!-- CTA -->
+    <div class="slide essay">
+      <div class="chapter-mark"></div>
+      <h1>Одно<br>решение<br>меняет<br>всё</h1>
+      <p>Сохрани эту карусель. Перечитай через неделю. Посмотри, что изменилось в твоём мышлении.</p>
+      <span class="username">@username</span>
+      <span class="counter">6 / 6</span>
+    </div>
+
+  </div>
+
+  <!-- BLOCK -->
+  <h2>Block — Удар</h2>
+  <div class="row">
+
+    <!-- Hook dark -->
+    <div class="slide block dark">
+      <span class="counter">1 / 6</span>
+      <h1>Твой<br>бизнес<br>не <span class="hl-dark">растёт</span></h1>
+      <div class="divider"></div>
+      <p>Одна причина. Ты её не замечаешь.</p>
+      <span class="username">@username</span>
+    </div>
+
+    <!-- Content light -->
+    <div class="slide block light">
+      <span class="counter">3 / 6</span>
+      <h1>Нет<br><span class="hl-light">систе-<br>мы</span> —<br>нет роста</h1>
+      <div class="divider"></div>
+      <p>Хаос съедает прибыль быстрее любого кризиса.</p>
+      <span class="username">@username</span>
+    </div>
+
+    <!-- CTA dark -->
+    <div class="slide block dark">
+      <span class="counter">6 / 6</span>
+      <h1>Начни<br>сегодня.<br>Не<br><span class="hl-dark">завтра</span></h1>
+      <div class="divider"></div>
+      <p>Сохрани. Перешли тому, кто застрял.</p>
+      <span class="username">@username</span>
+    </div>
+
+  </div>
+
+</body>
+</html>

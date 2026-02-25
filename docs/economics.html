@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swipely — Экономика сервиса</title>
+<style>
+  :root {
+    --bg: #0c0c14;
+    --surface: #13131f;
+    --surface-2: #1a1a2e;
+    --surface-3: #222238;
+    --border: #2a2a42;
+    --text: #e4e4ed;
+    --text-muted: #8888a4;
+    --blue: #0A84FF;
+    --blue-dim: rgba(10, 132, 255, 0.15);
+    --lime: #D4F542;
+    --lime-dim: rgba(212, 245, 66, 0.12);
+    --pink: #F9A8D4;
+    --pink-dim: rgba(249, 168, 212, 0.12);
+    --red: #FF6B6B;
+    --red-dim: rgba(255, 107, 107, 0.12);
+    --green: #4ADE80;
+    --green-dim: rgba(74, 222, 128, 0.12);
+    --orange: #FB923C;
+    --orange-dim: rgba(251, 146, 60, 0.12);
+    --purple: #A78BFA;
+    --purple-dim: rgba(167, 139, 250, 0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @font-face {
+    font-family: 'Inter';
+    src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(10,132,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: var(--blue-dim);
+    border: 1px solid rgba(10,132,255,0.25);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 .accent { color: var(--lime); }
+
+  .hero p {
+    font-size: 18px;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .hero-date {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  /* ─── Sections ─── */
+  section {
+    padding: 60px 0;
+  }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--blue);
+    margin-bottom: 12px;
+  }
+
+  .section-label .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--blue);
+  }
+
+  h2 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+  }
+
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 16px;
+    margin-bottom: 40px;
+    max-width: 680px;
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .card-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .badge-green { background: var(--green-dim); color: var(--green); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); }
+  .badge-red { background: var(--red-dim); color: var(--red); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); }
+  .badge-lime { background: var(--lime-dim); color: var(--lime); }
+
+  /* ─── KPI Row ─── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+  }
+
+  .kpi-value {
+    font-size: 36px;
+    font-weight: 800;
+    font-family: var(--mono);
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .kpi-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+
+  /* ─── Tables ─── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead th {
+    background: var(--surface-2);
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  .num { font-family: var(--mono); font-weight: 600; font-size: 13px; }
+  .num-green { color: var(--green); }
+  .num-blue { color: var(--blue); }
+  .num-lime { color: var(--lime); }
+  .num-red { color: var(--red); }
+  .num-orange { color: var(--orange); }
+
+  .row-highlight { background: var(--blue-dim) !important; }
+
+  /* ─── Margin Bar ─── */
+  .margin-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .margin-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--surface-3);
+    border-radius: 100px;
+    overflow: hidden;
+    max-width: 120px;
+  }
+
+  .margin-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.3s;
+  }
+
+  .margin-bar-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 42px;
+  }
+
+  /* ─── Grid Layouts ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* ─── Pricing Cards ─── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    position: relative;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+
+  .pricing-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .pricing-card.featured {
+    border-color: var(--blue);
+    background: linear-gradient(180deg, rgba(10,132,255,0.06) 0%, var(--surface) 100%);
+  }
+
+  .pricing-card.featured::before {
+    content: 'Рекомендуем';
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--blue);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 14px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .pricing-tier {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .pricing-price {
+    font-size: 40px;
+    font-weight: 800;
+    font-family: var(--mono);
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .pricing-price .currency { font-size: 20px; color: var(--text-muted); }
+  .pricing-price .period { font-size: 14px; color: var(--text-muted); font-weight: 500; letter-spacing: 0; }
+
+  .pricing-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    min-height: 40px;
+  }
+
+  .pricing-features {
+    list-style: none;
+    font-size: 13px;
+  }
+
+  .pricing-features li {
+    padding: 6px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .pricing-features li::before {
+    content: '→';
+    color: var(--blue);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .pricing-features .disabled {
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  .pricing-features .disabled::before {
+    content: '—';
+    color: var(--text-muted);
+  }
+
+  .pricing-cost-line {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .pricing-cost-line .label { color: var(--text-muted); }
+  .pricing-cost-line .value { font-family: var(--mono); font-weight: 700; }
+
+  /* ─── Credits Cards ─── */
+  .credits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .credit-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    position: relative;
+    transition: transform 0.15s;
+  }
+
+  .credit-card:hover { transform: translateY(-2px); }
+
+  .credit-card.popular {
+    border-color: var(--lime);
+  }
+
+  .credit-card.popular::before {
+    content: 'Популярный';
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--lime);
+    color: #0c0c14;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 14px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .credit-amount {
+    font-size: 48px;
+    font-weight: 800;
+    font-family: var(--mono);
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .credit-unit {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .credit-price {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .credit-per {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .credit-discount {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* ─── Callout ─── */
+  .callout {
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .callout-blue { background: var(--blue-dim); border: 1px solid rgba(10,132,255,0.2); }
+  .callout-lime { background: var(--lime-dim); border: 1px solid rgba(212,245,66,0.2); }
+  .callout-orange { background: var(--orange-dim); border: 1px solid rgba(251,146,60,0.2); }
+  .callout-red { background: var(--red-dim); border: 1px solid rgba(255,107,107,0.2); }
+
+  .callout-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+
+  .callout-text { font-size: 14px; line-height: 1.6; }
+  .callout-text strong { font-weight: 700; }
+
+  /* ─── Flow Diagram ─── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 20px;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .flow-step-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .flow-step-value {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--text-muted);
+  }
+
+  /* ─── Scenario Grid ─── */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .scenario-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+  }
+
+  .scenario-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .scenario-mrr {
+    font-size: 42px;
+    font-weight: 800;
+    font-family: var(--mono);
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .scenario-mrr .k { font-size: 24px; }
+
+  .scenario-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .scenario-breakdown {
+    text-align: left;
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .scenario-breakdown div {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+
+  .scenario-breakdown .label { color: var(--text-muted); }
+  .scenario-breakdown .value { font-family: var(--mono); font-weight: 600; }
+
+  /* ─── Recommendations ─── */
+  .rec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .rec-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+  }
+
+  .rec-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    font-family: var(--mono);
+    margin-bottom: 16px;
+  }
+
+  .rec-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .rec-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ─── Divider ─── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  /* ─── Footer ─── */
+  .footer {
+    padding: 40px 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+
+  .footer a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  /* ─── Comparison ─── */
+  .compare-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .inline-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 8px;
+  }
+
+  /* ─── Visual separator ─── */
+  .section-sep {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--border);
+    font-size: 24px;
+    letter-spacing: 8px;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 900px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+    .credits-grid { grid-template-columns: 1fr; }
+    .scenario-grid { grid-template-columns: 1fr; }
+    .rec-grid { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 32px; }
+  }
+
+  @media (max-width: 600px) {
+    .kpi-row { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 28px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="container">
+    <div class="hero-badge"><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--blue)"></span> Internal Strategy</div>
+    <h1>Экономика <span class="accent">Swipely</span></h1>
+    <p>Себестоимость AI-моделей, предложение по тарифам, юнит-экономика и прогноз выручки</p>
+    <div class="hero-date">2026-02-20 · v1.0</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════════
+     1. СЕБЕСТОИМОСТЬ (COST ANALYSIS)
+     ════════════════════════════════════════════ -->
+<section>
+  <div class="section-label"><span class="dot"></span> Раздел 01</div>
+  <h2>Себестоимость генерации</h2>
+  <p class="section-desc">Реальная стоимость AI-моделей за одну генерацию карусели. Данные на февраль 2026.</p>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-value" style="color: var(--green)">0.04₽</div>
+      <div class="kpi-label">Стандартный режим</div>
+      <div class="kpi-sub">1 карусель (текст)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color: var(--orange)">60₽</div>
+      <div class="kpi-label">Фото-режим (5 сл.)</div>
+      <div class="kpi-sub">текст + 5 AI-изображений</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color: var(--blue)">12₽</div>
+      <div class="kpi-label">1 AI-фото слайд</div>
+      <div class="kpi-sub">gemini-3-pro @ 2K</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color: var(--lime)">0.06₽</div>
+      <div class="kpi-label">TOV-анализ</div>
+      <div class="kpi-sub">разовый (onboarding)</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom: 32px;">
+    <!-- Standard Mode -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Стандартный режим</span>
+        <span class="card-badge badge-green">~0₽</span>
+      </div>
+      <div class="table-wrap" style="border: none; margin-bottom: 0;">
+        <table>
+          <thead>
+            <tr><th>Компонент</th><th>Модель</th><th>Токены</th><th>Стоимость</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Системный промпт</td>
+              <td><code style="font-size:12px; color: var(--blue)">gemini-2.5-flash-lite</code></td>
+              <td class="num">~1,000 in</td>
+              <td class="num num-green">$0.0001</td>
+            </tr>
+            <tr>
+              <td>Промпт пользователя</td>
+              <td><code style="font-size:12px; color: var(--blue)">gemini-2.5-flash-lite</code></td>
+              <td class="num">~500 in</td>
+              <td class="num num-green">$0.00005</td>
+            </tr>
+            <tr>
+              <td>Ответ (JSON слайдов)</td>
+              <td><code style="font-size:12px; color: var(--blue)">gemini-2.5-flash-lite</code></td>
+              <td class="num">~650 out</td>
+              <td class="num num-green">$0.00026</td>
+            </tr>
+            <tr style="background: var(--surface-2);">
+              <td colspan="3"><strong>ИТОГО за 1 генерацию</strong></td>
+              <td class="num num-green"><strong>$0.0004</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="inline-note">1 вызов API. Стоимость: $0.10/1M input, $0.40/1M output. По курсу 87₽/$ ≈ 0.035₽</p>
+    </div>
+
+    <!-- Photo Mode -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Фото-режим</span>
+        <span class="card-badge badge-orange">$0.134/img</span>
+      </div>
+      <div class="table-wrap" style="border: none; margin-bottom: 0;">
+        <table>
+          <thead>
+            <tr><th>Компонент</th><th>Модель</th><th>Кол-во</th><th>Стоимость</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Генерация текста</td>
+              <td><code style="font-size:12px; color: var(--blue)">gemini-2.5-flash-lite</code></td>
+              <td class="num">1 вызов</td>
+              <td class="num num-green">$0.0004</td>
+            </tr>
+            <tr>
+              <td>AI-изображения (2K)</td>
+              <td><code style="font-size:12px; color: var(--orange)">gemini-3-pro-image</code></td>
+              <td class="num">× N слайдов</td>
+              <td class="num num-orange">$0.134 × N</td>
+            </tr>
+            <tr>
+              <td>Input токены (фото)</td>
+              <td><code style="font-size:12px; color: var(--text-muted)">gemini-3-pro</code></td>
+              <td class="num">~1,574 × N</td>
+              <td class="num" style="color:var(--text-muted)">~$0.003 × N</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top: 16px;">
+        <table>
+          <thead>
+            <tr><th>Слайдов</th><th>Текст</th><th>Изображения</th><th>Итого USD</th><th>Итого ₽</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num">3</td>
+              <td class="num" style="color:var(--text-muted)">$0.0004</td>
+              <td class="num num-orange">$0.411</td>
+              <td class="num"><strong>$0.411</strong></td>
+              <td class="num num-red"><strong>≈ 36₽</strong></td>
+            </tr>
+            <tr class="row-highlight">
+              <td class="num">5</td>
+              <td class="num" style="color:var(--text-muted)">$0.0004</td>
+              <td class="num num-orange">$0.686</td>
+              <td class="num"><strong>$0.686</strong></td>
+              <td class="num num-red"><strong>≈ 60₽</strong></td>
+            </tr>
+            <tr>
+              <td class="num">7</td>
+              <td class="num" style="color:var(--text-muted)">$0.0005</td>
+              <td class="num num-orange">$0.961</td>
+              <td class="num"><strong>$0.961</strong></td>
+              <td class="num num-red"><strong>≈ 84₽</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-blue">
+    <span class="callout-icon">💡</span>
+    <div class="callout-text">
+      <strong>Free Tier от Google:</strong> Gemini 2.5 Flash Lite — 1,500 запросов/день бесплатно. Gemini 3 Pro Image — 50 изображений/день бесплатно (7-16 AI-каруселей). На ранней стадии стоимость AI = 0₽.
+    </div>
+  </div>
+
+  <div class="callout callout-orange">
+    <span class="callout-icon">⚠️</span>
+    <div class="callout-text">
+      <strong>Оптимизация:</strong> Фоллбек-модель <code>gemini-2.0-flash</code> стоит $0.039/img вместо $0.134 — в 3.4× дешевле. Если качество приемлемое, себестоимость фото-карусели из 5 слайдов падает с 60₽ до ≈ 17₽.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════
+     2. ПРЕДЛАГАЕМАЯ МОДЕЛЬ МОНЕТИЗАЦИИ
+     ════════════════════════════════════════════ -->
+<section>
+  <div class="section-label"><span class="dot"></span> Раздел 02</div>
+  <h2>Предлагаемая модель</h2>
+  <p class="section-desc">Подписка на стандартные карусели + кредиты на AI-фото слайды как отдельный продукт. Двухуровневая монетизация.</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-step-label">Вход</div>
+      <div class="flow-step-value">Free (3/мес)</div>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-color: var(--blue);">
+      <div class="flow-step-label">Подписка</div>
+      <div class="flow-step-value" style="color:var(--blue)">Starter / Pro</div>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-color: var(--lime);">
+      <div class="flow-step-label">Допродажа</div>
+      <div class="flow-step-value" style="color:var(--lime)">AI-кредиты</div>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-color: var(--purple);">
+      <div class="flow-step-label">Масштаб</div>
+      <div class="flow-step-value" style="color:var(--purple)">Business</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 48px;">Тарифные планы (подписка)</h3>
+
+  <div class="pricing-grid">
+    <!-- Free -->
+    <div class="pricing-card">
+      <div class="pricing-tier" style="color: var(--text-muted)">Free</div>
+      <div class="pricing-price">0<span class="currency">₽</span></div>
+      <div class="pricing-desc">Попробовать сервис. Конвертировать в платный тариф.</div>
+      <ul class="pricing-features">
+        <li>3 генерации / месяц</li>
+        <li>Все 17 шаблонов</li>
+        <li>Экспорт PNG</li>
+        <li class="disabled">AI-фото не доступен</li>
+        <li class="disabled">Watermark на экспорте</li>
+      </ul>
+      <div class="pricing-cost-line">
+        <span class="label">Себестоимость</span>
+        <span class="value" style="color:var(--green)">~0.1₽</span>
+      </div>
+    </div>
+
+    <!-- Starter -->
+    <div class="pricing-card">
+      <div class="pricing-tier" style="color: var(--blue)">Starter</div>
+      <div class="pricing-price">490<span class="currency">₽</span><span class="period">/мес</span></div>
+      <div class="pricing-desc">Для начинающих SMM-щиков и экспертов.</div>
+      <ul class="pricing-features">
+        <li><strong>30</strong> генераций / месяц</li>
+        <li>Все 17 шаблонов</li>
+        <li>Без watermark</li>
+        <li>TOV-анализ</li>
+        <li class="disabled">AI-фото: покупай кредиты</li>
+      </ul>
+      <div class="pricing-cost-line">
+        <span class="label">Себестоимость</span>
+        <span class="value" style="color:var(--green)">~1₽</span>
+      </div>
+      <div class="pricing-cost-line">
+        <span class="label">Маржа</span>
+        <span class="value" style="color:var(--lime)">99.8%</span>
+      </div>
+    </div>
+
+    <!-- Pro -->
+    <div class="pricing-card featured">
+      <div class="pricing-tier" style="color: var(--blue)">Pro</div>
+      <div class="pricing-price">990<span class="currency">₽</span><span class="period">/мес</span></div>
+      <div class="pricing-desc">Активные SMM-специалисты и агентства.</div>
+      <ul class="pricing-features">
+        <li><strong>Безлимит</strong> генераций</li>
+        <li>Все 17 шаблонов</li>
+        <li>Без watermark</li>
+        <li>TOV-анализ</li>
+        <li><strong>10 AI-кредитов</strong> в подарок</li>
+        <li>Приоритетная генерация</li>
+      </ul>
+      <div class="pricing-cost-line">
+        <span class="label">Себестоимость (100 ст. + 10 фото)</span>
+        <span class="value" style="color:var(--orange)">~124₽</span>
+      </div>
+      <div class="pricing-cost-line">
+        <span class="label">Маржа</span>
+        <span class="value" style="color:var(--lime)">87.5%</span>
+      </div>
+    </div>
+
+    <!-- Business -->
+    <div class="pricing-card">
+      <div class="pricing-tier" style="color: var(--purple)">Business</div>
+      <div class="pricing-price">2 490<span class="currency">₽</span><span class="period">/мес</span></div>
+      <div class="pricing-desc">Агентства и команды. Максимум возможностей.</div>
+      <ul class="pricing-features">
+        <li><strong>Безлимит</strong> генераций</li>
+        <li>Все шаблоны + приоритет</li>
+        <li>Без watermark</li>
+        <li>TOV-анализ</li>
+        <li><strong>50 AI-кредитов</strong> включено</li>
+        <li>API доступ (скоро)</li>
+      </ul>
+      <div class="pricing-cost-line">
+        <span class="label">Себестоимость (200 ст. + 50 фото)</span>
+        <span class="value" style="color:var(--orange)">~607₽</span>
+      </div>
+      <div class="pricing-cost-line">
+        <span class="label">Маржа</span>
+        <span class="value" style="color:var(--lime)">75.6%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-lime">
+    <span class="callout-icon">✦</span>
+    <div class="callout-text">
+      <strong>Годовые тарифы:</strong> Starter — 3 990₽/год (−32%), Pro — 7 900₽/год (−33%), Business — 19 900₽/год (−33%). Годовая оплата снижает отток и увеличивает LTV.
+    </div>
+  </div>
+
+  <!-- AI Credits -->
+  <h3 style="margin-top: 48px;">AI-кредиты (фото-режим)</h3>
+  <p class="section-desc" style="margin-bottom: 24px;">1 кредит = 1 AI-фото слайд. Карусель из 5 слайдов = 5 кредитов. Кредиты не сгорают.</p>
+
+  <div class="credits-grid">
+    <div class="credit-card">
+      <div class="credit-amount" style="color: var(--blue)">10</div>
+      <div class="credit-unit">AI-кредитов</div>
+      <div class="credit-price">490₽</div>
+      <div class="credit-per">49₽ / слайд</div>
+      <div class="credit-discount badge-blue" style="opacity: 0.6">Базовая цена</div>
+      <div class="pricing-cost-line">
+        <span class="label">Себестоимость</span>
+        <span class="value" style="color:var(--orange)">120₽</span>
+      </div>
+      <div class="pricing-cost-line">
+        <span class="label">Маржа</span>
+        <span class="value" style="color:var(--lime)">75.5%</span>
+      </div>
+    </div>
+
+    <div class="credit-card popular">
+      <div class="credit-amount" style="color: var(--lime)">30</div>
+      <div class="credit-unit">AI-кредитов</div>
+      <div class="credit-price">1 190₽</div>
+      <div class="credit-per">~40₽ / слайд</div>
+      <div class="credit-discount badge-lime">−19% скидка</div>
+      <div class="pricing-cost-line">
+        <span class="label">Себестоимость</span>
+        <span class="value" style="color:var(--orange)">360₽</span>
+      </div>
+      <div class="pricing-cost-line">
+        <span class="label">Маржа</span>
+        <span class="value" style="color:var(--lime)">69.7%</span>
+      </div>
+    </div>
+
+    <div class="credit-card">
+      <div class="credit-amount" style="color: var(--purple)">100</div>
+      <div class="credit-unit">AI-кредитов</div>
+      <div class="credit-price">2 990₽</div>
+      <div class="credit-per">~30₽ / слайд</div>
+      <div class="credit-discount badge-purple">−39% скидка</div>
+      <div class="pricing-cost-line">
+        <span class="label">Себестоимость</span>
+        <span class="value" style="color:var(--orange)">1 200₽</span>
+      </div>
+      <div class="pricing-cost-line">
+        <span class="label">Маржа</span>
+        <span class="value" style="color:var(--lime)">59.9%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-blue">
+    <span class="callout-icon">🎯</span>
+    <div class="callout-text">
+      <strong>Почему кредиты, а не "за карусель"?</strong> Кредиты гибче: пользователь выбирает 3, 5 или 7 слайдов сам. Кредиты не сгорают — это снижает барьер покупки. Остаток кредитов мотивирует вернуться. А для нас — понятная юнит-экономика за каждый слайд.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════
+     3. ЮНИТ-ЭКОНОМИКА
+     ════════════════════════════════════════════ -->
+<section>
+  <div class="section-label"><span class="dot"></span> Раздел 03</div>
+  <h2>Юнит-экономика</h2>
+  <p class="section-desc">Маржинальность каждого продукта. Стандартный режим — почти чистая прибыль. AI-фото — основная статья расходов, но маржа здоровая.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Продукт</th>
+          <th>Цена</th>
+          <th>Себестоимость AI</th>
+          <th>Валовая прибыль</th>
+          <th>Маржа</th>
+          <th style="min-width:180px">Визуализация</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Starter (мес)</strong></td>
+          <td class="num">490₽</td>
+          <td class="num num-orange">~1₽</td>
+          <td class="num num-green">489₽</td>
+          <td>
+            <div class="margin-bar">
+              <div class="margin-bar-track"><div class="margin-bar-fill" style="width:99.8%;background:var(--green)"></div></div>
+              <span class="margin-bar-label num-green">99.8%</span>
+            </div>
+          </td>
+          <td><div class="margin-bar-track" style="max-width:180px;height:12px"><div class="margin-bar-fill" style="width:99.8%;background:linear-gradient(90deg,var(--green),var(--lime))"></div></div></td>
+        </tr>
+        <tr>
+          <td><strong>Pro (мес)</strong></td>
+          <td class="num">990₽</td>
+          <td class="num num-orange">~124₽</td>
+          <td class="num num-green">866₽</td>
+          <td>
+            <div class="margin-bar">
+              <div class="margin-bar-track"><div class="margin-bar-fill" style="width:87.5%;background:var(--green)"></div></div>
+              <span class="margin-bar-label num-green">87.5%</span>
+            </div>
+          </td>
+          <td><div class="margin-bar-track" style="max-width:180px;height:12px"><div class="margin-bar-fill" style="width:87.5%;background:linear-gradient(90deg,var(--green),var(--lime))"></div></div></td>
+        </tr>
+        <tr>
+          <td><strong>Business (мес)</strong></td>
+          <td class="num">2 490₽</td>
+          <td class="num num-orange">~607₽</td>
+          <td class="num num-green">1 883₽</td>
+          <td>
+            <div class="margin-bar">
+              <div class="margin-bar-track"><div class="margin-bar-fill" style="width:75.6%;background:var(--green)"></div></div>
+              <span class="margin-bar-label num-green">75.6%</span>
+            </div>
+          </td>
+          <td><div class="margin-bar-track" style="max-width:180px;height:12px"><div class="margin-bar-fill" style="width:75.6%;background:linear-gradient(90deg,var(--blue),var(--green))"></div></div></td>
+        </tr>
+        <tr style="background: var(--surface-2);">
+          <td colspan="6" style="padding: 8px 16px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">AI-кредиты (дополнительно)</td>
+        </tr>
+        <tr>
+          <td><strong>10 кредитов</strong></td>
+          <td class="num">490₽</td>
+          <td class="num num-orange">120₽</td>
+          <td class="num num-green">370₽</td>
+          <td>
+            <div class="margin-bar">
+              <div class="margin-bar-track"><div class="margin-bar-fill" style="width:75.5%;background:var(--blue)"></div></div>
+              <span class="margin-bar-label num-blue">75.5%</span>
+            </div>
+          </td>
+          <td><div class="margin-bar-track" style="max-width:180px;height:12px"><div class="margin-bar-fill" style="width:75.5%;background:linear-gradient(90deg,var(--blue),var(--green))"></div></div></td>
+        </tr>
+        <tr>
+          <td><strong>30 кредитов</strong></td>
+          <td class="num">1 190₽</td>
+          <td class="num num-orange">360₽</td>
+          <td class="num num-green">830₽</td>
+          <td>
+            <div class="margin-bar">
+              <div class="margin-bar-track"><div class="margin-bar-fill" style="width:69.7%;background:var(--blue)"></div></div>
+              <span class="margin-bar-label num-blue">69.7%</span>
+            </div>
+          </td>
+          <td><div class="margin-bar-track" style="max-width:180px;height:12px"><div class="margin-bar-fill" style="width:69.7%;background:linear-gradient(90deg,var(--blue),var(--green))"></div></div></td>
+        </tr>
+        <tr>
+          <td><strong>100 кредитов</strong></td>
+          <td class="num">2 990₽</td>
+          <td class="num num-orange">1 200₽</td>
+          <td class="num num-green">1 790₽</td>
+          <td>
+            <div class="margin-bar">
+              <div class="margin-bar-track"><div class="margin-bar-fill" style="width:59.9%;background:var(--blue)"></div></div>
+              <span class="margin-bar-label num-blue">59.9%</span>
+            </div>
+          </td>
+          <td><div class="margin-bar-track" style="max-width:180px;height:12px"><div class="margin-bar-fill" style="width:59.9%;background:linear-gradient(90deg,var(--orange),var(--blue))"></div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-orange">
+    <span class="callout-icon">📊</span>
+    <div class="callout-text">
+      <strong>Себестоимость Pro считается так:</strong> ~100 стандартных генераций (3.5₽) + 10 AI-кредитов бонусом (120₽) = 123.5₽. При оптимизации модели на <code>gemini-2.0-flash</code> себестоимость AI-кредитов падает до ~3.4₽/слайд, и Pro стоит всего ~38₽.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════
+     4. СЦЕНАРИИ ВЫРУЧКИ
+     ════════════════════════════════════════════ -->
+<section>
+  <div class="section-label"><span class="dot"></span> Раздел 04</div>
+  <h2>Прогноз выручки (MRR)</h2>
+  <p class="section-desc">Три сценария через 6 месяцев после запуска. Предполагается конверсия Free → Paid 5-8%, допродажа кредитов 30-40% от платных.</p>
+
+  <div class="scenario-grid">
+    <!-- Conservative -->
+    <div class="scenario-card">
+      <div class="scenario-label" style="color: var(--text-muted)">Консервативный</div>
+      <div class="scenario-mrr" style="color: var(--text-muted)">89<span class="k">k₽</span></div>
+      <div class="scenario-sub">MRR через 6 месяцев</div>
+      <div class="scenario-breakdown">
+        <div><span class="label">Пользователей</span><span class="value">500</span></div>
+        <div><span class="label">Платных</span><span class="value">25 (5%)</span></div>
+        <div><span class="label">Средний чек</span><span class="value">990₽</span></div>
+        <div><span class="label">Подписки</span><span class="value">24 750₽</span></div>
+        <div><span class="label">AI-кредиты (30%)</span><span class="value">3 675₽</span></div>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+          <span class="label"><strong>Итого MRR</strong></span>
+          <span class="value"><strong>28 425₽</strong></span>
+        </div>
+        <div><span class="label">Себестоимость AI</span><span class="value" style="color:var(--orange)">~4 100₽</span></div>
+        <div><span class="label">Валовая прибыль</span><span class="value" style="color:var(--green)">~24 300₽</span></div>
+      </div>
+    </div>
+
+    <!-- Base -->
+    <div class="scenario-card" style="border-color: var(--blue);">
+      <div class="scenario-label" style="color: var(--blue)">Базовый</div>
+      <div class="scenario-mrr" style="color: var(--blue)">243<span class="k">k₽</span></div>
+      <div class="scenario-sub">MRR через 6 месяцев</div>
+      <div class="scenario-breakdown">
+        <div><span class="label">Пользователей</span><span class="value">2 000</span></div>
+        <div><span class="label">Платных</span><span class="value">120 (6%)</span></div>
+        <div><span class="label">Средний чек</span><span class="value">1 250₽</span></div>
+        <div><span class="label">Подписки</span><span class="value">150 000₽</span></div>
+        <div><span class="label">AI-кредиты (35%)</span><span class="value">52 500₽</span></div>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+          <span class="label"><strong>Итого MRR</strong></span>
+          <span class="value"><strong>202 500₽</strong></span>
+        </div>
+        <div><span class="label">Себестоимость AI</span><span class="value" style="color:var(--orange)">~28 000₽</span></div>
+        <div><span class="label">Валовая прибыль</span><span class="value" style="color:var(--green)">~174 500₽</span></div>
+      </div>
+    </div>
+
+    <!-- Optimistic -->
+    <div class="scenario-card" style="border-color: var(--lime);">
+      <div class="scenario-label" style="color: var(--lime)">Оптимистичный</div>
+      <div class="scenario-mrr" style="color: var(--lime)">680<span class="k">k₽</span></div>
+      <div class="scenario-sub">MRR через 6 месяцев</div>
+      <div class="scenario-breakdown">
+        <div><span class="label">Пользователей</span><span class="value">5 000</span></div>
+        <div><span class="label">Платных</span><span class="value">400 (8%)</span></div>
+        <div><span class="label">Средний чек</span><span class="value">1 400₽</span></div>
+        <div><span class="label">Подписки</span><span class="value">560 000₽</span></div>
+        <div><span class="label">AI-кредиты (40%)</span><span class="value">112 000₽</span></div>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+          <span class="label"><strong>Итого MRR</strong></span>
+          <span class="value"><strong>672 000₽</strong></span>
+        </div>
+        <div><span class="label">Себестоимость AI</span><span class="value" style="color:var(--orange)">~90 000₽</span></div>
+        <div><span class="label">Валовая прибыль</span><span class="value" style="color:var(--green)">~582 000₽</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue structure chart via CSS -->
+  <h3>Структура выручки (базовый сценарий)</h3>
+  <div class="card" style="margin-bottom: 32px;">
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--blue)"></span> Подписки (74%)</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--lime)"></span> AI-кредиты (26%)</span>
+    </div>
+    <div style="display:flex;height:40px;border-radius:8px;overflow:hidden;">
+      <div style="width:74%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;">150 000₽</div>
+      <div style="width:26%;background:var(--lime);color:#0c0c14;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;">52 500₽</div>
+    </div>
+    <div style="display:flex;height:28px;border-radius:8px;overflow:hidden;margin-top:8px;">
+      <div style="width:86%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0c0c14;">Валовая прибыль: 174 500₽ (86%)</div>
+      <div style="width:14%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0c0c14;">AI: 28k₽</div>
+    </div>
+  </div>
+
+  <div class="callout callout-lime">
+    <span class="callout-icon">📈</span>
+    <div class="callout-text">
+      <strong>Ключевой рычаг роста — AI-кредиты.</strong> Подписки дают стабильный MRR с почти нулевой себестоимостью. AI-кредиты — growth engine с высоким средним чеком. При 40% допродаже кредиты могут давать до 30% выручки при маржинальности 60-75%.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════
+     5. СРАВНЕНИЕ С КОНКУРЕНТАМИ
+     ════════════════════════════════════════════ -->
+<section>
+  <div class="section-label"><span class="dot"></span> Раздел 05</div>
+  <h2>Контекст рынка</h2>
+  <p class="section-desc">Как наша экономика соотносится с конкурентами в пространстве AI-генерации контента.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Сервис</th>
+          <th>Тип</th>
+          <th>Цена</th>
+          <th>Генераций</th>
+          <th>AI-фото</th>
+          <th>Модель</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Canva Pro</strong></td>
+          <td>Дизайн</td>
+          <td class="num">$12.99/мес</td>
+          <td class="num">Безлимит (шаблоны)</td>
+          <td>500 AI credits</td>
+          <td><span class="compare-label" style="background:var(--purple-dim);color:var(--purple)">Подписка</span></td>
+        </tr>
+        <tr>
+          <td><strong>Designify / Carousel Maker</strong></td>
+          <td>Карусели</td>
+          <td class="num">$9-15/мес</td>
+          <td class="num">Безлимит</td>
+          <td>Нет</td>
+          <td><span class="compare-label" style="background:var(--purple-dim);color:var(--purple)">Подписка</span></td>
+        </tr>
+        <tr>
+          <td><strong>Taplio / Postwise</strong></td>
+          <td>AI контент</td>
+          <td class="num">$49-79/мес</td>
+          <td class="num">~200-500/мес</td>
+          <td>Нет</td>
+          <td><span class="compare-label" style="background:var(--purple-dim);color:var(--purple)">Подписка</span></td>
+        </tr>
+        <tr>
+          <td><strong>Midjourney</strong></td>
+          <td>AI-фото</td>
+          <td class="num">$10-30/мес</td>
+          <td class="num">200 fast gen</td>
+          <td>Только фото</td>
+          <td><span class="compare-label" style="background:var(--orange-dim);color:var(--orange)">Кредиты</span></td>
+        </tr>
+        <tr class="row-highlight">
+          <td><strong>Swipely</strong></td>
+          <td>AI карусели</td>
+          <td class="num">490-2 490₽/мес</td>
+          <td class="num">30 → безлимит</td>
+          <td>Кредиты (допродажа)</td>
+          <td><span class="compare-label" style="background:var(--lime-dim);color:var(--lime)">Гибрид</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-blue">
+    <span class="callout-icon">⚡</span>
+    <div class="callout-text">
+      <strong>Конкурентное преимущество Swipely:</strong> Единственный сервис, который делает полный цикл: тема → AI-текст → дизайн → AI-фото → готовая карусель. Конкуренты делают либо текст, либо дизайн, либо фото — отдельно. Наша модель "подписка + кредиты" позволяет зарабатывать на обоих сценариях.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════
+     6. СТРАТЕГИЧЕСКИЕ РЕКОМЕНДАЦИИ
+     ════════════════════════════════════════════ -->
+<section>
+  <div class="section-label"><span class="dot"></span> Раздел 06</div>
+  <h2>Рекомендации</h2>
+  <p class="section-desc">Что внедрить для максимальной прибыльности и роста.</p>
+
+  <div class="rec-grid">
+    <div class="rec-card">
+      <div class="rec-number" style="background: var(--blue-dim); color: var(--blue);">1</div>
+      <div class="rec-title">Watermark на Free-тарифе</div>
+      <div class="rec-text">
+        Добавить маленький "Made with Swipely" watermark на экспорте для бесплатных пользователей. Это и маркетинг (виральность), и мотивация перейти на Starter. Убирается с первого платного тарифа.
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-number" style="background: var(--lime-dim); color: var(--lime);">2</div>
+      <div class="rec-title">Бесплатная "пробная" AI-генерация</div>
+      <div class="rec-text">
+        Дать каждому новому пользователю 3 бесплатных AI-кредита (себестоимость ~36₽). Попробовав AI-фото, пользователь увидит разницу качества и будет мотивирован покупать ещё. Классическая "наркодилерская" модель.
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-number" style="background: var(--orange-dim); color: var(--orange);">3</div>
+      <div class="rec-title">Оптимизировать модель для фото</div>
+      <div class="rec-text">
+        Протестировать <code>gemini-2.0-flash</code> ($0.039/img) вместо <code>gemini-3-pro</code> ($0.134/img). Если качество приемлемое — себестоимость AI-кредита падает с 12₽ до 3.4₽, маржа растёт с 75% до 93%. Можно использовать как модель для Starter, а Pro/Business получают premium-модель.
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-number" style="background: var(--purple-dim); color: var(--purple);">4</div>
+      <div class="rec-title">AI-кредиты → "AI Slides" брендинг</div>
+      <div class="rec-text">
+        Назвать кредиты "AI Slides" — это понятнее, чем абстрактные "кредиты". "У тебя 10 AI Slides" звучит конкретнее. Показывать баланс AI Slides в интерфейсе с кнопкой "Докупить" рядом.
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-number" style="background: var(--green-dim); color: var(--green);">5</div>
+      <div class="rec-title">Триггерные напоминания</div>
+      <div class="rec-text">
+        Когда AI-кредиты заканчиваются — push/email "Осталось 0 AI Slides. Пополни баланс со скидкой 15%". Персональные скидки по триггерам: не заходил 7 дней, закончились кредиты, использовал 80% лимита генераций.
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-number" style="background: var(--red-dim); color: var(--red);">6</div>
+      <div class="rec-title">Годовые планы с бонусом</div>
+      <div class="rec-text">
+        Pro годовой (7 900₽/год) = 2 месяца бесплатно + 30 AI Slides бонусом (себестоимость ~360₽). Это увеличивает LTV, снижает churn и создаёт ощущение щедрости. Окупается за счёт удержания.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════
+     7. ДОРОЖНАЯ КАРТА МОНЕТИЗАЦИИ
+     ════════════════════════════════════════════ -->
+<section>
+  <div class="section-label"><span class="dot"></span> Раздел 07</div>
+  <h2>Дорожная карта</h2>
+  <p class="section-desc">Поэтапное внедрение модели монетизации.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Фаза</th>
+          <th>Срок</th>
+          <th>Что внедряем</th>
+          <th>Цель</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="card-badge badge-blue">MVP</span></td>
+          <td class="num">Неделя 1-2</td>
+          <td>
+            Free (3 ген) + Pro (990₽, безлимит). AI-кредиты: 1 пак (10 шт. / 490₽).<br>
+            Watermark на Free. 3 бесплатных AI Slides каждому.
+          </td>
+          <td>Запустить платежи, проверить конверсию Free → Pro</td>
+        </tr>
+        <tr>
+          <td><span class="card-badge badge-green">V1</span></td>
+          <td class="num">Месяц 1-2</td>
+          <td>
+            Добавить Starter (490₽). Добавить паки 30 и 100 AI Slides.<br>
+            Годовые тарифы. Триггерные email (кредиты кончились).
+          </td>
+          <td>Снизить порог входа. Увеличить ARPU через допродажу.</td>
+        </tr>
+        <tr>
+          <td><span class="card-badge badge-purple">V2</span></td>
+          <td class="num">Месяц 3-4</td>
+          <td>
+            Business тариф (2 490₽). Оптимизация моделей (тест дешёвых фоллбеков).<br>
+            API доступ для агентств. Реферальная программа.
+          </td>
+          <td>Enterprise-сегмент. Снизить COGS. Виральный рост.</td>
+        </tr>
+        <tr>
+          <td><span class="card-badge badge-lime">V3</span></td>
+          <td class="num">Месяц 5-6</td>
+          <td>
+            Команды (совместный доступ, общие кредиты). White-label для агентств.<br>
+            Новые AI-функции: AI-рерайт, AI-дизайн, автопубликация.
+          </td>
+          <td>Увеличить LTV. Расширить TAM. Новые источники выручки.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════
+     8. ИТОГОВЫЕ ЦИФРЫ
+     ════════════════════════════════════════════ -->
+<section style="padding-bottom: 40px;">
+  <div class="section-label"><span class="dot"></span> Итого</div>
+  <h2>Ключевые цифры</h2>
+
+  <div class="kpi-row" style="margin-bottom: 32px;">
+    <div class="kpi" style="border-color: var(--green);">
+      <div class="kpi-value" style="color: var(--green)">99.8%</div>
+      <div class="kpi-label">Маржа стандарта</div>
+      <div class="kpi-sub">подписки = чистая прибыль</div>
+    </div>
+    <div class="kpi" style="border-color: var(--blue);">
+      <div class="kpi-value" style="color: var(--blue)">75%</div>
+      <div class="kpi-label">Маржа AI-кредитов</div>
+      <div class="kpi-sub">при базовом паке 10 шт.</div>
+    </div>
+    <div class="kpi" style="border-color: var(--lime);">
+      <div class="kpi-value" style="color: var(--lime)">202k₽</div>
+      <div class="kpi-label">MRR (базовый)</div>
+      <div class="kpi-sub">через 6 месяцев</div>
+    </div>
+    <div class="kpi" style="border-color: var(--orange);">
+      <div class="kpi-value" style="color: var(--orange)">14%</div>
+      <div class="kpi-label">Доля AI-костов</div>
+      <div class="kpi-sub">от выручки (базовый)</div>
+    </div>
+  </div>
+
+  <div class="callout callout-lime" style="margin-bottom: 0;">
+    <span class="callout-icon">✦</span>
+    <div class="callout-text">
+      <strong>Вывод:</strong> Стандартные карусели — практически бесплатны в производстве и идеальны как подписочный продукт (маржа 99%+). AI-фото слайды — премиум-допродажа с маржой 60-75%, которая масштабируется через кредитную систему. Двухуровневая модель "подписка + кредиты" даёт стабильный MRR от подписок и growth через AI-допродажу. При 2 000 пользователей и 6% конверсии — MRR 200k₽ при себестоимости AI ~28k₽.
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer class="footer">
+  <div class="container">
+    Swipely Economics · Внутренний документ · Февраль 2026<br>
+    <span style="opacity: 0.6;">Курс: 1$ ≈ 87₽ · Цены API Google Gemini на 20.02.2026</span>
+  </div>
+</footer>
+
+</body>
+</html>
