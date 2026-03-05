@@ -3,6 +3,7 @@ import { Composition } from "remotion";
 import { SwipelyPromo } from "./SwipelyPromo";
 import { LaunchPromo } from "./LaunchPromo";
 import { PhonePromo } from "./PhonePromo";
+import { HeroAmbient } from "./HeroAmbient";
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -29,6 +30,14 @@ export const RemotionRoot: React.FC = () => (
       fps={30}
       width={1080}
       height={1920}
+    />
+    <Composition
+      id="HeroAmbient"
+      component={HeroAmbient}
+      durationInFrames={750}
+      fps={30}
+      width={1920}
+      height={1080}
     />
   </>
 );
