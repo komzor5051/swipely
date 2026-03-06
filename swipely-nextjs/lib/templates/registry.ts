@@ -7,7 +7,10 @@ export interface Template {
   tags: string[];
   maxWordsPerSlide: number;
   tone: string;
+  proOnly?: boolean;
 }
+
+export const PRO_ONLY_TEMPLATE_IDS = ["chapter", "dispatch", "frame", "street", "grid_multi"] as const;
 
 export const templates: Template[] = [
   {
@@ -29,6 +32,7 @@ export const templates: Template[] = [
     tags: ["яркий", "модульный"],
     maxWordsPerSlide: 30,
     tone: "friendly",
+    proOnly: true,
   },
   {
     id: "purple_accent",
@@ -89,6 +93,7 @@ export const templates: Template[] = [
     tags: ["светлый", "bold", "минималистичный"],
     maxWordsPerSlide: 30,
     tone: "provocative",
+    proOnly: true,
   },
   {
     id: "chapter",
@@ -99,6 +104,7 @@ export const templates: Template[] = [
     tags: ["светлый", "серифный", "минималистичный"],
     maxWordsPerSlide: 35,
     tone: "professional",
+    proOnly: true,
   },
   {
     id: "dispatch",
@@ -109,6 +115,18 @@ export const templates: Template[] = [
     tags: ["тёмный", "newsletter", "структурированный"],
     maxWordsPerSlide: 30,
     tone: "professional",
+    proOnly: true,
+  },
+  {
+    id: "newspaper",
+    name: "Newspaper",
+    nameRu: "Газета",
+    description: "Классический газетный стиль — Playfair Display, красные выделения, чёрно-белая строгость",
+    preview: "/previews/newspaper.png",
+    tags: ["светлый", "серифный", "эдиториал"],
+    maxWordsPerSlide: 30,
+    tone: "professional",
+    proOnly: true,
   },
   {
     id: "frame",
@@ -119,6 +137,7 @@ export const templates: Template[] = [
     tags: ["тёмный", "премиальный", "элегантный"],
     maxWordsPerSlide: 30,
     tone: "professional",
+    proOnly: true,
   },
 ];
 

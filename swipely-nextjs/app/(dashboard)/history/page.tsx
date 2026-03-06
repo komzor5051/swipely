@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import type { Generation } from "@/lib/supabase/queries";
@@ -43,11 +43,24 @@ export default function HistoryPage() {
   const [selected, setSelected] = useState<Generation | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Measure the actual slide container width so the slide always fits, regardless
+  // of viewport, dialog padding, or SSR/hydration state.
+  const slideContainerRef = useRef<HTMLDivElement>(null);
+  const [slideContainerW, setSlideContainerW] = useState(0);
   useEffect(() => {
-    loadGenerations();
-  }, [filterTemplate]);
+    const el = slideContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      setSlideContainerW(entries[0].contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [selected]); // re-attach when dialog opens/closes
 
-  const loadGenerations = async () => {
+  // Touch swipe state for the modal
+  const touchStartX = useRef<number | null>(null);
+
+  const loadGenerations = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
     const {
@@ -73,7 +86,11 @@ export default function HistoryPage() {
     const { data } = await query;
     if (data) setGenerations(data as Generation[]);
     setLoading(false);
-  };
+  }, [filterTemplate]);
+
+  useEffect(() => {
+    loadGenerations();
+  }, [loadGenerations]);
 
   const handleDelete = async (id: string) => {
     const supabase = createClient();
@@ -94,7 +111,7 @@ export default function HistoryPage() {
   };
 
   const getTemplateName = (id: string) => {
-    if (id === "photo_mode") return "AI Фото";
+    if (id === "photo_mode") return "AI карусель с фото";
     return templates.find((t) => t.id === id)?.nameRu || id;
   };
 
@@ -113,14 +130,19 @@ export default function HistoryPage() {
     return date.toLocaleDateString("ru-RU");
   };
 
+  // Slide max width = actual measured container width (0 until ResizeObserver fires,
+  // then the real pixel width of the flex container inside the dialog).
+  // Capped at 480 so it never gets huge on desktop.
+  const maxMainSlideW = slideContainerW > 0 ? Math.min(slideContainerW, 480) : 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <FadeIn>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-1 text-[#0D0D14]">История</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 text-[#0D0D14]">История</h1>
+            <p className="text-sm text-muted-foreground">
               Все твои сгенерированные карусели
             </p>
           </div>
@@ -132,9 +154,9 @@ export default function HistoryPage() {
               onClick={() => setShowFilter(!showFilter)}
             >
               <Filter className="mr-1 h-3.5 w-3.5" />
-              {filterTemplate
-                ? getTemplateName(filterTemplate)
-                : "Фильтр"}
+              <span className="hidden sm:inline">
+                {filterTemplate ? getTemplateName(filterTemplate) : "Фильтр"}
+              </span>
               <ChevronDown className={`ml-1 h-3.5 w-3.5 transition-transform duration-200 ${showFilter ? "rotate-180" : ""}`} />
             </Button>
 
@@ -181,11 +203,11 @@ export default function HistoryPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="rounded-2xl border border-[#E8E8E4] bg-white p-5"
+              className="rounded-2xl border border-[#E8E8E4] bg-white p-4 sm:p-5"
             >
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-muted animate-pulse" />
@@ -225,7 +247,7 @@ export default function HistoryPage() {
           </div>
         </FadeIn>
       ) : (
-        <StaggerList className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StaggerList className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <AnimatePresence>
             {generations.map((gen) => (
               <StaggerItem
@@ -240,7 +262,7 @@ export default function HistoryPage() {
                     setSelected(gen);
                     setCurrentSlide(0);
                   }}
-                  className="rounded-2xl border border-[#E8E8E4] bg-white overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
+                  className="rounded-2xl border border-[#E8E8E4] bg-white overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer active:scale-[0.98]"
                 >
                   {/* Slide preview thumbnail */}
                   {(() => {
@@ -249,7 +271,7 @@ export default function HistoryPage() {
                     const fmt = (gen.format || "portrait") as "square" | "portrait";
                     if (!firstSlide) return null;
                     return (
-                      <div className="flex justify-center bg-muted/30 py-4 border-b border-border">
+                      <div className="flex justify-center bg-muted/30 py-3 border-b border-border overflow-hidden">
                         <SlideRenderer
                           template={gen.template}
                           scale={0.18}
@@ -262,20 +284,20 @@ export default function HistoryPage() {
                     );
                   })()}
 
-                  <div className="p-4">
+                  <div className="p-3 sm:p-4">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-[#D4F542]/15 flex items-center justify-center">
-                          <span className="text-xs font-bold font-[family-name:var(--font-mono)] text-[#0D0D14]">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#D4F542]/15 flex items-center justify-center flex-shrink-0">
+                          <span className="text-[10px] sm:text-xs font-bold font-[family-name:var(--font-mono)] text-[#0D0D14]">
                             {gen.slide_count}
                           </span>
                         </div>
-                        <div>
-                          <div className="text-xs font-medium">
+                        <div className="min-w-0">
+                          <div className="text-[11px] sm:text-xs font-medium truncate">
                             {getTemplateName(gen.template)}
                           </div>
-                          <div className="text-[10px] text-muted-foreground">
+                          <div className="text-[9px] sm:text-[10px] text-muted-foreground">
                             {gen.slide_count} слайдов
                           </div>
                         </div>
@@ -292,15 +314,15 @@ export default function HistoryPage() {
                     </div>
 
                     {/* Preview text */}
-                    <p className="text-sm line-clamp-2 mb-2 text-muted-foreground">
+                    <p className="text-[11px] sm:text-sm line-clamp-2 mb-2 text-muted-foreground">
                       {gen.input_text}
                     </p>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground pt-2 border-t border-border">
                       <span>{formatDate(gen.created_at)}</span>
                       {gen.format && (
-                        <span className="bg-muted px-2 py-0.5 rounded-full">
+                        <span className="bg-muted px-1.5 py-0.5 rounded-full">
                           {gen.format}
                         </span>
                       )}
@@ -332,62 +354,87 @@ export default function HistoryPage() {
           if (slides.length === 0) return null;
 
           return (
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
+            <DialogContent className="w-[95vw] sm:w-auto sm:max-w-2xl max-h-[92dvh] overflow-x-hidden overflow-y-auto p-4 sm:p-6">
+              <DialogHeader className="text-left">
+                <DialogTitle className="text-base sm:text-lg leading-tight pr-6">
                   {getTemplateName(selected.template)} &middot; {slides.length} слайдов
                 </DialogTitle>
-                <DialogDescription>{selected.input_text}</DialogDescription>
+                <DialogDescription className="text-xs sm:text-sm line-clamp-2">
+                  {selected.input_text}
+                </DialogDescription>
               </DialogHeader>
 
-              {/* Slide preview */}
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex justify-center">
-                  <SlideRenderer
-                    template={selected.template}
-                    scale={fmt === "square" ? 0.45 : 0.4}
-                    slide={slides[currentSlide]}
-                    slideNumber={currentSlide + 1}
-                    totalSlides={slides.length}
-                    format={fmt}
-                  />
+              {/* Slide preview with touch swipe */}
+              <div className="flex flex-col items-center gap-3 sm:gap-4">
+                {/* ref div measures its own pixel width → SlideRenderer always fits */}
+                <div
+                  ref={slideContainerRef}
+                  className="flex justify-center w-full overflow-hidden"
+                  onTouchStart={(e) => {
+                    touchStartX.current = e.touches[0].clientX;
+                  }}
+                  onTouchEnd={(e) => {
+                    if (touchStartX.current === null) return;
+                    const delta = touchStartX.current - e.changedTouches[0].clientX;
+                    if (Math.abs(delta) > 40) {
+                      if (delta > 0 && currentSlide < slides.length - 1) {
+                        setCurrentSlide((p) => p + 1);
+                      } else if (delta < 0 && currentSlide > 0) {
+                        setCurrentSlide((p) => p - 1);
+                      }
+                    }
+                    touchStartX.current = null;
+                  }}
+                >
+                  {maxMainSlideW > 0 && (
+                    <SlideRenderer
+                      template={selected.template}
+                      maxWidth={maxMainSlideW}
+                      slide={slides[currentSlide]}
+                      slideNumber={currentSlide + 1}
+                      totalSlides={slides.length}
+                      format={fmt}
+                    />
+                  )}
                 </div>
 
                 {/* Nav arrows + dots */}
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     disabled={currentSlide === 0}
                     onClick={() => setCurrentSlide((prev) => prev - 1)}
-                    className="active:scale-95 transition-all"
+                    className="active:scale-95 transition-all h-8 w-8 p-0"
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
-                  {slides.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentSlide(i)}
-                      className={`rounded-full transition-all duration-300 ${
-                        i === currentSlide
-                          ? "w-6 h-2.5 bg-[#0D0D14]"
-                          : "w-2.5 h-2.5 bg-muted-foreground/20 hover:bg-muted-foreground/40"
-                      }`}
-                    />
-                  ))}
+                  <div className="flex items-center gap-1 flex-wrap justify-center max-w-[200px]">
+                    {slides.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentSlide(i)}
+                        className={`rounded-full transition-all duration-300 ${
+                          i === currentSlide
+                            ? "w-5 h-2 bg-[#0D0D14]"
+                            : "w-2 h-2 bg-muted-foreground/20 hover:bg-muted-foreground/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     disabled={currentSlide === slides.length - 1}
                     onClick={() => setCurrentSlide((prev) => prev + 1)}
-                    className="active:scale-95 transition-all"
+                    className="active:scale-95 transition-all h-8 w-8 p-0"
                   >
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
 
                 {/* Thumbnail strip */}
-                <div className="flex gap-2 overflow-x-auto pb-1 justify-center">
+                <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 w-full justify-start md:justify-center px-1">
                   {slides.map((slide, i) => (
                     <button
                       key={i}
@@ -400,7 +447,7 @@ export default function HistoryPage() {
                     >
                       <SlideRenderer
                         template={selected.template}
-                        scale={0.08}
+                        maxWidth={72}
                         slide={slide}
                         slideNumber={i + 1}
                         totalSlides={slides.length}
@@ -413,7 +460,7 @@ export default function HistoryPage() {
 
               {/* Post caption */}
               {postCaption && (
-                <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-2">
+                <div className="rounded-xl border border-border bg-muted/50 p-3 sm:p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-muted-foreground">
                       Подпись к посту
@@ -431,14 +478,14 @@ export default function HistoryPage() {
                       Скопировать
                     </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-6">
+                  <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-line line-clamp-6">
                     {postCaption}
                   </p>
                 </div>
               )}
 
               {/* Export */}
-              <div className="flex justify-center pt-2">
+              <div className="flex justify-center pt-1 sm:pt-2">
                 <ExportPanel
                   slides={slides}
                   template={selected.template}

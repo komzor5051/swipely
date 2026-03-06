@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 export default function PurpleAccentSlide({
   slide,
@@ -19,7 +19,7 @@ export default function PurpleAccentSlide({
     display: "inline",
     background: "#F9A8D4",
     color: "#0A0A0A",
-    padding: "6px 16px",
+    padding: "0px 14px",
     margin: "0 -6px",
     boxDecorationBreak: "clone" as const,
     WebkitBoxDecorationBreak: "clone" as const,
@@ -156,7 +156,7 @@ export default function PurpleAccentSlide({
             opacity: 0.85,
           }}
         >
-          {slide.content}
+          {renderContent(slide.content)}
         </p>
       </div>
 

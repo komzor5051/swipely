@@ -9,7 +9,7 @@ const footerLinks = {
   ],
   support: [
     { href: "https://t.me/swipelybot", label: "Telegram-бот" },
-    { href: "https://t.me/swipely_support", label: "Поддержка" },
+    { href: "https://t.me/lyaminvl", label: "Тех. поддержка" },
   ],
   legal: [
     { href: "/docs/terms", label: "Условия использования" },

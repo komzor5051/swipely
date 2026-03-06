@@ -2,9 +2,17 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap');`;
+
+function StarIcon({ size, color }: { size: number; color: string }) {
+  return (
+    <svg viewBox="0 0 100 100" width={size} height={size} fill={color}>
+      <polygon points="50,0 54,42 100,50 54,58 50,100 46,58 0,50 46,42" />
+    </svg>
+  );
+}
 
 export default function StarHighlightSlide({
   slide,
@@ -19,7 +27,7 @@ export default function StarHighlightSlide({
     display: "inline",
     background: "#FFF59D",
     color: "#0A0A0A",
-    padding: "4px 16px",
+    padding: "0px 14px",
     margin: "0 -6px",
     boxDecorationBreak: "clone" as const,
     WebkitBoxDecorationBreak: "clone" as const,
@@ -29,17 +37,11 @@ export default function StarHighlightSlide({
     display: "inline",
     background: "#FFF59D",
     color: "#0A0A0A",
-    padding: "4px 16px",
+    padding: "0px 14px",
     margin: "0 -6px",
     boxDecorationBreak: "clone" as const,
     WebkitBoxDecorationBreak: "clone" as const,
   };
-
-  const StarIcon = ({ size, color }: { size: number; color: string }) => (
-    <svg viewBox="0 0 100 100" width={size} height={size} fill={color}>
-      <polygon points="50,0 54,42 100,50 54,58 50,100 46,58 0,50 46,42" />
-    </svg>
-  );
 
   /* ── HOOK — тёмный фон, большая звезда, центрированный ── */
   if (isHook) {
@@ -129,7 +131,7 @@ export default function StarHighlightSlide({
               textAlign: "center",
             }}
           >
-            {slide.content}
+            {renderContent(slide.content)}
           </p>
         </div>
       </div>
@@ -191,51 +193,60 @@ export default function StarHighlightSlide({
         </span>
       </div>
 
-      {/* Заголовок */}
-      <h1
-        style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: 80,
-          fontWeight: 700,
-          lineHeight: 1.12,
-          letterSpacing: -0.5,
-          color: "#0A0A0A",
-          marginBottom: 40,
-          overflowWrap: "anywhere",
-          wordBreak: "break-word",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        {renderTitle(slide.title, highlightStyle)}
-      </h1>
-
-      {/* Разделитель */}
+      {/* Центрированный контент */}
       <div
         style={{
-          width: "100%",
-          height: 1,
-          background: "#F0F0F0",
-          marginBottom: 36,
-          flexShrink: 0,
-        }}
-      />
-
-      {/* Контент */}
-      <p
-        style={{
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 36,
-          fontWeight: 400,
-          lineHeight: 1.7,
-          color: "#444444",
           flex: 1,
-          position: "relative",
-          zIndex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
         }}
       >
-        {slide.content}
-      </p>
+        {/* Заголовок */}
+        <h1
+          style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 80,
+            fontWeight: 700,
+            lineHeight: 1.12,
+            letterSpacing: -0.5,
+            color: "#0A0A0A",
+            marginBottom: 40,
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {renderTitle(slide.title, highlightStyle)}
+        </h1>
+
+        {/* Разделитель */}
+        <div
+          style={{
+            width: "100%",
+            height: 1,
+            background: "#F0F0F0",
+            marginBottom: 36,
+            flexShrink: 0,
+          }}
+        />
+
+        {/* Контент */}
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 36,
+            fontWeight: 400,
+            lineHeight: 1.7,
+            color: "#444444",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {slide.content}
+        </p>
+      </div>
 
       {/* Стрелка снизу */}
       <div

@@ -24,6 +24,11 @@ GOOGLE_GEMINI_API_KEY=        # Used by /api/generate (REST) and /api/generate/p
 AURAPAY_API_KEY=              # Required by /api/payments/create
 AURAPAY_SHOP_ID=              # Required by /api/payments/create
 NEXT_PUBLIC_APP_URL=          # Base URL for payment callbacks (default: http://localhost:3000)
+ADMIN_EMAIL=                  # Required by /admin layout — gate for admin panel access
+TELEGRAM_BOT_TOKEN=           # Required by /api/auth/telegram — HMAC hash verification
+EXA_API_KEY=                  # Required by /api/cron/generate and /api/cron/mine-topics (Exa search)
+CRON_SECRET=                  # Bearer token for cron route auth (set same in cron-job.org)
+WORDSTAT_TOKEN=               # Optional — Yandex Wordstat OAuth token (topic scoring)
 ```
 
 ## swipely-editor/.env.local

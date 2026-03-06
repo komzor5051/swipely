@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap');`;
 
@@ -116,7 +116,7 @@ export default function ChapterSlide({
               maxWidth: 800,
             }}
           >
-            {slide.content}
+            {renderContent(slide.content)}
           </p>
         </div>
       </div>
@@ -188,6 +188,7 @@ export default function ChapterSlide({
           flex: 1,
           display: "flex",
           flexDirection: "column",
+          justifyContent: "center",
         }}
       >
         <h1

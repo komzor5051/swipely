@@ -6,6 +6,7 @@
     "studio": "remotion studio",
     "render": "remotion render SwipelyPromo out/swipely-promo.mp4",
     "render:gif": "remotion render SwipelyPromo out/swipely-promo.gif",
+    "render:launch": "remotion render LaunchPromo out/launch-promo.gif --every-nth-frame=2",
     "still": "remotion still SwipelyPromo out/thumbnail.png --frame=200"
   },
   "dependencies": {

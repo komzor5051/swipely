@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500&family=Barlow+Condensed:wght@400;500;600&display=swap');`;
 
@@ -105,7 +105,7 @@ export default function StreetSlide({
               maxWidth: 820,
             }}
           >
-            {slide.content}
+            {renderContent(slide.content)}
           </p>
         </div>
       </div>

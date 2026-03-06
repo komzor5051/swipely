@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 export default function SwipelySlide({
   slide,
@@ -17,7 +17,7 @@ export default function SwipelySlide({
     display: "inline",
     background: "#D4F542",
     color: "#0066CC",
-    padding: "6px 20px",
+    padding: "0px 16px",
     margin: "0 -8px",
     boxDecorationBreak: "clone",
     WebkitBoxDecorationBreak: "clone",
@@ -326,7 +326,7 @@ export default function SwipelySlide({
               maxWidth: 800,
             }}
           >
-            {slide.content}
+            {renderContent(slide.content)}
           </p>
         )}
       </div>

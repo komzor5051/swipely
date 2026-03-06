@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Check, Minus, Camera, Zap, ArrowRight, ChevronDown } from "lucide-react";
 import { CustomSlidePicker } from "@/components/pricing/CustomSlidePicker";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { ProButton } from "./ProButton";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
+import NumberFlow from "@number-flow/react";
 
 // ─── Data ───
 
@@ -15,14 +19,14 @@ const FREE_FEATURES = [
   { text: "18 шаблонов дизайна", ok: true },
   { text: "Подпись к посту", ok: true },
   { text: "PNG экспорт", ok: true },
-  { text: "Photo Mode", ok: false },
+  { text: "AI карусель с вашим фото", ok: false },
   { text: "Без водяного знака", ok: false },
   { text: "Приоритетная очередь", ok: false },
 ];
 
 const PRO_FEATURES = [
   { text: "Безлимит карусели в месяц", highlight: false },
-  { text: "Photo Mode — AI-фото слайды", highlight: true },
+  { text: "AI карусель с вашим фото/персонажем", highlight: true },
   { text: "18 шаблонов дизайна", highlight: false },
   { text: "Подпись к посту", highlight: false },
   { text: "PNG экспорт", highlight: false },
@@ -38,12 +42,12 @@ const PHOTO_PACKS = [
 
 const FAQS = [
   {
-    q: "Что такое Photo Mode?",
-    a: "Photo Mode генерирует уникальные AI-изображения для каждого слайда вместо текстовых шаблонов. Каждый слайд — это сгенерированная картинка со встроенным текстом.",
+    q: "Что такое AI карусель с вашим фото?",
+    a: "Генерируем карусель с вашим фото или персонажем на каждом слайде. Вместо стоковых картинок — уникальные изображения с вашим героем и текстом.",
   },
   {
-    q: "Зачем покупать Photo Mode кредиты?",
-    a: "PRO-подписка открывает доступ к Photo Mode. Кредиты слайдов — дополнительный запас для больших объёмов. 1 кредит = 1 AI-изображение в карусели.",
+    q: "Зачем покупать кредиты AI карусели?",
+    a: "PRO-подписка открывает доступ к AI карусели с вашим фото. Кредиты — дополнительный запас для больших объёмов. 1 кредит = 1 слайд с вашим персонажем.",
   },
   {
     q: "Можно ли отменить подписку?",
@@ -54,29 +58,47 @@ const FAQS = [
 // ─── Billing Toggle ───
 
 function BillingToggle({ billing, onChange }: { billing: "monthly" | "yearly"; onChange: (b: "monthly" | "yearly") => void }) {
+  const switchRef = useRef<HTMLButtonElement>(null);
+
+  const handleToggle = (checked: boolean) => {
+    onChange(checked ? "yearly" : "monthly");
+    if (checked && switchRef.current) {
+      const rect = switchRef.current.getBoundingClientRect();
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: {
+          x: (rect.left + rect.width / 2) / window.innerWidth,
+          y: (rect.top + rect.height / 2) / window.innerHeight,
+        },
+        colors: ["#D4F542", "#0D0D14", "#a3e635", "#84cc16"],
+        ticks: 200,
+        gravity: 1.2,
+        decay: 0.94,
+        startVelocity: 30,
+        shapes: ["circle"],
+      });
+    }
+  };
+
   return (
-    <div className="inline-flex items-center bg-white/8 border border-white/10 rounded-full p-1 gap-0.5">
-      {(["monthly", "yearly"] as const).map((b) => (
-        <button
-          key={b}
-          onClick={() => onChange(b)}
-          className={cn(
-            "relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-200",
-            billing === b
-              ? "bg-white text-[#0D0D14] shadow-sm"
-              : "text-white/50 hover:text-white/80"
-          )}
-        >
-          {b === "monthly" ? "По месяцам" : (
-            <span className="flex items-center gap-2">
-              За год
-              <span className="text-[10px] font-bold bg-[#D4F542] text-[#0D0D14] px-1.5 py-0.5 rounded-full leading-none">
-                −17%
-              </span>
-            </span>
-          )}
-        </button>
-      ))}
+    <div className="flex items-center gap-3">
+      <span className={cn("text-sm font-medium", billing === "monthly" ? "text-white" : "text-white/40")}>
+        По месяцам
+      </span>
+      <Label>
+        <Switch
+          ref={switchRef as React.RefObject<HTMLButtonElement>}
+          checked={billing === "yearly"}
+          onCheckedChange={handleToggle}
+        />
+      </Label>
+      <span className={cn("text-sm font-medium flex items-center gap-1.5", billing === "yearly" ? "text-white" : "text-white/40")}>
+        За год
+        <span className="text-[11px] font-bold bg-[#D4F542] text-[#0D0D14] px-1.5 py-0.5 rounded-full leading-none">
+          −17%
+        </span>
+      </span>
     </div>
   );
 }
@@ -84,14 +106,14 @@ function BillingToggle({ billing, onChange }: { billing: "monthly" | "yearly"; o
 // ─── Main Plans ───
 
 function Plans({ billing }: { billing: "monthly" | "yearly" }) {
-  const proPrice = billing === "yearly" ? 825 : 990;
+  const proPrice = billing === "yearly" ? 412 : 495;
   const proProductId = billing === "yearly" ? "pro_yearly" : "pro_monthly";
-  const proLabel = billing === "yearly" ? "Купить PRO · 9 900₽/год" : "Купить PRO · 990₽/мес";
+  const proLabel = billing === "yearly" ? "Купить PRO · 4 950₽/год →" : "Купить PRO · 495₽/мес →";
 
   return (
     <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
       {/* FREE */}
-      <div className="rounded-2xl border border-white/8 bg-white/4 p-7 flex flex-col backdrop-blur-sm">
+      <div className="rounded-2xl border border-white/8 bg-white/4 p-5 sm:p-7 flex flex-col backdrop-blur-sm">
         <div className="mb-6">
           <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Бесплатный</p>
           <div className="flex items-end gap-2 mb-1">
@@ -134,7 +156,7 @@ function Plans({ billing }: { billing: "monthly" | "yearly" }) {
       </div>
 
       {/* PRO */}
-      <div className="rounded-2xl border-2 border-[#D4F542]/40 bg-[#0D0D14] p-7 flex flex-col relative overflow-hidden shadow-2xl shadow-[#D4F542]/5">
+      <div className="rounded-2xl border-2 border-[#D4F542]/40 bg-[#0D0D14] p-5 sm:p-7 flex flex-col relative overflow-hidden shadow-2xl shadow-[#D4F542]/5">
         {/* Glow effects */}
         <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-[#D4F542]/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-[#0A84FF]/8 blur-2xl pointer-events-none" />
@@ -155,17 +177,22 @@ function Plans({ billing }: { billing: "monthly" | "yearly" }) {
           <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">PRO</p>
           <div className="flex items-end gap-2 mb-1">
             <span
-              className="text-[56px] font-black tracking-tight leading-none text-white transition-all duration-300"
+              className="text-[56px] font-black tracking-tight leading-none text-white"
               style={{ fontFamily: "var(--font-mono)" }}
             >
-              {proPrice.toLocaleString("ru-RU")}
+              <NumberFlow
+                value={proPrice}
+                format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }}
+                transformTiming={{ duration: 500, easing: "ease-out" }}
+                willChange
+              />
             </span>
             <span className="text-xl text-white/35 mb-2">₽/мес</span>
           </div>
           <p className="text-sm text-white/30">
             {billing === "yearly"
-              ? `9 900₽/год · сэкономишь ${(990 * 12 - 9900).toLocaleString("ru-RU")}₽`
-              : "или 825₽/мес при оплате за год"}
+              ? "4 950₽/год · было 9 900₽"
+              : <>было <span className="line-through">990₽</span> · −50%</>}
           </p>
         </div>
 
@@ -208,12 +235,12 @@ function PhotoCredits() {
             <Camera className="h-4 w-4 text-[#0A84FF]" />
           </div>
           <div>
-            <h3 className="font-semibold text-white text-sm">Photo Mode — кредиты слайдов</h3>
-            <p className="text-xs text-white/35">AI-изображения для каруселей · 1 кредит = 1 слайд</p>
+            <h3 className="font-semibold text-white text-sm">AI карусель с вашим фото — кредиты</h3>
+            <p className="text-xs text-white/35">Ваш персонаж на каждом слайде · 1 кредит = 1 слайд</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {PHOTO_PACKS.map((pack) => (
             <div
               key={pack.productId}
@@ -318,7 +345,7 @@ export default function PricingPage() {
       </div>
 
       {/* Navbar */}
-      <nav className="relative z-20 flex items-center justify-between px-8 py-5 border-b border-white/6">
+      <nav className="relative z-20 flex items-center justify-between px-4 sm:px-8 py-5 border-b border-white/6">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#D4F542] flex items-center justify-center">
             <svg viewBox="0 0 32 32" fill="none" width={20} height={20}>
@@ -343,14 +370,14 @@ export default function PricingPage() {
       </nav>
 
       {/* Content */}
-      <main className="relative z-10 px-6 pt-16 pb-20 space-y-10">
+      <main className="relative z-10 px-4 sm:px-6 pt-16 pb-20 space-y-10">
         {/* Hero */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 bg-[#D4F542]/10 border border-[#D4F542]/20 text-[#D4F542] text-xs font-semibold px-3 py-1.5 rounded-full">
             <Zap className="h-3 w-3" />
             Тарифы Swipely
           </div>
-          <h1 className="text-5xl md:text-6xl font-black tracking-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight">
             Начни за 0₽.{" "}
             <span className="text-[#D4F542]">Расти без лимитов.</span>
           </h1>
@@ -358,7 +385,7 @@ export default function PricingPage() {
             AI-карусели для любых соцсетей — от Instagram до LinkedIn
           </p>
 
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center">
             <BillingToggle billing={billing} onChange={setBilling} />
           </div>
         </div>

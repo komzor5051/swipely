@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@300;400;500&display=swap');`;
 
@@ -120,7 +120,7 @@ export default function DispatchSlide({
                 maxWidth: 840,
               }}
             >
-              {slide.content}
+              {renderContent(slide.content)}
             </p>
           </div>
         </div>
@@ -190,43 +190,51 @@ export default function DispatchSlide({
           flexDirection: "column",
         }}
       >
-        <h1
-          style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: 76,
-            fontWeight: 800,
-            lineHeight: 1.02,
-            color: "#F5F5F3",
-            marginBottom: 32,
-            overflowWrap: "anywhere",
-            wordBreak: "break-word",
-          }}
-        >
-          {renderTitle(slide.title, hlStyle)}
-        </h1>
-
         <div
           style={{
-            width: "100%",
-            height: 1,
-            background: "#1A1A2E",
-            marginBottom: 32,
-            flexShrink: 0,
-          }}
-        />
-
-        <p
-          style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: 36,
-            fontWeight: 300,
-            lineHeight: 1.7,
-            color: "#666680",
             flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
           }}
         >
-          {slide.content}
-        </p>
+          <h1
+            style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: 76,
+              fontWeight: 800,
+              lineHeight: 1.02,
+              color: "#F5F5F3",
+              marginBottom: 32,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
+            {renderTitle(slide.title, hlStyle)}
+          </h1>
+
+          <div
+            style={{
+              width: "100%",
+              height: 1,
+              background: "#1A1A2E",
+              marginBottom: 32,
+              flexShrink: 0,
+            }}
+          />
+
+          <p
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 36,
+              fontWeight: 300,
+              lineHeight: 1.7,
+              color: "#666680",
+            }}
+          >
+            {slide.content}
+          </p>
+        </div>
 
         {/* Footer: dots + step */}
         <div

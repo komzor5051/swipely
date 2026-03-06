@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');`;
 
@@ -19,7 +19,7 @@ export default function ReceiptSlide({
     display: "inline",
     background: "#E8725C",
     color: "#FFFFFF",
-    padding: "4px 12px",
+    padding: "0px 12px",
     margin: "0 -4px",
     boxDecorationBreak: "clone" as const,
     WebkitBoxDecorationBreak: "clone" as const,
@@ -29,7 +29,7 @@ export default function ReceiptSlide({
     display: "inline",
     background: "#FFFFFF",
     color: "#1A1A1A",
-    padding: "4px 12px",
+    padding: "0px 12px",
     margin: "0 -4px",
     boxDecorationBreak: "clone" as const,
     WebkitBoxDecorationBreak: "clone" as const,
@@ -140,7 +140,7 @@ export default function ReceiptSlide({
           <hr style={{ border: "none", borderTop: "2px dashed #DDDDDD", margin: "20px 0" }} />
 
           <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#444", textAlign: "center", margin: "20px 0" }}>
-            {slide.content}
+            {renderContent(slide.content)}
           </p>
 
           <hr style={{ border: "none", borderTop: "2px dashed #DDDDDD", margin: "20px 0" }} />

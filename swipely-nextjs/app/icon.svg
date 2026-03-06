@@ -1,10 +1,36 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="8" fill="url(#g)"/>
-  <path d="M8 11h16M8 16h16M8 21h10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0A84FF"/>
-      <stop offset="1" stop-color="#0066CC"/>
-    </linearGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- background: brand dark -->
+  <rect width="512" height="512" fill="#0D0D14"/>
+
+  <!-- Three stacked slide cards, fanned out (back → front) -->
+
+  <!-- back card -->
+  <rect
+    x="215" y="108" width="196" height="248" rx="28"
+    fill="#1C1C2C"
+    transform="rotate(14 313 232)"
+  />
+
+  <!-- middle card -->
+  <rect
+    x="180" y="130" width="196" height="248" rx="28"
+    fill="#232338"
+    transform="rotate(6 278 254)"
+  />
+
+  <!-- front card -->
+  <rect x="120" y="152" width="220" height="248" rx="28" fill="#1A1A2E"/>
+
+  <!-- lime title bar on front card -->
+  <rect x="148" y="192" width="108" height="22" rx="11" fill="#D4F542"/>
+
+  <!-- text lines on front card -->
+  <rect x="148" y="230" width="164" height="14" rx="7" fill="rgba(255,255,255,0.28)"/>
+  <rect x="148" y="258" width="138" height="14" rx="7" fill="rgba(255,255,255,0.18)"/>
+  <rect x="148" y="286" width="112" height="14" rx="7" fill="rgba(255,255,255,0.12)"/>
+
+  <!-- carousel dots (indicator) at bottom -->
+  <rect x="156" y="358" width="36" height="12" rx="6" fill="#D4F542"/>
+  <circle cx="210" cy="364" r="6" fill="rgba(255,255,255,0.25)"/>
+  <circle cx="234" cy="364" r="6" fill="rgba(255,255,255,0.25)"/>
 </svg>

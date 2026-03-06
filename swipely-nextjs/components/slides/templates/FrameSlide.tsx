@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap');`;
 
@@ -138,7 +138,7 @@ export default function FrameSlide({
               zIndex: 1,
             }}
           >
-            {slide.content}
+            {renderContent(slide.content)}
           </p>
         </div>
       </div>
@@ -201,43 +201,51 @@ export default function FrameSlide({
           </span>
         </div>
 
-        <h1
-          style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            fontSize: 72,
-            fontWeight: 400,
-            lineHeight: 1.08,
-            color: "#F5F4F0",
-            marginBottom: 28,
-            overflowWrap: "anywhere",
-            wordBreak: "break-word",
-          }}
-        >
-          {renderTitle(slide.title, hlStyle)}
-        </h1>
-
         <div
           style={{
-            width: "100%",
-            height: 1,
-            background: "rgba(255,255,255,0.06)",
-            marginBottom: 28,
-            flexShrink: 0,
-          }}
-        />
-
-        <p
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 36,
-            fontWeight: 300,
-            lineHeight: 1.75,
-            color: "rgba(245,244,240,0.45)",
             flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
           }}
         >
-          {slide.content}
-        </p>
+          <h1
+            style={{
+              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontSize: 72,
+              fontWeight: 400,
+              lineHeight: 1.08,
+              color: "#F5F4F0",
+              marginBottom: 28,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+            }}
+          >
+            {renderTitle(slide.title, hlStyle)}
+          </h1>
+
+          <div
+            style={{
+              width: "100%",
+              height: 1,
+              background: "rgba(255,255,255,0.06)",
+              marginBottom: 28,
+              flexShrink: 0,
+            }}
+          />
+
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 36,
+              fontWeight: 300,
+              lineHeight: 1.75,
+              color: "rgba(245,244,240,0.45)",
+            }}
+          >
+            {renderContent(slide.content)}
+          </p>
+        </div>
       </div>
 
       {/* Footer — outside frame */}
