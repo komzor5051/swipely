@@ -26,7 +26,7 @@ Four phases build on the existing Next.js 16 + React 19 + Gemini + Supabase stac
 
 Plans:
 - [x] 01-01-PLAN.md — Extend SlideData schema with layout enum + update Gemini responseSchema
-- [ ] 01-02-PLAN.md — Wire layout into all templates + remove backdrop-filter
+- [x] 01-02-PLAN.md — Wire layout into all templates + remove backdrop-filter
 
 ### Phase 2: Rich Elements
 **Goal**: Users receive slides with beautifully rendered numbered lists, stat heroes, and SVG charts as AI-chosen content types
@@ -38,11 +38,11 @@ Plans:
   3. A generated carousel can include an inline SVG bar chart slide
   4. A generated carousel can include an inline SVG pie/donut chart slide
   5. All rich element slides export to PNG correctly — no blank areas, no missing chart segments
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: Build `components/slides/elements/` — ListElement, StatElement, BarChartElement, PieChartElement
-- [ ] 02-02: Wire elements into template rendering + extend Gemini prompt with `elements` schema
+- [ ] 02-01-PLAN.md — Types, element components (List, Stat, BarChart, PieChart), renderElement dispatcher, and Gemini responseSchema extension
+- [ ] 02-02-PLAN.md — Wire renderElement into all 24 templates + visual verification checkpoint
 
 ### Phase 3: User Photo Upload
 **Goal**: Users can upload their own photos and use them as full-bleed backgrounds or split-layout images in slides
@@ -82,7 +82,7 @@ Phase 1 first (schema foundation). Phase 2 and Phase 3 can follow in parallel. P
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Layout System | 2/2 | Complete   | 2026-03-19 |
+| 1. Layout System | 2/2 | Complete    | 2026-03-19 |
 | 2. Rich Elements | 0/2 | Not started | - |
 | 3. User Photo Upload | 0/2 | Not started | - |
 | 4. Content Calendar | 0/2 | Not started | - |
