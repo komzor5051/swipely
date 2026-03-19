@@ -2,7 +2,8 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions, scaleContentFontSize, getLayoutVariant, getContentAlignment } from "../utils";
+import { renderElement } from "../elements";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');`;
 
@@ -14,6 +15,8 @@ export default function ReceiptSlide({
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
   const isHook = slideNumber === 1;
+  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
+  const alignment = getContentAlignment(layout, slideNumber);
 
   const highlightStyle: React.CSSProperties = {
     display: "inline",
@@ -116,7 +119,6 @@ export default function ReceiptSlide({
             </div>
           </div>
 
-          <hr style={{ border: "none", borderTop: "2px dashed #DDDDDD", margin: "20px 0" }} />
 
           {/* Main headline */}
           <h1
@@ -137,13 +139,22 @@ export default function ReceiptSlide({
             {renderTitle(slide.title, hookHighlight)}
           </h1>
 
-          <hr style={{ border: "none", borderTop: "2px dashed #DDDDDD", margin: "20px 0" }} />
 
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#444", textAlign: "center", margin: "20px 0" }}>
-            {renderContent(slide.content)}
-          </p>
+          {slide.element ? (
+            <div style={{ margin: "20px 0" }}>
+              {renderElement({ element: slide.element, accentColor: "#E8725C" })}
+              {slide.content && (
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#444", textAlign: "center", marginTop: 12 }}>
+                  {slide.content}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: scaleContentFontSize(slide.content, 22), fontWeight: 500, lineHeight: 1.5, color: "#444", textAlign: "center", margin: "20px 0" }}>
+              {renderContent(slide.content)}
+            </p>
+          )}
 
-          <hr style={{ border: "none", borderTop: "2px dashed #DDDDDD", margin: "20px 0" }} />
 
           {/* Barcode */}
           <div style={{ display: "flex", justifyContent: "center", gap: 2, margin: "24px 0 12px", height: 52 }}>
@@ -168,8 +179,9 @@ export default function ReceiptSlide({
         height,
         background: "#E8E8E8",
         display: "flex",
-        alignItems: "center",
+        alignItems: alignment,
         justifyContent: "center",
+        padding: "60px 0",
         position: "relative",
         overflow: "hidden",
         boxSizing: "border-box",
@@ -214,12 +226,11 @@ export default function ReceiptSlide({
           <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 800, color: "#1A1A1A", letterSpacing: 2 }}>Swipely</div>
         </div>
 
-        <hr style={{ border: "none", borderTop: "2px dashed #CCCCCC", margin: "18px 0" }} />
 
         <h1
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: 52,
+            fontSize: 58,
             fontWeight: 800,
             lineHeight: 1.12,
             color: "#E8725C",
@@ -234,13 +245,22 @@ export default function ReceiptSlide({
           {renderTitle(slide.title, highlightStyle)}
         </h1>
 
-        <hr style={{ border: "none", borderTop: "2px dashed #CCCCCC", margin: "18px 0" }} />
 
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#1A1A1A", textAlign: "center", margin: "18px 0" }}>
-          {slide.content}
-        </p>
+        {slide.element ? (
+          <div style={{ margin: "18px 0" }}>
+            {renderElement({ element: slide.element, accentColor: "#E8725C" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#1A1A1A", textAlign: "center", marginTop: 12 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#1A1A1A", textAlign: "center", margin: "18px 0" }}>
+            {slide.content}
+          </p>
+        )}
 
-        <hr style={{ border: "none", borderTop: "2px dashed #CCCCCC", margin: "18px 0" }} />
 
         <div style={{ display: "flex", justifyContent: "center", gap: 2, margin: "20px 0 10px", height: 48 }}>
           {bars.map((type, i) => (

@@ -2,7 +2,8 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions, scaleContentFontSize, PhotoBackground, getLayoutVariant, getContentAlignment } from "../utils";
+import { renderElement } from "../elements";
 
 export default function SwipelySlide({
   slide,
@@ -12,11 +13,14 @@ export default function SwipelySlide({
   username,
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
+  const hasPhoto = !!slide.imageUrl;
+  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
+  const alignment = getContentAlignment(layout, slideNumber);
 
   const highlightStyle: React.CSSProperties = {
     display: "inline",
-    background: "#D4F542",
-    color: "#0066CC",
+    background: hasPhoto ? "rgba(0,0,0,0.5)" : "#D4F542",
+    color: hasPhoto ? "#FFFFFF" : "#0066CC",
     padding: "0px 16px",
     margin: "0 -8px",
     boxDecorationBreak: "clone",
@@ -30,12 +34,20 @@ export default function SwipelySlide({
       style={{
         width,
         height,
-        background: "linear-gradient(165deg, #0A84FF 0%, #0066CC 100%)",
+        background: hasPhoto ? "#0A0A0A" : "linear-gradient(165deg, #0A84FF 0%, #0066CC 100%)",
         fontFamily: "'Outfit', -apple-system, sans-serif",
         position: "relative",
         overflow: "hidden",
       }}
     >
+      {/* Photo background with blue-tinted overlay */}
+      {hasPhoto && (
+        <PhotoBackground
+          imageUrl={slide.imageUrl!}
+          overlayColor="#002255"
+          overlayOpacity={0.45}
+        />
+      )}
       {/* Google Fonts */}
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');`}</style>
 
@@ -298,13 +310,13 @@ export default function SwipelySlide({
           padding: "200px 70px 200px",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
+          justifyContent: isHook ? "center" : alignment,
           zIndex: 5,
         }}
       >
         <h1
           style={{
-            fontSize: isHook ? 92 : 82,
+            fontSize: isHook ? 92 : 88,
             fontWeight: 800,
             lineHeight: 1.05,
             color: "#FFFFFF",
@@ -315,19 +327,36 @@ export default function SwipelySlide({
         >
           {renderTitle(slide.title, highlightStyle)}
         </h1>
-        {slide.content && (
-          <p
-            style={{
-              fontSize: 34,
-              fontWeight: 400,
-              lineHeight: 1.6,
-              color: "rgba(255, 255, 255, 0.8)",
-              marginTop: 45,
-              maxWidth: 800,
-            }}
-          >
-            {renderContent(slide.content)}
-          </p>
+        {slide.element ? (
+          <div style={{ marginBottom: 16, marginTop: 45 }}>
+            {renderElement({ element: slide.element, accentColor: "#D4F542" })}
+            {slide.content && (
+              <p style={{
+                fontSize: 22,
+                color: "rgba(255,255,255,0.6)",
+                marginTop: 12,
+                fontFamily: "'Outfit', sans-serif",
+                lineHeight: 1.4,
+              }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          slide.content && (
+            <p
+              style={{
+                fontSize: scaleContentFontSize(slide.content, 40),
+                fontWeight: 400,
+                lineHeight: 1.6,
+                color: "rgba(255, 255, 255, 0.8)",
+                marginTop: 45,
+                maxWidth: 800,
+              }}
+            >
+              {renderContent(slide.content)}
+            </p>
+          )
         )}
       </div>
 
@@ -361,8 +390,7 @@ export default function SwipelySlide({
             alignItems: "center",
             gap: 12,
             padding: "16px 28px",
-            background: "rgba(255, 255, 255, 0.15)",
-            backdropFilter: "blur(10px)",
+            background: "rgba(255, 255, 255, 0.25)",
             border: "1px solid rgba(255, 255, 255, 0.2)",
             borderRadius: 100,
             fontSize: 18,

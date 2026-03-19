@@ -2,7 +2,8 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions, scaleContentFontSize, getLayoutVariant, getContentAlignment } from "../utils";
+import { renderElement } from "../elements";
 
 export default function SpeechBubbleSlide({
   slide,
@@ -12,6 +13,8 @@ export default function SpeechBubbleSlide({
   username,
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
+  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
+  const alignment = getContentAlignment(layout, slideNumber);
 
   const isHook = slide.type === "hook";
 
@@ -108,7 +111,7 @@ export default function SpeechBubbleSlide({
         style={{
           flex: 1,
           display: "flex",
-          alignItems: "center",
+          alignItems: isHook ? "center" : alignment,
           justifyContent: "center",
           padding: "150px 70px",
           position: "relative",
@@ -179,7 +182,7 @@ export default function SpeechBubbleSlide({
             <p
               style={{
                 fontFamily: "'Inter', sans-serif",
-                fontSize: isHook ? 42 : 36,
+                fontSize: isHook ? 42 : 40,
                 fontWeight: 700,
                 lineHeight: 1.35,
                 color: "#1A1A1A",
@@ -188,16 +191,27 @@ export default function SpeechBubbleSlide({
             >
               {renderTitle(slide.title, highlightStyle)}
             </p>
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 24,
-                fontWeight: 600,
-                color: "#F26B3A",
-              }}
-            >
-              {renderContent(slide.content)}
-            </span>
+            {slide.element ? (
+              <div style={{ marginBottom: 4 }}>
+                {renderElement({ element: slide.element, accentColor: "#F26B3A" })}
+                {slide.content && (
+                  <p style={{ fontSize: 22, color: "rgba(0,0,0,0.6)", marginTop: 12, fontFamily: "'Inter', sans-serif", lineHeight: 1.4, margin: 0, marginTop: 12 }}>
+                    {slide.content}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <span
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: scaleContentFontSize(slide.content, 28),
+                  fontWeight: 600,
+                  color: "#F26B3A",
+                }}
+              >
+                {renderContent(slide.content)}
+              </span>
+            )}
           </div>
         </div>
       </div>

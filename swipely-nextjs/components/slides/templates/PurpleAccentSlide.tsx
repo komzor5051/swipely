@@ -2,7 +2,8 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions, scaleContentFontSize, getLayoutVariant, getContentAlignment } from "../utils";
+import { renderElement } from "../elements";
 
 export default function PurpleAccentSlide({
   slide,
@@ -12,6 +13,8 @@ export default function PurpleAccentSlide({
   username,
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
+  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
+  const alignment = getContentAlignment(layout, slideNumber);
 
   const isHook = slide.type === "hook";
 
@@ -113,7 +116,7 @@ export default function PurpleAccentSlide({
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
+          justifyContent: isHook ? "center" : alignment,
           padding: "160px 70px 200px",
         }}
       >
@@ -121,7 +124,7 @@ export default function PurpleAccentSlide({
         <h1
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: isHook ? 100 : 92,
+            fontSize: isHook ? 100 : 96,
             fontWeight: 800,
             lineHeight: 1.0,
             color: "#0A0A0A",
@@ -144,20 +147,37 @@ export default function PurpleAccentSlide({
         </h1>
 
         {/* Content text (subtitle) */}
-        <p
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 34,
-            fontWeight: 500,
-            lineHeight: 1.5,
-            color: "#0A0A0A",
-            marginTop: 40,
-            maxWidth: 700,
-            opacity: 0.85,
-          }}
-        >
-          {renderContent(slide.content)}
-        </p>
+        {slide.element ? (
+          <div style={{ marginBottom: 16, marginTop: 40 }}>
+            {renderElement({ element: slide.element, accentColor: "#E91E8C" })}
+            {slide.content && (
+              <p style={{
+                fontSize: 22,
+                color: "rgba(0,0,0,0.6)",
+                marginTop: 12,
+                fontFamily: "'Inter', sans-serif",
+                lineHeight: 1.4,
+              }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: scaleContentFontSize(slide.content, 40),
+              fontWeight: 500,
+              lineHeight: 1.5,
+              color: "#0A0A0A",
+              marginTop: 40,
+              maxWidth: 700,
+              opacity: 0.85,
+            }}
+          >
+            {renderContent(slide.content)}
+          </p>
+        )}
       </div>
 
       {/* Footer */}

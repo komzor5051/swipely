@@ -2,7 +2,8 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions, getLayoutVariant, getContentAlignment } from "../utils";
+import { renderElement } from "../elements";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@500;600;700;800&display=swap');`;
 
@@ -14,6 +15,8 @@ export default function PhotoSlide({
   username,
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
+  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
+  const alignment = getContentAlignment(layout, slideNumber);
   const isHook = slideNumber === 1;
 
   const titleLength = (slide.title || "").length;
@@ -122,7 +125,7 @@ export default function PhotoSlide({
           position: "absolute", inset: 0,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
+          justifyContent: alignment,
           padding: isHook ? "80px 68px 72px" : "70px 65px",
         }}
       >
@@ -162,13 +165,11 @@ export default function PhotoSlide({
         </div>
 
         {/* Bottom: контент */}
-        {slide.content && (
+        {slide.element ? (
           <div style={{ flex: "0 0 auto", paddingBottom: 15 }}>
             <div
               style={{
-                background: isHook ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.35)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
+                background: isHook ? "rgba(0,0,0,0.65)" : "rgba(0,0,0,0.55)",
                 borderRadius: 20,
                 padding: "28px 32px",
                 border: isHook
@@ -176,22 +177,44 @@ export default function PhotoSlide({
                   : "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <p
-                style={{
-                  fontFamily: "'Manrope', sans-serif",
-                  fontSize: contentSize,
-                  fontWeight: 600,
-                  color: "#FFFFFF",
-                  lineHeight: 1.5,
-                  letterSpacing: -0.3,
-                  textShadow: "0 2px 8px rgba(0,0,0,0.8)",
-                  margin: 0,
-                }}
-              >
-                {renderContent(slide.content)}
-              </p>
+              {renderElement({ element: slide.element, accentColor: "#FFFFFF" })}
+              {slide.content && (
+                <p style={{ fontSize: 22, color: "rgba(255,255,255,0.6)", marginTop: 12, fontFamily: "'Manrope', sans-serif", lineHeight: 1.4 }}>
+                  {slide.content}
+                </p>
+              )}
             </div>
           </div>
+        ) : (
+          slide.content && (
+            <div style={{ flex: "0 0 auto", paddingBottom: 15 }}>
+              <div
+                style={{
+                  background: isHook ? "rgba(0,0,0,0.65)" : "rgba(0,0,0,0.55)",
+                  borderRadius: 20,
+                  padding: "28px 32px",
+                  border: isHook
+                    ? "1px solid rgba(212,245,66,0.2)"
+                    : "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: "'Manrope', sans-serif",
+                    fontSize: contentSize,
+                    fontWeight: 600,
+                    color: "#FFFFFF",
+                    lineHeight: 1.5,
+                    letterSpacing: -0.3,
+                    textShadow: "0 2px 8px rgba(0,0,0,0.8)",
+                    margin: 0,
+                  }}
+                >
+                  {renderContent(slide.content)}
+                </p>
+              </div>
+            </div>
+          )
         )}
       </div>
 
@@ -205,9 +228,7 @@ export default function PhotoSlide({
           fontSize: 24,
           fontWeight: 700,
           color: "#FFFFFF",
-          background: "rgba(0,0,0,0.45)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
+          background: "rgba(0,0,0,0.65)",
           padding: "10px 20px",
           borderRadius: 50,
           border: isHook
@@ -241,11 +262,9 @@ export default function PhotoSlide({
             fontSize: 18,
             fontWeight: 600,
             color: "#FFFFFF",
-            background: "rgba(0,0,0,0.5)",
+            background: "rgba(0,0,0,0.7)",
             padding: "8px 16px",
             borderRadius: 20,
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
             zIndex: 10,
             letterSpacing: 0.3,
           }}

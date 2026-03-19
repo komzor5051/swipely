@@ -527,6 +527,80 @@ UPDATE profiles
  WHERE subscription_end > NOW()
    AND subscription_tier != 'start';
 
+-- ─── 2026-03-09: Referral bonus → generations (instead of photo_slides) ──────
+
+-- bonus_generations: non-expiring pool, spent when monthly limit is exhausted
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bonus_generations INT DEFAULT 0 NOT NULL;
+
+-- Updated grant_referral_bonus: +5 generations to referrer, +3 to new user
+CREATE OR REPLACE FUNCTION grant_referral_bonus(new_user_id UUID, referrer_id UUID)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE profiles
+    SET bonus_generations = bonus_generations + 3,
+        referred_by = referrer_id,
+        referral_bonus_applied = TRUE
+    WHERE id = new_user_id;
+  UPDATE profiles
+    SET bonus_generations = bonus_generations + 5,
+        referral_count = COALESCE(referral_count, 0) + 1
+    WHERE id = referrer_id;
+END;
+$$;
+
+-- Updated claim_generation_slot: falls back to bonus_generations when monthly quota exhausted
+CREATE OR REPLACE FUNCTION claim_generation_slot(p_user_id UUID)
+RETURNS TABLE(allowed BOOLEAN, reason TEXT, wait_seconds INT)
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+DECLARE
+  v_tier TEXT; v_sub_end TIMESTAMPTZ; v_used INT; v_bonus INT;
+  v_last_generate_at TIMESTAMPTZ; v_sub_active BOOLEAN;
+  v_effective_tier TEXT; v_cooldown_sec INT; v_month_limit INT;
+  v_elapsed_sec FLOAT; v_remaining_sec INT;
+BEGIN
+  SELECT subscription_tier, subscription_end, standard_used, bonus_generations, last_generate_at
+    INTO v_tier, v_sub_end, v_used, v_bonus, v_last_generate_at
+    FROM profiles WHERE id = p_user_id FOR UPDATE;
+
+  IF NOT FOUND THEN RETURN QUERY SELECT FALSE, 'LIMIT_EXCEEDED'::TEXT, 0; RETURN; END IF;
+
+  v_sub_active := v_sub_end IS NOT NULL AND v_sub_end > NOW();
+  IF v_sub_active THEN
+    v_effective_tier := v_tier;
+    IF v_tier = 'free' THEN v_effective_tier := 'pro'; UPDATE profiles SET subscription_tier = 'pro' WHERE id = p_user_id; END IF;
+  ELSE
+    v_effective_tier := 'free';
+    IF v_tier != 'free' THEN UPDATE profiles SET subscription_tier = 'free' WHERE id = p_user_id; END IF;
+  END IF;
+
+  v_cooldown_sec := CASE WHEN v_effective_tier = 'pro' THEN 3 WHEN v_effective_tier = 'start' THEN 5 ELSE 15 END;
+  IF v_last_generate_at IS NOT NULL THEN
+    v_elapsed_sec := EXTRACT(EPOCH FROM (NOW() - v_last_generate_at));
+    IF v_elapsed_sec < v_cooldown_sec THEN
+      v_remaining_sec := CEIL(v_cooldown_sec - v_elapsed_sec);
+      RETURN QUERY SELECT FALSE, 'COOLDOWN'::TEXT, v_remaining_sec; RETURN;
+    END IF;
+  END IF;
+
+  v_month_limit := CASE WHEN v_effective_tier = 'pro' THEN 150 WHEN v_effective_tier = 'start' THEN 20 ELSE 3 END;
+
+  IF v_used >= v_month_limit THEN
+    IF v_bonus <= 0 THEN RETURN QUERY SELECT FALSE, 'LIMIT_EXCEEDED'::TEXT, 0; RETURN; END IF;
+    UPDATE profiles SET bonus_generations = bonus_generations - 1, last_generate_at = NOW() WHERE id = p_user_id;
+    RETURN QUERY SELECT TRUE, 'OK'::TEXT, 0; RETURN;
+  END IF;
+
+  UPDATE profiles
+     SET standard_used = standard_used + 1,
+         last_generate_at = NOW()
+   WHERE id = p_user_id;
+  RETURN QUERY SELECT TRUE, 'OK'::TEXT, 0;
+END;
+$$;
+
 NOTIFY pgrst, 'reload schema';
 
 -- RLS: published posts are publicly readable
@@ -626,9 +700,79 @@ GRANT ALL ON api_keys TO authenticated;
 
 NOTIFY pgrst, 'reload schema';
 
+-- RPC: rollback a generation slot when AI call fails after claim
+CREATE OR REPLACE FUNCTION release_generation_slot(p_user_id UUID)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE profiles
+  SET standard_used = GREATEST(0, standard_used - 1)
+  WHERE id = p_user_id;
+END;
+$$;
+
 -- ============================================
 -- VERIFY: run these to check
 -- SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'profiles';
 -- SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'generations';
 -- SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'api_keys';
 -- ============================================
+
+-- ─── 2026-03-14: Free tier limit 3→1, remove Start from pricing ──────────────
+-- Free users now get 1 carousel/month (resets monthly, same as before).
+-- Start tier (start=20) is removed from the public pricing UI but kept in DB
+-- for existing subscribers until their subscription expires.
+
+CREATE OR REPLACE FUNCTION claim_generation_slot(p_user_id UUID)
+RETURNS TABLE(allowed BOOLEAN, reason TEXT, wait_seconds INT)
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+DECLARE
+  v_tier TEXT; v_sub_end TIMESTAMPTZ; v_used INT; v_bonus INT;
+  v_last_generate_at TIMESTAMPTZ; v_sub_active BOOLEAN;
+  v_effective_tier TEXT; v_cooldown_sec INT; v_month_limit INT;
+  v_elapsed_sec FLOAT; v_remaining_sec INT;
+BEGIN
+  SELECT subscription_tier, subscription_end, standard_used, bonus_generations, last_generate_at
+    INTO v_tier, v_sub_end, v_used, v_bonus, v_last_generate_at
+    FROM profiles WHERE id = p_user_id FOR UPDATE;
+
+  IF NOT FOUND THEN RETURN QUERY SELECT FALSE, 'LIMIT_EXCEEDED'::TEXT, 0; RETURN; END IF;
+
+  v_sub_active := v_sub_end IS NOT NULL AND v_sub_end > NOW();
+  IF v_sub_active THEN
+    v_effective_tier := v_tier;
+    IF v_tier = 'free' THEN v_effective_tier := 'pro'; UPDATE profiles SET subscription_tier = 'pro' WHERE id = p_user_id; END IF;
+  ELSE
+    v_effective_tier := 'free';
+    IF v_tier != 'free' THEN UPDATE profiles SET subscription_tier = 'free' WHERE id = p_user_id; END IF;
+  END IF;
+
+  v_cooldown_sec := CASE WHEN v_effective_tier = 'pro' THEN 3 WHEN v_effective_tier = 'start' THEN 5 ELSE 15 END;
+  IF v_last_generate_at IS NOT NULL THEN
+    v_elapsed_sec := EXTRACT(EPOCH FROM (NOW() - v_last_generate_at));
+    IF v_elapsed_sec < v_cooldown_sec THEN
+      v_remaining_sec := CEIL(v_cooldown_sec - v_elapsed_sec);
+      RETURN QUERY SELECT FALSE, 'COOLDOWN'::TEXT, v_remaining_sec; RETURN;
+    END IF;
+  END IF;
+
+  -- Free tier: 1 carousel/month (was 3). Start tier: 20/month (legacy, kept for existing subs).
+  v_month_limit := CASE WHEN v_effective_tier = 'pro' THEN 150 WHEN v_effective_tier = 'start' THEN 20 ELSE 1 END;
+
+  IF v_used >= v_month_limit THEN
+    IF v_bonus <= 0 THEN RETURN QUERY SELECT FALSE, 'LIMIT_EXCEEDED'::TEXT, 0; RETURN; END IF;
+    UPDATE profiles SET bonus_generations = bonus_generations - 1, last_generate_at = NOW() WHERE id = p_user_id;
+    RETURN QUERY SELECT TRUE, 'OK'::TEXT, 0; RETURN;
+  END IF;
+
+  UPDATE profiles
+     SET standard_used = standard_used + 1,
+         last_generate_at = NOW()
+   WHERE id = p_user_id;
+  RETURN QUERY SELECT TRUE, 'OK'::TEXT, 0;
+END;
+$$;
+
+NOTIFY pgrst, 'reload schema';
