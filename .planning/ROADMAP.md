@@ -38,11 +38,11 @@ Plans:
   3. A generated carousel can include an inline SVG bar chart slide
   4. A generated carousel can include an inline SVG pie/donut chart slide
   5. All rich element slides export to PNG correctly — no blank areas, no missing chart segments
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed (awaiting visual verification checkpoint)
 
 Plans:
-- [ ] 02-01-PLAN.md — Types, element components (List, Stat, BarChart, PieChart), renderElement dispatcher, and Gemini responseSchema extension
-- [ ] 02-02-PLAN.md — Wire renderElement into all 24 templates + visual verification checkpoint
+- [x] 02-01-PLAN.md — Types, element components (List, Stat, BarChart, PieChart), renderElement dispatcher, and Gemini responseSchema extension
+- [x] 02-02-PLAN.md — Wire renderElement into all 24 templates + visual verification checkpoint
 
 ### Phase 3: User Photo Upload
 **Goal**: Users can upload their own photos and use them as full-bleed backgrounds or split-layout images in slides
@@ -83,6 +83,6 @@ Phase 1 first (schema foundation). Phase 2 and Phase 3 can follow in parallel. P
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Layout System | 2/2 | Complete    | 2026-03-19 |
-| 2. Rich Elements | 1/2 | In Progress|  |
+| 2. Rich Elements | 2/2 | Checkpoint |  |
 | 3. User Photo Upload | 0/2 | Not started | - |
 | 4. Content Calendar | 0/2 | Not started | - |
