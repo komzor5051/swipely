@@ -14,10 +14,10 @@
 
 ### Rich Elements
 
-- [ ] **RICH-01**: Пользователь получает слайды с нумерованными списками (стильный рендеринг, не дефолтный `<ol>`)
-- [ ] **RICH-02**: Пользователь получает слайды со stat/infographic-элементами (большая цифра + подпись)
-- [ ] **RICH-03**: Пользователь получает слайды с bar chart (inline SVG, без внешних зависимостей)
-- [ ] **RICH-04**: Пользователь получает слайды с pie chart (inline SVG, без внешних зависимостей)
+- [x] **RICH-01**: Пользователь получает слайды с нумерованными списками (стильный рендеринг, не дефолтный `<ol>`)
+- [x] **RICH-02**: Пользователь получает слайды со stat/infographic-элементами (большая цифра + подпись)
+- [x] **RICH-03**: Пользователь получает слайды с bar chart (inline SVG, без внешних зависимостей)
+- [x] **RICH-04**: Пользователь получает слайды с pie chart (inline SVG, без внешних зависимостей)
 - [ ] **RICH-05**: Rich-элементы корректно экспортируются в PNG через html-to-image
 
 ### User Photos
@@ -69,10 +69,10 @@
 | LAYOUT-02 | Phase 1 | Complete |
 | LAYOUT-03 | Phase 1 | Pending |
 | LAYOUT-04 | Phase 1 | Complete |
-| RICH-01 | Phase 2 | Pending |
-| RICH-02 | Phase 2 | Pending |
-| RICH-03 | Phase 2 | Pending |
-| RICH-04 | Phase 2 | Pending |
+| RICH-01 | Phase 2 | Complete |
+| RICH-02 | Phase 2 | Complete |
+| RICH-03 | Phase 2 | Complete |
+| RICH-04 | Phase 2 | Complete |
 | RICH-05 | Phase 2 | Pending |
 | PHOTO-01 | Phase 3 | Pending |
 | PHOTO-02 | Phase 3 | Pending |
