@@ -2,19 +2,6 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 // ─── Types ───
 
-export interface ApiKey {
-  id: string;
-  key_hash: string;
-  name: string;
-  tenant_id: string;
-  monthly_limit: number;
-  used_this_month: number;
-  last_reset_month: string | null;
-  active: boolean;
-  created_at: string;
-  last_used_at: string | null;
-}
-
 export interface Profile {
   id: string;
   telegram_id?: number;
@@ -22,7 +9,7 @@ export interface Profile {
   email?: string;
   username?: string;
   first_name?: string;
-  subscription_tier: "free" | "start" | "pro" | "agency";
+  subscription_tier: "free" | "pro";
   subscription_end?: string;
   standard_used: number;
   photo_slides_balance: number;
@@ -145,7 +132,7 @@ export async function getUsage(
   const profile = await getProfile(supabase, userId);
   if (!profile) return { used: 0, limit: 3, tier: "free" };
 
-  const limit = profile.subscription_tier === "pro" ? -1 : profile.subscription_tier === "start" ? 20 : 1;
+  const limit = profile.subscription_tier === "pro" ? -1 : 3;
   return {
     used: profile.standard_used,
     limit,
@@ -209,19 +196,26 @@ export async function checkSubscriptionExpiry(
   supabase: SupabaseClient,
   userId: string,
   profile: Pick<Profile, "subscription_tier" | "subscription_end">
-): Promise<"free" | "start" | "pro" | "agency"> {
-  // Self-healing: subscription_end in the future → tier is valid as-is
+): Promise<"free" | "pro"> {
+  // Self-healing: subscription_end in the future → must be "pro" regardless of stored tier
   if (profile.subscription_end) {
     const expiry = new Date(profile.subscription_end);
     if (expiry > new Date()) {
-      return profile.subscription_tier;
+      if (profile.subscription_tier !== "pro") {
+        // Tier out of sync — heal it silently
+        await supabase
+          .from("profiles")
+          .update({ subscription_tier: "pro" })
+          .eq("id", userId);
+      }
+      return "pro";
     }
   }
 
   // No active subscription_end
-  if (profile.subscription_tier === "free") return "free";
+  if (profile.subscription_tier !== "pro") return profile.subscription_tier;
 
-  // Was paid but no valid subscription_end — downgrade
+  // Was "pro" but no valid subscription_end — downgrade
   await supabase
     .from("profiles")
     .update({ subscription_tier: "free" })
@@ -235,8 +229,7 @@ export async function checkSubscriptionExpiry(
 export interface ReferralStats {
   code: string | null;
   count: number;
-  totalBonusEarned: number; // 5 generations per referral
-  bonusRemaining: number;
+  totalBonusEarned: number; // 5 slides per referral
 }
 
 export async function getReferralStats(
@@ -245,7 +238,7 @@ export async function getReferralStats(
 ): Promise<ReferralStats> {
   const { data } = await supabase
     .from("profiles")
-    .select("referral_code, referral_count, bonus_generations")
+    .select("referral_code, referral_count")
     .eq("id", userId)
     .single();
 
@@ -254,82 +247,7 @@ export async function getReferralStats(
     code: data?.referral_code ?? null,
     count,
     totalBonusEarned: count * 5,
-    bonusRemaining: data?.bonus_generations ?? 0,
   };
-}
-
-// ─── B2B API Key Queries ───
-
-/**
- * Atomically claim an API key slot (checks quota + lazy monthly reset + increments).
- * Returns the claim result with api_key_id and tenant_id on success.
- */
-export async function claimApiKeySlot(
-  supabase: SupabaseClient,
-  keyHash: string
-): Promise<{ allowed: boolean; reason: string; apiKeyId: string | null; tenantId: string | null }> {
-  const { data, error } = await supabase.rpc("claim_api_key_slot", { p_key_hash: keyHash });
-  if (error || !data || !data[0]) {
-    return { allowed: false, reason: "ERROR", apiKeyId: null, tenantId: null };
-  }
-  const row = data[0];
-  return {
-    allowed: row.allowed,
-    reason: row.reason,
-    apiKeyId: row.api_key_id ?? null,
-    tenantId: row.tenant_id ?? null,
-  };
-}
-
-/**
- * List all API keys for admin panel (admin client only).
- */
-export async function listApiKeys(supabase: SupabaseClient): Promise<ApiKey[]> {
-  const { data, error } = await supabase
-    .from("api_keys")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) return [];
-  return data as ApiKey[];
-}
-
-/**
- * Create a new API key record (stores hash, not plain key).
- */
-export async function createApiKey(
-  supabase: SupabaseClient,
-  record: Pick<ApiKey, "key_hash" | "name" | "tenant_id" | "monthly_limit">
-): Promise<ApiKey | null> {
-  const { data, error } = await supabase
-    .from("api_keys")
-    .insert(record)
-    .select()
-    .single();
-  if (error) return null;
-  return data as ApiKey;
-}
-
-/**
- * Toggle active/inactive status of an API key.
- */
-export async function setApiKeyActive(
-  supabase: SupabaseClient,
-  id: string,
-  active: boolean
-): Promise<boolean> {
-  const { error } = await supabase.from("api_keys").update({ active }).eq("id", id);
-  return !error;
-}
-
-/**
- * Reset usage counter for an API key to 0.
- */
-export async function resetApiKeyUsage(supabase: SupabaseClient, id: string): Promise<boolean> {
-  const { error } = await supabase
-    .from("api_keys")
-    .update({ used_this_month: 0, last_reset_month: null })
-    .eq("id", id);
-  return !error;
 }
 
 /**
