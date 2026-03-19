@@ -2,8 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions, scaleContentFontSize, getLayoutVariant, getContentAlignment } from "../utils";
-import { renderElement } from "../elements";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 export default function QuoteDoodleSlide({
   slide,
@@ -13,8 +12,6 @@ export default function QuoteDoodleSlide({
   username,
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
-  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
-  const alignment = getContentAlignment(layout, slideNumber);
 
   const highlightStyle: React.CSSProperties = {
     display: "inline",
@@ -132,7 +129,7 @@ export default function QuoteDoodleSlide({
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          justifyContent: isHook ? "center" : alignment,
+          justifyContent: "center",
           padding: "180px 70px 250px",
         }}
       >
@@ -155,7 +152,7 @@ export default function QuoteDoodleSlide({
         <h1
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: isHook ? 90 : 88,
+            fontSize: isHook ? 90 : 82,
             fontWeight: 900,
             lineHeight: 1.15,
             color: "#0A0A0A",
@@ -168,37 +165,20 @@ export default function QuoteDoodleSlide({
         </h1>
 
         {/* Content text */}
-        {slide.element ? (
-          <div style={{ marginBottom: 16, marginTop: 40 }}>
-            {renderElement({ element: slide.element, accentColor: "#A3E635" })}
-            {slide.content && (
-              <p style={{
-                fontSize: 22,
-                color: "rgba(0,0,0,0.6)",
-                marginTop: 12,
-                fontFamily: "'Inter', sans-serif",
-                lineHeight: 1.4,
-              }}>
-                {slide.content}
-              </p>
-            )}
-          </div>
-        ) : (
-          slide.content && (
-            <p
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: scaleContentFontSize(slide.content, 38),
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: "#666666",
-                marginTop: 40,
-                maxWidth: 700,
-              }}
-            >
-              {renderContent(slide.content)}
-            </p>
-          )
+        {slide.content && (
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 32,
+              fontWeight: 500,
+              lineHeight: 1.5,
+              color: "#666666",
+              marginTop: 40,
+              maxWidth: 700,
+            }}
+          >
+            {renderContent(slide.content)}
+          </p>
         )}
       </div>
 
