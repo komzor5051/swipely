@@ -2,8 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions, scaleContentFontSize, getLayoutVariant, getContentAlignment } from "../utils";
-import { renderElement } from "../elements";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap');`;
 
@@ -18,8 +17,6 @@ export default function FrameSlide({
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
   const isHook = slideNumber === 1;
-  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
-  const alignment = getContentAlignment(layout, slideNumber);
 
   const hlStyle: React.CSSProperties = {
     fontStyle: "italic",
@@ -129,37 +126,20 @@ export default function FrameSlide({
             }}
           />
 
-          {slide.element ? (
-            <div style={{ marginBottom: 16, position: "relative", zIndex: 1 }}>
-              {renderElement({ element: slide.element, accentColor: GOLD })}
-              {slide.content && (
-                <p style={{
-                  fontSize: 22,
-                  color: "rgba(255,255,255,0.6)",
-                  marginTop: 12,
-                  fontFamily: "'Inter', sans-serif",
-                  lineHeight: 1.4,
-                }}>
-                  {slide.content}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 34,
-                fontWeight: 300,
-                lineHeight: 1.7,
-                color: "rgba(245,244,240,0.45)",
-                maxWidth: 760,
-                position: "relative",
-                zIndex: 1,
-              }}
-            >
-              {renderContent(slide.content)}
-            </p>
-          )}
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 34,
+              fontWeight: 300,
+              lineHeight: 1.7,
+              color: "rgba(245,244,240,0.45)",
+              maxWidth: 760,
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            {renderContent(slide.content)}
+          </p>
         </div>
       </div>
     );
@@ -226,13 +206,13 @@ export default function FrameSlide({
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            justifyContent: alignment,
+            justifyContent: "center",
           }}
         >
           <h1
             style={{
               fontFamily: "'Instrument Serif', Georgia, serif",
-              fontSize: 82,
+              fontSize: 72,
               fontWeight: 400,
               lineHeight: 1.08,
               color: "#F5F4F0",
@@ -254,34 +234,17 @@ export default function FrameSlide({
             }}
           />
 
-          {slide.element ? (
-            <div style={{ marginBottom: 16 }}>
-              {renderElement({ element: slide.element, accentColor: GOLD })}
-              {slide.content && (
-                <p style={{
-                  fontSize: 22,
-                  color: "rgba(255,255,255,0.6)",
-                  marginTop: 12,
-                  fontFamily: "'Inter', sans-serif",
-                  lineHeight: 1.4,
-                }}>
-                  {slide.content}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: scaleContentFontSize(slide.content, 42),
-                fontWeight: 300,
-                lineHeight: 1.75,
-                color: "rgba(245,244,240,0.45)",
-              }}
-            >
-              {renderContent(slide.content)}
-            </p>
-          )}
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 36,
+              fontWeight: 300,
+              lineHeight: 1.75,
+              color: "rgba(245,244,240,0.45)",
+            }}
+          >
+            {renderContent(slide.content)}
+          </p>
         </div>
       </div>
 

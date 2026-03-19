@@ -2,8 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions, scaleContentFontSize, getLayoutVariant, getContentAlignment } from "../utils";
-import { renderElement } from "../elements";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 export default function GridMultiSlide({
   slide,
@@ -13,8 +12,6 @@ export default function GridMultiSlide({
   username,
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
-  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
-  const alignment = getContentAlignment(layout, slideNumber);
 
   const highlightStyle: React.CSSProperties = {
     display: "inline",
@@ -164,7 +161,7 @@ export default function GridMultiSlide({
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          justifyContent: isHook ? "center" : alignment,
+          justifyContent: "center",
           padding: "200px 70px 250px",
           position: "relative",
           zIndex: 5,
@@ -174,7 +171,7 @@ export default function GridMultiSlide({
         <h1
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: isHook ? 96 : 92,
+            fontSize: isHook ? 96 : 88,
             fontWeight: 800,
             lineHeight: 1.05,
             color: "#0A0A0A",
@@ -186,36 +183,19 @@ export default function GridMultiSlide({
         </h1>
 
         {/* Content */}
-        {slide.element ? (
-          <div style={{ marginBottom: 16, marginTop: 50 }}>
-            {renderElement({ element: slide.element, accentColor: "#F9A8D4" })}
-            {slide.content && (
-              <p style={{
-                fontSize: 22,
-                color: "rgba(0,0,0,0.6)",
-                marginTop: 12,
-                fontFamily: "'Inter', sans-serif",
-                lineHeight: 1.4,
-              }}>
-                {slide.content}
-              </p>
-            )}
-          </div>
-        ) : (
-          <p
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: scaleContentFontSize(slide.content, 38),
-              fontWeight: 500,
-              lineHeight: 1.5,
-              color: "#888888",
-              marginTop: 50,
-              maxWidth: 700,
-            }}
-          >
-            {renderContent(slide.content)}
-          </p>
-        )}
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 32,
+            fontWeight: 500,
+            lineHeight: 1.5,
+            color: "#888888",
+            marginTop: 50,
+            maxWidth: 700,
+          }}
+        >
+          {renderContent(slide.content)}
+        </p>
       </div>
 
       {/* Footer */}
