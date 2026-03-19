@@ -8,9 +8,9 @@
 ### Layout System
 
 - [ ] **LAYOUT-01**: AI назначает layout для каждого слайда (text-left, text-right, split, big-number, quote, default)
-- [ ] **LAYOUT-02**: Существующие шаблоны рендерятся корректно с новой системой лейаутов (backward compatibility)
+- [x] **LAYOUT-02**: Существующие шаблоны рендерятся корректно с новой системой лейаутов (backward compatibility)
 - [ ] **LAYOUT-03**: Gemini использует responseSchema enum для надёжного варьирования лейаутов
-- [ ] **LAYOUT-04**: `backdrop-filter` заменён на solid rgba во всех шаблонах (иначе html-to-image экспорт сломан)
+- [x] **LAYOUT-04**: `backdrop-filter` заменён на solid rgba во всех шаблонах (иначе html-to-image экспорт сломан)
 
 ### Rich Elements
 
@@ -66,9 +66,9 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | LAYOUT-01 | Phase 1 | Pending |
-| LAYOUT-02 | Phase 1 | Pending |
+| LAYOUT-02 | Phase 1 | Complete |
 | LAYOUT-03 | Phase 1 | Pending |
-| LAYOUT-04 | Phase 1 | Pending |
+| LAYOUT-04 | Phase 1 | Complete |
 | RICH-01 | Phase 2 | Pending |
 | RICH-02 | Phase 2 | Pending |
 | RICH-03 | Phase 2 | Pending |

@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: executing
+stopped_at: Completed 01-layout-system-01-02-PLAN.md
+last_updated: "2026-03-19T11:39:03.583Z"
+last_activity: "2026-03-19 — Plan 01-01 complete: SlideLayout type + Gemini responseSchema"
+progress:
+  total_phases: 4
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 100
+---
+
 # Project State
 
 ## Project Reference
@@ -10,28 +26,28 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 1 of 4 (Layout System)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-03-19 — Plan 01-01 complete: SlideLayout type + Gemini responseSchema
+Plan: 2 of 2 in current phase (phase complete)
+Status: Phase 1 complete
+Last activity: 2026-03-19 — Plan 01-02 complete: layout wired into all 24 templates, backdropFilter removed
 
-Progress: [#░░░░░░░░░] 10%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 27 min
-- Total execution time: 0.45 hours
+- Total plans completed: 2
+- Average duration: 26 min
+- Total execution time: 0.87 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-layout-system | 1/2 | 27 min | 27 min |
+| 01-layout-system | 2/2 | 52 min | 26 min |
 
 **Recent Trend:**
-- Last 5 plans: 27 min (01-01)
-- Trend: -
+- Last 5 plans: 27 min (01-01), 25 min (01-02)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -50,6 +66,8 @@ Recent decisions affecting current work:
 - [Phase 2]: SVG charts are hand-written inline React components; Recharts stays in /admin only
 - [Phase 3]: Signed-upload-URL pattern (client uploads direct to Supabase Storage); base64 conversion client-side before export
 - [Phase 4]: content_plans uses JSONB items column; plan generation does NOT consume a carousel generation slot
+- [Phase 01-layout-system]: Template layout wiring pattern established: all templates call getLayoutVariant with slide.layout as 4th arg; Group B templates (Kinfolk, Nikkei, Swiss, Wabi, Photo) now also import getContentAlignment
+- [Phase 01-layout-system]: No backdropFilter allowed in slide components — html-to-image cannot render it; use solid rgba with +0.2 alpha increase instead
 
 ### Pending Todos
 
@@ -62,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19
-Stopped at: Completed 01-layout-system-01-01-PLAN.md
+Last session: 2026-03-19T11:39:03.582Z
+Stopped at: Completed 01-layout-system-01-02-PLAN.md
 Resume file: None

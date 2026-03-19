@@ -6,7 +6,7 @@ Four phases build on the existing Next.js 16 + React 19 + Gemini + Supabase stac
 
 ## Phases
 
-- [ ] **Phase 1: Layout System** - AI assigns varied per-slide layouts; export pipeline made reliable
+- [x] **Phase 1: Layout System** - AI assigns varied per-slide layouts; export pipeline made reliable (completed 2026-03-19)
 - [ ] **Phase 2: Rich Elements** - Lists, stat heroes, and SVG charts as native slide types
 - [ ] **Phase 3: User Photo Upload** - Users upload their own photos as slide backgrounds
 - [ ] **Phase 4: Content Calendar** - AI-generated 30-day content plan with one-click carousel generation
@@ -22,7 +22,7 @@ Four phases build on the existing Next.js 16 + React 19 + Gemini + Supabase stac
   2. All existing templates render without visual regression after the layout system is introduced
   3. Exported PNGs match what the user sees in the editor (no blur artifacts, no invisible overlays)
   4. AI consistently uses different layout values per slide — the same layout does not repeat for every slide in a 5+ slide carousel
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 01-01-PLAN.md — Extend SlideData schema with layout enum + update Gemini responseSchema
@@ -82,7 +82,7 @@ Phase 1 first (schema foundation). Phase 2 and Phase 3 can follow in parallel. P
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Layout System | 1/2 | In progress | - |
+| 1. Layout System | 2/2 | Complete   | 2026-03-19 |
 | 2. Rich Elements | 0/2 | Not started | - |
 | 3. User Photo Upload | 0/2 | Not started | - |
 | 4. Content Calendar | 0/2 | Not started | - |
