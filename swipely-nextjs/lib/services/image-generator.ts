@@ -28,7 +28,6 @@ export interface SlideData {
   content: string;
   type: string;
   slideNumber: number;
-  layout?: string; // AI-assigned visual composition (kept in sync with components/slides/types.ts)
 }
 
 let genAI: GoogleGenAI | null = null;
