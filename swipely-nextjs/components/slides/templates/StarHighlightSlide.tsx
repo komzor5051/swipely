@@ -2,8 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, renderContent, getSlideDimensions, scaleContentFontSize, getLayoutVariant, getContentAlignment } from "../utils";
-import { renderElement } from "../elements";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap');`;
 
@@ -23,8 +22,6 @@ export default function StarHighlightSlide({
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
   const isHook = slideNumber === 1;
-  const layout = getLayoutVariant(slide.type, slideNumber, totalSlides, slide.layout);
-  const alignment = getContentAlignment(layout, slideNumber);
 
   const highlightStyle: React.CSSProperties = {
     display: "inline",
@@ -124,36 +121,18 @@ export default function StarHighlightSlide({
             maxWidth: 800,
           }}
         >
-          {slide.element ? (
-            <div style={{ marginBottom: 16 }}>
-              {renderElement({ element: slide.element, accentColor: "#FFF59D" })}
-              {slide.content && (
-                <p style={{
-                  fontSize: 22,
-                  color: "rgba(255,255,255,0.6)",
-                  marginTop: 12,
-                  fontFamily: "'Inter', sans-serif",
-                  lineHeight: 1.4,
-                  textAlign: "center",
-                }}>
-                  {slide.content}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: scaleContentFontSize(slide.content, 34),
-                fontWeight: 300,
-                lineHeight: 1.65,
-                color: "rgba(255,255,255,0.55)",
-                textAlign: "center",
-              }}
-            >
-              {renderContent(slide.content)}
-            </p>
-          )}
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 34,
+              fontWeight: 300,
+              lineHeight: 1.65,
+              color: "rgba(255,255,255,0.55)",
+              textAlign: "center",
+            }}
+          >
+            {renderContent(slide.content)}
+          </p>
         </div>
       </div>
     );
@@ -214,20 +193,20 @@ export default function StarHighlightSlide({
         </span>
       </div>
 
-      {/* Контент */}
+      {/* Центрированный контент */}
       <div
         style={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          justifyContent: alignment,
+          justifyContent: "center",
         }}
       >
         {/* Заголовок */}
         <h1
           style={{
             fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 88,
+            fontSize: 80,
             fontWeight: 700,
             lineHeight: 1.12,
             letterSpacing: -0.5,
@@ -254,36 +233,19 @@ export default function StarHighlightSlide({
         />
 
         {/* Контент */}
-        {slide.element ? (
-          <div style={{ marginBottom: 16, position: "relative", zIndex: 1 }}>
-            {renderElement({ element: slide.element, accentColor: "#FFF59D" })}
-            {slide.content && (
-              <p style={{
-                fontSize: 22,
-                color: "rgba(0,0,0,0.6)",
-                marginTop: 12,
-                fontFamily: "'Inter', sans-serif",
-                lineHeight: 1.4,
-              }}>
-                {slide.content}
-              </p>
-            )}
-          </div>
-        ) : (
-          <p
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: scaleContentFontSize(slide.content, 42),
-              fontWeight: 400,
-              lineHeight: 1.7,
-              color: "#444444",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            {slide.content}
-          </p>
-        )}
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 36,
+            fontWeight: 400,
+            lineHeight: 1.7,
+            color: "#444444",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {slide.content}
+        </p>
       </div>
 
       {/* Стрелка снизу */}
