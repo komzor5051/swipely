@@ -61,6 +61,6 @@ Improve hook formulas from abstract labels ("CONTRARIAN", "SHOCK DATA") to concr
 2. User can select a carousel framework before generation
 3. Hook quality is measurably better (concrete formulas, not abstract labels)
 4. Formatter prevents generation crashes from malformed AI output
-5. All 24 existing templates continue to work
+5. All 23 existing templates continue to work
 6. Generation cost stays within 3x of current per-carousel
 7. No regression in generation speed (< 15 seconds total)
