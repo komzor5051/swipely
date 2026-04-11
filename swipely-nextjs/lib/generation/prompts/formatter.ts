@@ -57,7 +57,8 @@ export function buildFormatterPrompt(input: FormatterPromptInput): string {
     preserveText,
   } = input;
 
-  if (preserveText && rawText) {
+  if (preserveText) {
+    if (!rawText) throw new Error("preserveText mode requires rawText");
     return buildPreserveTextPrompt({
       rawText,
       templateName,
@@ -67,8 +68,10 @@ export function buildFormatterPrompt(input: FormatterPromptInput): string {
     });
   }
 
+  if (!copywriterOutput) throw new Error("Standard mode requires copywriterOutput");
+
   return buildStandardPrompt({
-    copywriterOutput: copywriterOutput!,
+    copywriterOutput,
     templateName,
     templateTone,
     maxWords,

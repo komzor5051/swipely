@@ -1,4 +1,4 @@
-import type { Framework, FrameworkId, HookTemplate } from "./types";
+import type { Framework, FrameworkId } from "./types";
 
 // ---------------------------------------------------------------------------
 // Framework definitions
@@ -85,80 +85,6 @@ export const FRAMEWORKS: Record<FrameworkId, Framework> = {
 };
 
 // ---------------------------------------------------------------------------
-// Hook library — 18 fill-in-the-blank templates
-// ---------------------------------------------------------------------------
-
-export const HOOK_LIBRARY: HookTemplate[] = [
-  {
-    pattern: "{N} ошибок, из-за которых вы теряете {outcome}",
-    frameworks: ["mistakes"],
-  },
-  {
-    pattern: "Как мы увеличили {metric} в {N} раз за {period}",
-    frameworks: ["case-study"],
-  },
-  {
-    pattern: "Перестаньте делать {action} — вот почему",
-    frameworks: ["mistakes", "myths-vs-reality"],
-  },
-  {
-    pattern: "Никто не говорит вам об этом, но {insight}",
-    frameworks: ["myths-vs-reality", "case-study"],
-  },
-  {
-    pattern: "{N} шагов к {result}, которые работают в {year}",
-    frameworks: ["step-by-step", "checklist"],
-  },
-  {
-    pattern: "До: {pain}. После: {result}. Что изменилось?",
-    frameworks: ["before-after", "case-study"],
-  },
-  {
-    pattern: "Вы до сих пор {old_way}? В {year} это уже не работает",
-    frameworks: ["myths-vs-reality", "mistakes"],
-  },
-  {
-    pattern: "Чек-лист для {role}: {N} пунктов, которые вы пропускаете",
-    frameworks: ["checklist"],
-  },
-  {
-    pattern: "Почему {common_approach} не работает (и что делать вместо)",
-    frameworks: ["mistakes", "myths-vs-reality"],
-  },
-  {
-    pattern: "{Famous_brand} делает {action}. А вы?",
-    frameworks: ["case-study", "before-after"],
-  },
-  {
-    pattern: "Формула {result}: {step1} + {step2} + {step3}",
-    frameworks: ["step-by-step"],
-  },
-  {
-    pattern: "Было {old_metric} — стало {new_metric}. Весь процесс по шагам",
-    frameworks: ["before-after", "step-by-step"],
-  },
-  {
-    pattern: "Миф: {belief}. Реальность: {truth}",
-    frameworks: ["myths-vs-reality"],
-  },
-  {
-    pattern: "{N} признаков того, что {problem}",
-    frameworks: ["checklist", "mistakes"],
-  },
-  {
-    pattern: "Мой путь от {start} до {end}: что я бы сделал иначе",
-    frameworks: ["case-study", "before-after"],
-  },
-  {
-    pattern: "Вот что произойдёт, если вы {action}",
-    frameworks: ["before-after", "step-by-step"],
-  },
-  {
-    pattern: "Сохрани, чтобы не потерять: {N} правил {topic}",
-    frameworks: ["checklist", "step-by-step"],
-  },
-  {
-    pattern: "Разбираю {topic} на пальцах — просто и без воды",
-    frameworks: ["step-by-step", "myths-vs-reality"],
-  },
-];
+// Note: Hook library is embedded directly in prompts/strategist.ts prompt.
+// HOOK_LIBRARY was removed as dead code — the strategist prompt contains its own
+// 18 concrete hook templates that are tuned for the prompt context.

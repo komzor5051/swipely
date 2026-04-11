@@ -123,6 +123,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const VALID_TONES = ["educational", "entertaining", "provocative", "motivational"];
+  if (tone && !VALID_TONES.includes(tone)) {
+    return NextResponse.json({ error: "Invalid tone" }, { status: 400 });
+  }
+
   if (framework && !FRAMEWORKS[framework]) {
     return NextResponse.json(
       { error: "Invalid framework" },

@@ -5,7 +5,7 @@
 import type { SlideData, SlideLayout, SlideElement } from "@/components/slides/types";
 import { callGemini, SLIDE_RESPONSE_SCHEMA } from "../gemini";
 import { buildFormatterPrompt } from "../prompts/formatter";
-import { designPresets } from "../presets";
+import { v1DesignPresets as designPresets } from "../presets";
 import type { CopywriterOutput, PipelineOutput } from "../types";
 
 export interface FormatterInput {

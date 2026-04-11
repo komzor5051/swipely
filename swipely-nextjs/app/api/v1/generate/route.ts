@@ -7,6 +7,7 @@ import { renderAndUploadSlides } from "@/lib/render/renderer";
 import { containsInjection } from "@/lib/ai-utils";
 import { generateCarousel, PipelineFailedError } from "@/lib/generation/pipeline";
 import type { FrameworkId } from "@/lib/generation/types";
+import { FRAMEWORKS } from "@/lib/generation/frameworks";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://swipely.ru";
 
@@ -98,6 +99,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Input contains disallowed content" }, { status: 400 });
   }
 
+  const VALID_TONES = ["educational", "entertaining", "provocative", "motivational"];
+  if (tone && !VALID_TONES.includes(tone)) {
+    return NextResponse.json({ error: "Invalid tone" }, { status: 400 });
+  }
+
+  if (framework && !FRAMEWORKS[framework]) {
+    return NextResponse.json({ error: "Invalid framework" }, { status: 400 });
+  }
+
   // ─── Template isolation: tenant-scoped templates must match API key's tenant ───
   const templateMeta = getTemplate(template);
   if (templateMeta?.tenantId && templateMeta.tenantId !== slot.tenantId) {
@@ -176,8 +186,8 @@ export async function POST(request: NextRequest) {
     if (error instanceof PipelineFailedError) {
       console.error("B2B pipeline error:", error.pipelineError);
       return NextResponse.json(
-        { error: `Generation failed at ${error.pipelineError.stage}: ${error.pipelineError.message}` },
-        { status: 500 },
+        { error: "Generation failed. Please try again." },
+        { status: 502 },
       );
     }
     console.error("B2B generation error:", error);

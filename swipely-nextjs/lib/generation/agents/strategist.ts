@@ -3,7 +3,7 @@
 
 import { callGemini } from "../gemini";
 import { buildStrategistPrompt } from "../prompts/strategist";
-import { designPresets } from "../presets";
+import { v1DesignPresets as designPresets } from "../presets";
 import type { FrameworkId, StrategyOutput } from "../types";
 
 export interface StrategistInput {

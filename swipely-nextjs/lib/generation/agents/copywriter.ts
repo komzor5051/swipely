@@ -2,8 +2,7 @@
 // Second agent in the 3-agent pipeline: strategist -> copywriter -> formatter.
 
 import type { StrategyOutput, CopywriterOutput } from "../types";
-import { designPresets } from "../presets";
-import { contentTones } from "../presets";
+import { v1DesignPresets as designPresets, contentTones } from "../presets";
 import { callGemini } from "../gemini";
 import { buildCopywriterPrompt } from "../prompts/copywriter";
 
@@ -42,11 +41,38 @@ export async function runCopywriter(input: CopywriterInput): Promise<CopywriterO
     {
       temperature: 0.7,
       thinkingBudget: 0,
+      responseSchema: COPYWRITER_RESPONSE_SCHEMA as Record<string, unknown>,
     },
     "copywriter",
   );
 
-  const parsed = JSON.parse(response.text) as CopywriterOutput;
+  const parsed = JSON.parse(response.text);
 
-  return parsed;
+  // Normalize field name: Gemini may return post_caption or postCaption
+  const postCaption = parsed.postCaption ?? parsed.post_caption ?? "";
+
+  return {
+    slides: Array.isArray(parsed.slides) ? parsed.slides : [],
+    postCaption,
+  };
 }
+
+const COPYWRITER_RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    slides: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          type: { type: "STRING" },
+          title: { type: "STRING" },
+          content: { type: "STRING" },
+        },
+        required: ["type", "title", "content"],
+      },
+    },
+    postCaption: { type: "STRING" },
+  },
+  required: ["slides", "postCaption"],
+} as const;
