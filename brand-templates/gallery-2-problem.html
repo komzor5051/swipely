@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1080px;
+      height: 1920px;
+      background: #0D0D14;
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 54px 54px;
+    }
+
+    /* Top red glow for "problem" mood */
+    .glow {
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(ellipse, rgba(255,80,80,0.07) 0%, transparent 70%);
+    }
+
+    .logo-area {
+      position: absolute;
+      top: 100px;
+      left: 80px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo-icon {
+      width: 60px;
+      height: 60px;
+      background: #1A1A2E;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid rgba(255,255,255,0.08);
+    }
+    .logo-icon-lime { width: 28px; height: 8px; background: #D4F542; border-radius: 4px; }
+    .logo-text { font-size: 36px; font-weight: 800; color: rgba(255,255,255,0.5); letter-spacing: -1px; }
+
+    .tag {
+      position: absolute;
+      top: 230px;
+      left: 80px;
+      background: rgba(255,80,80,0.1);
+      border: 1px solid rgba(255,80,80,0.25);
+      color: #FF6B6B;
+      font-size: 24px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 100px;
+    }
+
+    .headline {
+      position: absolute;
+      top: 340px;
+      left: 80px;
+      right: 80px;
+      font-size: 96px;
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 0.95;
+      letter-spacing: -4px;
+    }
+
+    /* Pain point cards */
+    .pains {
+      position: absolute;
+      top: 760px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .pain-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 42px 48px;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+    .pain-icon {
+      font-size: 56px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .pain-text { flex: 1; }
+    .pain-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .pain-desc {
+      font-size: 28px;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.3;
+    }
+
+    /* Big stat */
+    .big-stat {
+      position: absolute;
+      bottom: 180px;
+      left: 80px;
+      right: 80px;
+      background: rgba(255,80,80,0.06);
+      border: 1px solid rgba(255,80,80,0.15);
+      border-radius: 32px;
+      padding: 56px 60px;
+      text-align: center;
+    }
+    .big-stat-val {
+      font-size: 110px;
+      font-weight: 900;
+      color: #FF6B6B;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: -4px;
+      line-height: 1;
+    }
+    .big-stat-label {
+      font-size: 34px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 12px;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      color: #2D2D3A;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow"></div>
+
+  <div class="logo-area">
+    <div class="logo-icon"><div class="logo-icon-lime"></div></div>
+    <div class="logo-text">Swipely</div>
+  </div>
+
+  <div class="tag">Проблема</div>
+
+  <div class="headline">Карусель<br>съедает<br>3 часа.</div>
+
+  <div class="pains">
+    <div class="pain-card">
+      <div class="pain-icon">✍️</div>
+      <div class="pain-text">
+        <div class="pain-title">Написать текст</div>
+        <div class="pain-desc">Структура, заголовки, тезисы для каждого слайда</div>
+      </div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">🎨</div>
+      <div class="pain-text">
+        <div class="pain-title">Сделать дизайн</div>
+        <div class="pain-desc">Figma, шрифты, цвета, выравнивание — долго</div>
+      </div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">😩</div>
+      <div class="pain-text">
+        <div class="pain-title">Итог: не публикуем</div>
+        <div class="pain-desc">Слишком трудозатратно, откладывается на потом</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="big-stat">
+    <div class="big-stat-val">3ч</div>
+    <div class="big-stat-label">на одну карусель вручную</div>
+  </div>
+
+  <div class="footer">swipely.ru</div>
+</body>
+</html>

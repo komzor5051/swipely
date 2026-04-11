@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 export default function QuoteDoodleSlide({
   slide,
@@ -92,7 +93,7 @@ export default function QuoteDoodleSlide({
                 color: "#0A0A0A",
               }}
             >
-              {username || "Swipely"}
+              {username || ""}
             </span>
             <span
               style={{
@@ -165,20 +166,31 @@ export default function QuoteDoodleSlide({
         </h1>
 
         {/* Content text */}
-        {slide.content && (
-          <p
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 32,
-              fontWeight: 500,
-              lineHeight: 1.5,
-              color: "#666666",
-              marginTop: 40,
-              maxWidth: 700,
-            }}
-          >
-            {renderContent(slide.content)}
-          </p>
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div style={{ marginTop: 40 }}>
+            {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#A3E635" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 500, lineHeight: 1.5, color: "#666666", marginTop: 16 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          slide.content && (
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 32,
+                fontWeight: 500,
+                lineHeight: 1.5,
+                color: "#666666",
+                marginTop: 40,
+                maxWidth: 700,
+              }}
+            >
+              {renderContent(slide.content)}
+            </p>
+          )
         )}
       </div>
 

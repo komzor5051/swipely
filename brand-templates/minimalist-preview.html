@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minimalist Templates Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; font-family: 'Inter', sans-serif; padding: 48px; }
+
+  h1 { color: #fff; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 48px; font-weight: 400; }
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+
+  .template-block { display: flex; flex-direction: column; gap: 12px; }
+  .label { color: #666; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* Slide wrapper */
+  .slide { width: 100%; aspect-ratio: 1/1; position: relative; overflow: hidden; }
+
+  /* ─── A: Kinfolk/Editorial ─── */
+  .kinfolk {
+    background: #f7f4ee;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10%;
+  }
+  .kinfolk .tag {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 9px;
+    color: #999;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .kinfolk .center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+  }
+  .kinfolk .number {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    color: #bbb;
+    letter-spacing: 0.3em;
+  }
+  .kinfolk h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: #1a1a1a;
+    line-height: 1.3;
+  }
+  .kinfolk .divider {
+    width: 32px;
+    height: 1px;
+    background: #c8b89a;
+    margin: 4px 0;
+  }
+  .kinfolk p {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    color: #666;
+    line-height: 1.7;
+    max-width: 80%;
+  }
+  .kinfolk .bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .kinfolk .author {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px;
+    color: #aaa;
+    letter-spacing: 0.1em;
+  }
+  .kinfolk .page {
+    font-family: 'Playfair Display', serif;
+    font-size: 9px;
+    font-style: italic;
+    color: #c8b89a;
+  }
+
+  /* ─── B: Swiss/Helvetica ─── */
+  .swiss {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 10%;
+    gap: 0;
+  }
+  .swiss .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #000;
+    margin-bottom: 14px;
+  }
+  .swiss .label-sm {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #000;
+    font-weight: 500;
+  }
+  .swiss .num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 8px;
+    color: #999;
+    letter-spacing: 0.1em;
+  }
+  .swiss .grid-inner {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+    flex: 1;
+  }
+  .swiss .col-left {
+    border-right: 1px solid #e0e0e0;
+    padding-right: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .swiss .col-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+  }
+  .swiss .big-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+  }
+  .swiss .accent-line {
+    width: 100%;
+    height: 3px;
+    background: #000;
+    margin: 4px 0;
+  }
+  .swiss h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  .swiss p {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 8px;
+    color: #555;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .swiss .bottom-bar {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ─── C: Wabi-sabi ─── */
+  .wabi {
+    background: #f0ebe2;
+    display: flex;
+    flex-direction: column;
+    padding: 10%;
+    position: relative;
+  }
+  .wabi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .wabi .ink-circle {
+    position: absolute;
+    top: 8%;
+    right: 8%;
+    width: 60px;
+    height: 60px;
+  }
+  .wabi .kanji {
+    position: absolute;
+    top: 50%;
+    right: 10%;
+    transform: translateY(-50%);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: rgba(0,0,0,0.06);
+    writing-mode: vertical-rl;
+    letter-spacing: 0.1em;
+  }
+  .wabi .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .wabi .brush-line {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, #5c4a3a 0%, #8b7355 60%, transparent 100%);
+  }
+  .wabi .tag {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 8px;
+    color: #8b7355;
+    letter-spacing: 0.3em;
+  }
+  .wabi h2 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 400;
+    color: #2a2018;
+    line-height: 1.4;
+    max-width: 70%;
+  }
+  .wabi p {
+    font-family: 'Inter', sans-serif;
+    font-size: 8.5px;
+    font-weight: 300;
+    color: #6b5a47;
+    line-height: 1.7;
+    max-width: 65%;
+  }
+  .wabi .dot-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .wabi .dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: #8b7355;
+  }
+  .wabi .dot.active { background: #2a2018; width: 12px; border-radius: 2px; }
+
+  /* ─── D: Nikkei/Business ─── */
+  .nikkei {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 10%;
+    border: 1px solid #e8e8e8;
+  }
+  .nikkei .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .nikkei .brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 8px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #000;
+    font-weight: 500;
+  }
+  .nikkei .date {
+    font-family: 'Inter', sans-serif;
+    font-size: 7px;
+    color: #aaa;
+    font-weight: 300;
+  }
+  .nikkei .divider-top {
+    height: 1.5px;
+    background: #000;
+    margin-bottom: 16px;
+  }
+  .nikkei .stat-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .nikkei .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .nikkei .stat-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+  }
+  .nikkei .stat-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 7px;
+    color: #888;
+    letter-spacing: 0.1em;
+    font-weight: 300;
+  }
+  .nikkei .divider-mid {
+    height: 1px;
+    background: #e8e8e8;
+    margin-bottom: 12px;
+  }
+  .nikkei h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #000;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .nikkei p {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px;
+    font-weight: 300;
+    color: #666;
+    line-height: 1.7;
+  }
+  .nikkei .footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .nikkei .progress {
+    display: flex;
+    gap: 3px;
+  }
+  .nikkei .pip { width: 16px; height: 2px; background: #e0e0e0; }
+  .nikkei .pip.on { background: #000; }
+  .nikkei .page-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 7px;
+    color: #bbb;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+
+<h1>Minimalist Templates — 4 концепции</h1>
+
+<div class="grid">
+
+  <!-- A: Kinfolk -->
+  <div class="template-block">
+    <div class="label">А — Kinfolk / Editorial</div>
+    <div class="slide kinfolk">
+      <div class="tag">Личный бренд · 01</div>
+      <div class="center">
+        <div class="number">— 01 —</div>
+        <h2>Почему ваш контент не работает</h2>
+        <div class="divider"></div>
+        <p>Большинство экспертов публикуют информацию, а не смыслы. Разница между ними — это разница между шумом и влиянием.</p>
+      </div>
+      <div class="bottom">
+        <div class="author">@username</div>
+        <div class="page">1 / 7</div>
+      </div>
+    </div>
+    <div class="label" style="color:#444; font-size:10px; line-height:1.5; text-transform:none; letter-spacing:0;">
+      Кремовый фон · Playfair serif · максимум воздуха · золотые акценты
+    </div>
+  </div>
+
+  <!-- B: Swiss -->
+  <div class="template-block">
+    <div class="label">Б — Swiss / Helvetica</div>
+    <div class="slide swiss">
+      <div class="top-bar">
+        <span class="label-sm">Системное мышление</span>
+        <span class="num">01 / 07</span>
+      </div>
+      <div class="grid-inner">
+        <div class="col-left">
+          <div class="big-num">01</div>
+        </div>
+        <div class="col-right">
+          <div class="accent-line"></div>
+          <h2>Контент без системы — деньги на ветер</h2>
+          <p>87% экспертов создают контент хаотично. Именно поэтому большинство не видит результата первые 6 месяцев.</p>
+        </div>
+      </div>
+      <div class="bottom-bar">
+        <span class="label-sm" style="font-size:7px; color:#999;">@username</span>
+        <span class="num">Системы · Рост</span>
+      </div>
+    </div>
+    <div class="label" style="color:#444; font-size:10px; line-height:1.5; text-transform:none; letter-spacing:0;">
+      Белый · Space Grotesk · строгая сетка · чёрно-белое
+    </div>
+  </div>
+
+  <!-- C: Wabi-sabi -->
+  <div class="template-block">
+    <div class="label">В — Wabi-sabi</div>
+    <div class="slide wabi">
+      <div class="ink-circle">
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="30" cy="30" r="26" stroke="#2a2018" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.2"/>
+          <circle cx="30" cy="30" r="20" stroke="#8b7355" stroke-width="0.5" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="kanji">思想</div>
+      <div class="content">
+        <div class="tag">глубина · 01</div>
+        <div class="brush-line"></div>
+        <h2>В тишине рождается смысл</h2>
+        <p>Лучший контент не создаётся в спешке. Он вызревает, как чай, который нельзя торопить.</p>
+        <div class="dot-row">
+          <div class="dot active"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+    </div>
+    <div class="label" style="color:#444; font-size:10px; line-height:1.5; text-transform:none; letter-spacing:0;">
+      Тёплый кремовый · Playfair italic · японские мотивы · асимметрия
+    </div>
+  </div>
+
+  <!-- D: Nikkei -->
+  <div class="template-block">
+    <div class="label">Г — Nikkei / Деловой</div>
+    <div class="slide nikkei">
+      <div class="header">
+        <span class="brand">Разбор</span>
+        <span class="date">Март 2026</span>
+      </div>
+      <div class="divider-top"></div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-num">3×</div>
+          <div class="stat-label">рост охвата</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">87%</div>
+          <div class="stat-label">сохранений</div>
+        </div>
+      </div>
+      <div class="divider-mid"></div>
+      <h2>Формула контента, который сохраняют</h2>
+      <p>Данные 500 аккаунтов за 2025 год. Вот что работает на самом деле.</p>
+      <div class="footer">
+        <div class="progress">
+          <div class="pip on"></div>
+          <div class="pip"></div>
+          <div class="pip"></div>
+          <div class="pip"></div>
+          <div class="pip"></div>
+        </div>
+        <span class="page-label">01 / 05</span>
+      </div>
+    </div>
+    <div class="label" style="color:#444; font-size:10px; line-height:1.5; text-transform:none; letter-spacing:0;">
+      Чисто белый · Inter · тонкие линии · цифры крупно
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

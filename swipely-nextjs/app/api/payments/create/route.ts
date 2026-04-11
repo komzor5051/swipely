@@ -14,13 +14,33 @@ const PRODUCTS: Record<
     description: "Тестовый платёж 1₽",
     type: "test",
   },
+  blogger_monthly: {
+    amount: 890,
+    description: "Swipely Блогер — месячная подписка",
+    type: "subscription",
+  },
+  blogger_yearly: {
+    amount: 8544, // 712₽/мес × 12
+    description: "Swipely Блогер — годовая подписка",
+    type: "subscription",
+  },
+  creator_monthly: {
+    amount: 1990,
+    description: "Swipely Про — месячная подписка",
+    type: "subscription",
+  },
+  creator_yearly: {
+    amount: 19104, // 1592₽/мес × 12
+    description: "Swipely Про — годовая подписка",
+    type: "subscription",
+  },
   pro_monthly: {
-    amount: 495, // Promo -50% (было 990)
+    amount: 495,
     description: "Swipely PRO — месячная подписка",
     type: "subscription",
   },
   pro_yearly: {
-    amount: 4950, // Promo -50% (было 9900)
+    amount: 4950,
     description: "Swipely PRO — годовая подписка",
     type: "subscription",
   },

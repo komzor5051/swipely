@@ -9,7 +9,7 @@ export interface Profile {
   email?: string;
   username?: string;
   first_name?: string;
-  subscription_tier: "free" | "pro";
+  subscription_tier: "free" | "start" | "creator" | "pro";
   subscription_end?: string;
   standard_used: number;
   photo_slides_balance: number;
@@ -196,32 +196,120 @@ export async function checkSubscriptionExpiry(
   supabase: SupabaseClient,
   userId: string,
   profile: Pick<Profile, "subscription_tier" | "subscription_end">
-): Promise<"free" | "pro"> {
-  // Self-healing: subscription_end in the future → must be "pro" regardless of stored tier
+): Promise<"free" | "start" | "creator" | "pro"> {
+  const paid = profile.subscription_tier !== "free";
+
+  // If subscription_end is set and in the future → subscription is active
   if (profile.subscription_end) {
     const expiry = new Date(profile.subscription_end);
     if (expiry > new Date()) {
-      if (profile.subscription_tier !== "pro") {
-        // Tier out of sync — heal it silently
-        await supabase
-          .from("profiles")
-          .update({ subscription_tier: "pro" })
-          .eq("id", userId);
-      }
-      return "pro";
+      // Active — trust the stored tier
+      return profile.subscription_tier;
+    }
+
+    // subscription_end is in the past → expired, downgrade to free
+    if (paid) {
+      await supabase
+        .from("profiles")
+        .update({ subscription_tier: "free" })
+        .eq("id", userId);
+      return "free";
     }
   }
 
-  // No active subscription_end
-  if (profile.subscription_tier !== "pro") return profile.subscription_tier;
+  // subscription_end is null → lifetime / manually granted — trust tier as-is
+  return profile.subscription_tier;
+}
 
-  // Was "pro" but no valid subscription_end — downgrade
-  await supabase
-    .from("profiles")
-    .update({ subscription_tier: "free" })
-    .eq("id", userId);
+// ─── API Key Queries ───
 
-  return "free";
+export interface ApiKey {
+  id: string;
+  key_hash: string;
+  name: string;
+  tenant_id: string;
+  active: boolean;
+  monthly_limit: number;
+  used_this_month: number;
+  last_reset_month: string | null;
+  last_used_at: string | null;
+  created_at: string;
+}
+
+export async function createApiKey(
+  supabase: SupabaseClient,
+  data: Pick<ApiKey, "key_hash" | "name" | "tenant_id" | "monthly_limit">
+): Promise<ApiKey | null> {
+  const { data: row, error } = await supabase
+    .from("api_keys")
+    .insert(data)
+    .select()
+    .single();
+  if (error) return null;
+  return row as ApiKey;
+}
+
+export async function listApiKeys(
+  supabase: SupabaseClient
+): Promise<ApiKey[]> {
+  const { data, error } = await supabase
+    .from("api_keys")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) return [];
+  return data as ApiKey[];
+}
+
+export async function setApiKeyActive(
+  supabase: SupabaseClient,
+  id: string,
+  active: boolean
+): Promise<boolean> {
+  const { error } = await supabase
+    .from("api_keys")
+    .update({ active })
+    .eq("id", id);
+  return !error;
+}
+
+export async function resetApiKeyUsage(
+  supabase: SupabaseClient,
+  id: string
+): Promise<boolean> {
+  const { error } = await supabase
+    .from("api_keys")
+    .update({ used_this_month: 0 })
+    .eq("id", id);
+  return !error;
+}
+
+/**
+ * Atomically check and increment API key usage quota.
+ * Returns allowed=true + apiKeyId on success.
+ */
+export async function claimApiKeySlot(
+  supabase: SupabaseClient,
+  keyHash: string
+): Promise<{ allowed: boolean; reason: string; apiKeyId?: string; tenantId?: string }> {
+  const { data, error } = await supabase
+    .from("api_keys")
+    .select("id, tenant_id, active, monthly_limit, used_this_month")
+    .eq("key_hash", keyHash)
+    .single();
+
+  if (error || !data) return { allowed: false, reason: "NOT_FOUND" };
+  if (!data.active) return { allowed: false, reason: "INACTIVE" };
+  if (data.monthly_limit > 0 && data.used_this_month >= data.monthly_limit) {
+    return { allowed: false, reason: "QUOTA_EXCEEDED" };
+  }
+
+  const { error: updateError } = await supabase
+    .from("api_keys")
+    .update({ used_this_month: data.used_this_month + 1, last_used_at: new Date().toISOString() })
+    .eq("id", data.id);
+
+  if (updateError) return { allowed: false, reason: "DB_ERROR" };
+  return { allowed: true, reason: "OK", apiKeyId: data.id, tenantId: data.tenant_id };
 }
 
 // ─── Referral Queries ───

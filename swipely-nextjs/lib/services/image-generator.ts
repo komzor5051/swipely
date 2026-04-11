@@ -28,6 +28,7 @@ export interface SlideData {
   content: string;
   type: string;
   slideNumber: number;
+  layout?: string; // AI-assigned visual composition (kept in sync with components/slides/types.ts)
 }
 
 let genAI: GoogleGenAI | null = null;
@@ -116,13 +117,13 @@ export async function generateSlideImage(
           },
         },
       ],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       config: {
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: {
           aspectRatio,
           imageSize: "2K",
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
 
@@ -150,10 +151,10 @@ export async function generateSlideImage(
               },
             },
           ],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           config: {
             responseModalities: ["TEXT", "IMAGE"],
             imageConfig: { aspectRatio },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
         });
 

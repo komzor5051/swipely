@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital,wght@0,400;1,400&family=Barlow+Condensed:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1080px; height: 1350px; overflow: hidden; background: #fff; }
+
+  .slide {
+    width: 1080px;
+    height: 1350px;
+    background: #FAFAF8;
+    display: flex;
+    flex-direction: column;
+    padding: 64px 80px 72px;
+    position: relative;
+  }
+
+  /* ── MASTHEAD ── */
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .masthead-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 32px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #0A0A0A;
+  }
+  .masthead-meta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #888;
+  }
+
+  /* ── RULES ── */
+  .rule-thick {
+    width: 100%;
+    height: 4px;
+    background: #0A0A0A;
+    margin-bottom: 4px;
+  }
+  .rule-thin {
+    width: 100%;
+    height: 1px;
+    background: #0A0A0A;
+    margin-bottom: 60px;
+  }
+  .rule-mid {
+    width: 100%;
+    height: 1.5px;
+    background: #0A0A0A;
+    margin: 52px 0;
+  }
+
+  /* ── HEADLINE ── */
+  .headline {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 112px;
+    line-height: 0.95;
+    letter-spacing: -1px;
+    color: #0A0A0A;
+    text-transform: uppercase;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .headline .hl {
+    color: #CC0000;
+    font-style: italic;
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    font-family: 'Lora', serif;
+    font-size: 38px;
+    line-height: 1.65;
+    color: #1A1A1A;
+    max-width: 860px;
+  }
+
+  /* ── SLIDE NUMBER ── */
+  .slide-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: #BBBBBB;
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 64px;
+    right: 80px;
+  }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="masthead">
+    <span class="masthead-name">The Daily</span>
+    <span class="masthead-meta">Выпуск&nbsp;№&nbsp;01&nbsp;&nbsp;·&nbsp;&nbsp;2026</span>
+  </div>
+
+  <div class="rule-thick"></div>
+  <div class="rule-thin"></div>
+
+  <div class="headline">
+    КАК МЫ<br>
+    ПОТЕРЯЛИ <span class="hl">МИЛЛИОН</span><br>
+    И ЧТО НАШЛИ
+  </div>
+
+  <div class="rule-mid"></div>
+
+  <div class="content">
+    Три ошибки, которые совершает каждый предприниматель на старте — и как их избежать за 30 дней.
+  </div>
+
+  <div class="slide-num">1 / 6</div>
+</div>
+</body>
+</html>

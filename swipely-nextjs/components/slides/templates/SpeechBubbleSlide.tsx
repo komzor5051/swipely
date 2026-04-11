@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 export default function SpeechBubbleSlide({
   slide,
@@ -98,7 +99,7 @@ export default function SpeechBubbleSlide({
               color: "#1A1A1A",
             }}
           >
-            {username || "Swipely"}
+            {username || ""}
           </span>
         </div>
       </div>
@@ -188,16 +189,27 @@ export default function SpeechBubbleSlide({
             >
               {renderTitle(slide.title, highlightStyle)}
             </p>
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 24,
-                fontWeight: 600,
-                color: "#F26B3A",
-              }}
-            >
-              {renderContent(slide.content)}
-            </span>
+            {slide.element?.type && slide.element.type !== "none" ? (
+              <div style={{ marginTop: 8 }}>
+                {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#F26B3A" })}
+                {slide.content && (
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 20, fontWeight: 600, color: "#888888", display: "block", marginTop: 8 }}>
+                    {slide.content}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <span
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 24,
+                  fontWeight: 600,
+                  color: "#F26B3A",
+                }}
+              >
+                {renderContent(slide.content)}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -227,28 +239,7 @@ export default function SpeechBubbleSlide({
             <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
           </svg>
         </div>
-        <div style={{ display: "flex", flexDirection: "column" as const }}>
-          <span
-            style={{
-              fontSize: 16,
-              fontWeight: 500,
-              color: "#1A1A1A",
-            }}
-          >
-            swipely.ai
-          </span>
-          <span
-            style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: "#F26B3A",
-              textTransform: "uppercase" as const,
-              letterSpacing: 1,
-            }}
-          >
-            Create your carousel
-          </span>
-        </div>
+        <div style={{ display: "flex", flexDirection: "column" as const }}></div>
       </div>
 
       {/* Slide counter */}

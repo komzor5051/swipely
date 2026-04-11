@@ -10,6 +10,8 @@ import {
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Download,
   X,
   Loader2,
@@ -23,6 +25,9 @@ import {
   Move,
   FileText,
   Layers,
+  Copy,
+  Trash2,
+  FileDown,
 } from "lucide-react";
 import SlideRenderer from "@/components/slides/SlideRenderer";
 import type { SlideData } from "@/components/slides/types";
@@ -60,6 +65,9 @@ interface CarouselEditorProps {
   onUpdateCaption: (value: string) => void;
   onClose: () => void;
   onChangeTemplate: (id: string) => void;
+  onReorderSlide?: (from: number, to: number) => void;
+  onDeleteSlide?: (index: number) => void;
+  onDuplicateSlide?: (index: number) => void;
   isPro?: boolean;
 }
 
@@ -132,6 +140,9 @@ export default function CarouselEditor({
   onUpdateCaption,
   onClose,
   onChangeTemplate,
+  onReorderSlide,
+  onDeleteSlide,
+  onDuplicateSlide,
   isPro = false,
 }: CarouselEditorProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -180,7 +191,7 @@ export default function CarouselEditor({
   const isMobile = windowWidth > 0 && windowWidth < 768;
 
   // Scales
-  const activeScale = 0.38;
+  const activeScale = 0.46;
   const thumbScale = 0.18;
   // Dynamic: fit within viewport minus 40px (px-4 each side = 32px + 8px buffer)
   const mobileSlideScale = windowWidth > 0 ? Math.min(0.28, (windowWidth - 40) / 1080) : 0.28;
@@ -440,6 +451,96 @@ export default function CarouselEditor({
     }
   }, [slides, applyEditorStyles]);
 
+  /* ─── PDF Export ─── */
+
+  const handleExportPdf = useCallback(async () => {
+    setExporting(true);
+    setExported(false);
+
+    try {
+      const { toPng } = await import("html-to-image");
+      const { jsPDF } = await import("jspdf");
+      const container = exportContainerRef.current;
+      if (!container) return;
+
+      const exportSlides = container.querySelectorAll("[data-export-slide]");
+      exportSlides.forEach((el, i) => {
+        applyEditorStyles(el as HTMLElement, i);
+      });
+
+      await document.fonts.ready;
+
+      const pxW = 1080;
+      const pxH = format === "portrait" ? 1350 : 1080;
+      const pdf = new jsPDF({
+        orientation: format === "portrait" ? "portrait" : "landscape",
+        unit: "px",
+        format: [pxW, pxH],
+      });
+
+      for (let i = 0; i < slides.length; i++) {
+        if (i > 0) pdf.addPage([pxW, pxH]);
+        const slideEl = exportSlides[i] as HTMLElement;
+        if (!slideEl) continue;
+
+        const dataUrl = await toPng(slideEl, {
+          width: slideEl.offsetWidth,
+          height: slideEl.offsetHeight,
+          pixelRatio: 1,
+          skipAutoScale: true,
+        });
+
+        pdf.addImage(dataUrl, "PNG", 0, 0, pxW, pxH);
+      }
+
+      pdf.save("carousel.pdf");
+      setExported(true);
+      setTimeout(() => setExported(false), 3000);
+    } catch (err) {
+      console.error("PDF export error:", err);
+    } finally {
+      setExporting(false);
+    }
+  }, [slides, format, applyEditorStyles]);
+
+  /* ─── Slide management helpers ─── */
+
+  const handleMoveSlide = useCallback((from: number, direction: "up" | "down") => {
+    const to = direction === "up" ? from - 1 : from + 1;
+    if (to < 0 || to >= slides.length || !onReorderSlide) return;
+    onReorderSlide(from, to);
+    // Sync editStates
+    setEditStates(prev => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+    setCurrentSlide(to);
+  }, [slides.length, onReorderSlide]);
+
+  const handleDeleteSlide = useCallback((index: number) => {
+    if (slides.length <= 2 || !onDeleteSlide) return;
+    onDeleteSlide(index);
+    setEditStates(prev => prev.filter((_, i) => i !== index));
+    if (currentSlide >= slides.length - 1) {
+      setCurrentSlide(Math.max(0, slides.length - 2));
+    } else if (currentSlide > index) {
+      setCurrentSlide(currentSlide - 1);
+    }
+  }, [slides.length, currentSlide, onDeleteSlide]);
+
+  const handleDuplicateSlide = useCallback((index: number) => {
+    if (!onDuplicateSlide) return;
+    onDuplicateSlide(index);
+    setEditStates(prev => {
+      const next = [...prev];
+      next.splice(index + 1, 0, { ...prev[index], title: { ...prev[index].title }, content: { ...prev[index].content } });
+      return next;
+    });
+    setCurrentSlide(index + 1);
+  }, [onDuplicateSlide]);
+
   /* ─── Shared field toggle (used in both mobile sheets) ─── */
 
   function FieldToggle() {
@@ -469,7 +570,7 @@ export default function CarouselEditor({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-[#0D0D14]"
+      className="fixed inset-0 z-50 flex flex-col bg-[#1E1E1E]"
       style={{ animation: "editorFadeIn 0.3s ease" }}
     >
       <style>{`
@@ -552,7 +653,7 @@ export default function CarouselEditor({
       `}</style>
 
       {/* ── Top Bar ── */}
-      <header className="h-[60px] bg-[#0D0D14] border-b border-white/8 flex items-center justify-between px-4 md:px-6 shrink-0">
+      <header className="h-[60px] bg-[#1E1E1E] border-b border-white/8 flex items-center justify-between px-4 md:px-6 shrink-0">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="w-8 h-8 rounded-lg bg-[#D4F542] flex items-center justify-center shrink-0">
             <svg width={16} height={16} viewBox="0 0 32 32" fill="none">
@@ -609,6 +710,15 @@ export default function CarouselEditor({
                 <span className="hidden sm:inline">Скачать PNG</span>
               </>
             )}
+          </button>
+          <button
+            onClick={handleExportPdf}
+            disabled={exporting}
+            className="flex items-center gap-1.5 px-3 md:px-4 h-9 rounded-full bg-white/10 hover:bg-white/18 text-white text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+            title="Скачать PDF"
+          >
+            <FileDown className="h-4 w-4" />
+            <span className="hidden sm:inline">PDF</span>
           </button>
           <button
             className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/8 transition-all"
@@ -699,6 +809,46 @@ export default function CarouselEditor({
                       Перетаскивай текст
                     </div>
                   )}
+
+                  {/* Slide management buttons */}
+                  {isActive && !isDragging && (
+                    <div
+                      className="absolute top-2 right-2 flex flex-col gap-1"
+                      style={{ animation: "editorFadeIn 0.3s ease" }}
+                    >
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleMoveSlide(i, "up"); }}
+                        disabled={i === 0}
+                        className="w-6 h-6 rounded bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        title="Переместить вверх"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleMoveSlide(i, "down"); }}
+                        disabled={i === slides.length - 1}
+                        className="w-6 h-6 rounded bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        title="Переместить вниз"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDuplicateSlide(i); }}
+                        className="w-6 h-6 rounded bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/80 transition-all"
+                        title="Дублировать"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteSlide(i); }}
+                        disabled={slides.length <= 2}
+                        className="w-6 h-6 rounded bg-black/60 backdrop-blur-sm flex items-center justify-center text-red-400/70 hover:text-red-400 hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        title="Удалить"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -781,6 +931,39 @@ export default function CarouselEditor({
               />
             ))}
           </div>
+
+          {/* Mobile slide management */}
+          {!mobileSheet && (
+            <div className="flex items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => handleMoveSlide(currentSlide, "up")}
+                disabled={currentSlide === 0}
+                className="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-white/60 hover:text-white disabled:opacity-30 transition-all"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => handleDuplicateSlide(currentSlide)}
+                className="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-white/60 hover:text-white transition-all"
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => handleDeleteSlide(currentSlide)}
+                disabled={slides.length <= 2}
+                className="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-red-400/60 hover:text-red-400 disabled:opacity-30 transition-all"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => handleMoveSlide(currentSlide, "down")}
+                disabled={currentSlide === slides.length - 1}
+                className="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-white/60 hover:text-white disabled:opacity-30 transition-all"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── Desktop: Right Sidebar (hidden on mobile) ── */}
@@ -958,7 +1141,7 @@ export default function CarouselEditor({
       </div>
 
       {/* ── Mobile: Bottom Tab Bar ── */}
-      <div className="md:hidden h-[60px] bg-[#0D0D14] border-t border-white/8 flex items-stretch shrink-0">
+      <div className="md:hidden h-[60px] bg-[#1E1E1E] border-t border-white/8 flex items-stretch shrink-0">
         {MOBILE_TABS.map(({ id, label, icon: Icon }) => {
           const isActive = mobileSheet === id;
           return (

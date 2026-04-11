@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@300;400;500&display=swap');`;
 
@@ -110,18 +111,29 @@ export default function DispatchSlide({
                 flexShrink: 0,
               }}
             />
-            <p
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: 38,
-                fontWeight: 300,
-                lineHeight: 1.65,
-                color: "#555570",
-                maxWidth: 840,
-              }}
-            >
-              {renderContent(slide.content)}
-            </p>
+            {slide.element?.type && slide.element.type !== "none" ? (
+              <div>
+                {renderElement({ element: slide.element, textColor: "rgba(255,255,255,0.7)", accentColor: ACCENT })}
+                {slide.content && (
+                  <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 300, lineHeight: 1.5, color: "#444460", marginTop: 16 }}>
+                    {slide.content}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p
+                style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontSize: 38,
+                  fontWeight: 300,
+                  lineHeight: 1.65,
+                  color: "#555570",
+                  maxWidth: 840,
+                }}
+              >
+                {renderContent(slide.content)}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -223,17 +235,28 @@ export default function DispatchSlide({
             }}
           />
 
-          <p
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 36,
-              fontWeight: 300,
-              lineHeight: 1.7,
-              color: "#666680",
-            }}
-          >
-            {slide.content}
-          </p>
+          {slide.element?.type && slide.element.type !== "none" ? (
+            <div>
+              {renderElement({ element: slide.element, textColor: "rgba(255,255,255,0.7)", accentColor: ACCENT })}
+              {slide.content && (
+                <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 300, lineHeight: 1.5, color: "#555570", marginTop: 16 }}>
+                  {slide.content}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: 36,
+                fontWeight: 300,
+                lineHeight: 1.7,
+                color: "#666680",
+              }}
+            >
+              {slide.content}
+            </p>
+          )}
         </div>
 
         {/* Footer: dots + step */}

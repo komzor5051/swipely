@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cover — Claude Update</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1280px;
+    height: 1280px;
+    background: #fff;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .top-rule {
+    width: 100%;
+    height: 6px;
+    background: #000;
+  }
+
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 100px 100px 80px;
+  }
+
+  .label-top {
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #000;
+    margin-bottom: 64px;
+  }
+
+  .hero-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-number {
+    font-size: 240px;
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    color: #000;
+    margin-bottom: 20px;
+  }
+
+  .hero-caption {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: #000;
+    margin-bottom: 100px;
+    padding-left: 6px;
+  }
+
+  .mid-rule {
+    width: 100%;
+    height: 1px;
+    background: #000;
+    margin-bottom: 64px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+
+  .stat {
+    padding-right: 40px;
+    border-right: 1px solid #000;
+    padding-left: 0;
+  }
+
+  .stat:last-child {
+    border-right: none;
+    padding-right: 0;
+    padding-left: 40px;
+  }
+
+  .stat:nth-child(2) {
+    padding-left: 40px;
+  }
+
+  .stat-number {
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #000;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .stat-caption {
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: #555;
+    line-height: 1.4;
+  }
+
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 100px;
+    border-top: 1px solid #000;
+  }
+
+  .bottom-left {
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #000;
+  }
+
+  .bottom-right {
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: #888;
+  }
+</style>
+</head>
+<body>
+
+  <div class="top-rule"></div>
+
+  <div class="content">
+    <div class="label-top">Claude · Март 2026</div>
+
+    <div class="hero-block">
+      <div class="hero-number">1M</div>
+      <div class="hero-caption">токенов контекста — стандарт для всех</div>
+
+      <div class="mid-rule"></div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-number">128K</div>
+          <div class="stat-caption">выходной<br>контекст</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">600</div>
+          <div class="stat-caption">файлов<br>за один вызов</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">0₽</div>
+          <div class="stat-caption">доплат за<br>большой контекст</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="bottom-left">Anthropic API</div>
+    <div class="bottom-right">Что изменилось и как использовать</div>
+  </div>
+
+</body>
+</html>

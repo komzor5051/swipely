@@ -61,7 +61,7 @@ export default function ReferralPage() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-muted/50 p-4 text-center">
-              <div className="text-3xl font-bold font-[family-name:var(--font-mono)] text-[var(--swipely-blue)]">
+              <div className="text-3xl font-bold tabular-nums text-[var(--swipely-blue)]">
                 +3
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -69,7 +69,7 @@ export default function ReferralPage() {
               </p>
             </div>
             <div className="rounded-xl bg-muted/50 p-4 text-center">
-              <div className="text-3xl font-bold font-[family-name:var(--font-mono)] text-green-600">
+              <div className="text-3xl font-bold tabular-nums text-green-600">
                 +5
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -90,7 +90,7 @@ export default function ReferralPage() {
             <div className="h-10 bg-muted rounded-xl animate-pulse" />
           ) : stats?.code ? (
             <div className="flex items-center gap-2">
-              <div className="flex-1 rounded-xl bg-muted/60 px-4 py-2.5 text-sm font-[family-name:var(--font-mono)] truncate text-muted-foreground">
+              <div className="flex-1 rounded-xl bg-muted/60 px-4 py-2.5 text-sm tabular-nums truncate text-muted-foreground">
                 {referralUrl}
               </div>
               <Button
@@ -124,7 +124,7 @@ export default function ReferralPage() {
                 <Users className="h-3.5 w-3.5 text-blue-600" />
               </div>
             </div>
-            <div className="text-3xl font-bold font-[family-name:var(--font-mono)]">
+            <div className="text-3xl font-bold tabular-nums">
               {loading ? "—" : stats?.count ?? 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">человек</p>
@@ -137,7 +137,7 @@ export default function ReferralPage() {
                 <Sparkles className="h-3.5 w-3.5 text-amber-600" />
               </div>
             </div>
-            <div className="text-3xl font-bold font-[family-name:var(--font-mono)]">
+            <div className="text-3xl font-bold tabular-nums">
               {loading ? "—" : stats?.totalBonusEarned ?? 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Photo-слайдов</p>

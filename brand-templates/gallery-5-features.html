@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1080px;
+      height: 1920px;
+      background: #0D0D14;
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 54px 54px;
+    }
+    .glow {
+      position: absolute;
+      top: 600px;
+      left: -200px;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(ellipse, rgba(212,245,66,0.07) 0%, transparent 70%);
+    }
+
+    .logo-area {
+      position: absolute;
+      top: 100px;
+      left: 80px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo-icon {
+      width: 60px; height: 60px;
+      background: #1A1A2E; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(255,255,255,0.08);
+    }
+    .logo-icon-lime { width: 28px; height: 8px; background: #D4F542; border-radius: 4px; }
+    .logo-text { font-size: 36px; font-weight: 800; color: rgba(255,255,255,0.5); letter-spacing: -1px; }
+
+    .tag {
+      position: absolute;
+      top: 230px;
+      left: 80px;
+      background: rgba(212,245,66,0.12);
+      border: 1px solid rgba(212,245,66,0.3);
+      color: #D4F542;
+      font-size: 24px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 100px;
+    }
+
+    .headline {
+      position: absolute;
+      top: 340px;
+      left: 80px;
+      right: 80px;
+      font-size: 96px;
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 0.95;
+      letter-spacing: -4px;
+    }
+    .headline .lime { color: #D4F542; }
+
+    /* Features bento grid */
+    .bento {
+      position: absolute;
+      top: 710px;
+      left: 60px;
+      right: 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 22px;
+    }
+
+    .feat {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 28px;
+      padding: 44px 40px;
+    }
+    .feat.wide { grid-column: span 2; }
+    .feat.lime-border { border-color: rgba(212,245,66,0.2); background: rgba(212,245,66,0.04); }
+
+    .feat-icon { font-size: 52px; margin-bottom: 18px; line-height: 1; }
+    .feat-title { font-size: 38px; font-weight: 800; color: #fff; margin-bottom: 10px; line-height: 1.1; }
+    .feat-desc { font-size: 26px; color: rgba(255,255,255,0.4); line-height: 1.4; }
+
+    /* Wide feature has a horizontal layout */
+    .feat.wide { display: flex; align-items: center; gap: 40px; }
+    .feat.wide .feat-icon { margin-bottom: 0; font-size: 64px; flex-shrink: 0; }
+    .feat.wide .feat-body { flex: 1; }
+
+    /* Stat highlight inside feat */
+    .feat-stat {
+      font-size: 64px;
+      font-weight: 900;
+      color: #D4F542;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      color: #2D2D3A;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow"></div>
+
+  <div class="logo-area">
+    <div class="logo-icon"><div class="logo-icon-lime"></div></div>
+    <div class="logo-text">Swipely</div>
+  </div>
+
+  <div class="tag">Возможности</div>
+
+  <div class="headline">
+    Всё что<br>нужно для<br><span class="lime">контента</span>
+  </div>
+
+  <div class="bento">
+    <!-- Row 1: two small -->
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-stat">30с</div>
+      <div class="feat-desc">среднее время генерации</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🎨</div>
+      <div class="feat-stat">16</div>
+      <div class="feat-desc">готовых шаблонов</div>
+    </div>
+
+    <!-- Row 2: wide -->
+    <div class="feat wide lime-border">
+      <div class="feat-icon">🎙️</div>
+      <div class="feat-body">
+        <div class="feat-title">Текст и голос</div>
+        <div class="feat-desc">Отправь текст или надиктуй — AI поймёт</div>
+      </div>
+    </div>
+
+    <!-- Row 3: wide -->
+    <div class="feat wide">
+      <div class="feat-icon">✏️</div>
+      <div class="feat-body">
+        <div class="feat-title">Онлайн-редактор</div>
+        <div class="feat-desc">Изменяй текст, цвета, элементы перед скачиванием</div>
+      </div>
+    </div>
+
+    <!-- Row 4: two small -->
+    <div class="feat">
+      <div class="feat-icon">📱</div>
+      <div class="feat-title">PNG 2x</div>
+      <div class="feat-desc">1080×1080 и 1080×1350</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🤖</div>
+      <div class="feat-title">Подпись к посту</div>
+      <div class="feat-desc">AI пишет текст для Instagram автоматически</div>
+    </div>
+  </div>
+
+  <div class="footer">swipely.ru</div>
+</body>
+</html>

@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap');`;
 
@@ -112,28 +113,39 @@ export default function StarHighlightSlide({
         </h1>
 
         {/* Контент в жёлтом блоке */}
-        <div
-          style={{
-            background: "rgba(255,245,157,0.08)",
-            border: "1px solid rgba(255,245,157,0.15)",
-            borderRadius: 12,
-            padding: "20px 36px",
-            maxWidth: 800,
-          }}
-        >
-          <p
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div style={{ width: "100%", maxWidth: 800 }}>
+            {renderElement({ element: slide.element, textColor: "rgba(255,255,255,0.6)", accentColor: "#FFF59D" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 300, lineHeight: 1.5, color: "rgba(255,255,255,0.45)", textAlign: "center", marginTop: 16 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div
             style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 34,
-              fontWeight: 300,
-              lineHeight: 1.65,
-              color: "rgba(255,255,255,0.55)",
-              textAlign: "center",
+              background: "rgba(255,245,157,0.08)",
+              border: "1px solid rgba(255,245,157,0.15)",
+              borderRadius: 12,
+              padding: "20px 36px",
+              maxWidth: 800,
             }}
           >
-            {renderContent(slide.content)}
-          </p>
-        </div>
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 34,
+                fontWeight: 300,
+                lineHeight: 1.65,
+                color: "rgba(255,255,255,0.55)",
+                textAlign: "center",
+              }}
+            >
+              {renderContent(slide.content)}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -233,19 +245,30 @@ export default function StarHighlightSlide({
         />
 
         {/* Контент */}
-        <p
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 36,
-            fontWeight: 400,
-            lineHeight: 1.7,
-            color: "#444444",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          {slide.content}
-        </p>
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div style={{ position: "relative", zIndex: 1 }}>
+            {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#FFF59D" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 400, lineHeight: 1.6, color: "#888888", marginTop: 16 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 36,
+              fontWeight: 400,
+              lineHeight: 1.7,
+              color: "#444444",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            {slide.content}
+          </p>
+        )}
       </div>
 
       {/* Стрелка снизу */}

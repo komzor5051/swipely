@@ -1,10 +1,15 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { LiveStats } from "@/components/landing/LiveStats";
+import { HeroSection } from "@/components/landing/HeroSection";
 import { templates } from "@/lib/templates/registry";
+
+export const revalidate = 300; // 5-minute ISR
 import {
   MessageSquare,
   Sparkles,
@@ -15,28 +20,16 @@ import {
   Check,
   ArrowRight,
   ChevronDown,
-  Send,
 } from "lucide-react";
 
 /* ─── Hero ─── */
 function Hero() {
   return (
     <section className="min-h-screen flex items-center pt-24 sm:pt-32 pb-16 px-6 relative overflow-hidden">
-      {/* Ambient background video */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ opacity: 0.6 }}
-      >
-        <source src="/hero-ambient.webm" type="video/webm" />
-        <source src="/hero-ambient.mp4" type="video/mp4" />
-      </video>
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center w-full relative z-10">
-        {/* Left content */}
-        <div>
+      <div className="gradient-bg" />
+      <div className="max-w-7xl mx-auto w-full relative z-10">
+        {/* Top heading block */}
+        <div className="text-center mb-10">
           <span className="section-tag mb-6 inline-block">
             AI-генератор каруселей для соцсетей
           </span>
@@ -47,101 +40,31 @@ function Hero() {
             за 30 секунд
           </h1>
 
-          <p className="text-lg text-muted-foreground max-w-lg mb-8 leading-relaxed">
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Отправь текст или голосовое — AI создаст дизайнерские слайды для
             ВКонтакте, Instagram и Telegram. 18 шаблонов, автоматические подписи, экспорт в PNG.
           </p>
-
-          <div className="flex flex-wrap gap-4 mb-10">
-            <Link href="/signup">
-              <Button
-                size="lg"
-                className="rounded-full px-8 text-base bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] shadow-[0_4px_24px_rgba(212,245,66,0.3)] hover:shadow-[0_8px_32px_rgba(212,245,66,0.4)] hover:-translate-y-0.5 transition-all"
-              >
-                Начать бесплатно
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="#how-it-works">
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full px-8 text-base"
-              >
-                Как это работает
-              </Button>
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div className="flex flex-wrap gap-6 sm:gap-10 pt-6 border-t border-border">
-            {[
-              { value: "16", label: "шаблонов" },
-              { value: "30с", label: "генерация" },
-              { value: "0₽", label: "старт" },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <div className="text-2xl font-bold text-[#D4F542] font-[family-name:var(--font-mono)]">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Right visual — 3D carousel stack */}
-        <div className="relative hidden md:flex items-center justify-center">
-          <div className="relative w-full h-[500px] flex items-center justify-center group">
-            {/* Card 1 (left) */}
-            <div className="absolute w-[260px] h-[325px] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 -rotate-12 -translate-x-14 group-hover:-rotate-[18deg] group-hover:-translate-x-24 group-hover:translate-y-5 z-[1]">
-              <div className="w-full h-full bg-gradient-to-br from-[#0A84FF] to-[#0066CC] flex flex-col justify-center p-6 text-white">
-                <div className="text-xs font-mono opacity-60 mb-3">01 / 05</div>
-                <div className="text-xl font-extrabold leading-tight mb-3">
-                  <span className="bg-[#D4F542] text-[#0066CC] px-2 py-0.5 inline-block">5 способов</span><br />
-                  привлечь клиентов
-                </div>
-                <div className="text-sm opacity-70">
-                  Проверенные стратегии для роста
-                </div>
-              </div>
-            </div>
+        {/* Live generator */}
+        <HeroSection />
 
-            {/* Card 2 (center) */}
-            <div className="absolute w-[260px] h-[325px] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 -translate-y-5 group-hover:-translate-y-10 group-hover:scale-105 z-[2]">
-              <div className="w-full h-full bg-[#1A1A2E] flex flex-col justify-center p-6 text-white relative">
-                <div className="absolute top-4 right-4 flex flex-col gap-1.5">
-                  <div className="w-12 h-1.5 bg-[#D4F542] rounded-full -rotate-[25deg]" />
-                  <div className="w-9 h-1.5 bg-[#D4F542] rounded-full -rotate-[25deg] opacity-70" />
-                  <div className="w-6 h-1.5 bg-[#D4F542] rounded-full -rotate-[25deg] opacity-40" />
-                </div>
-                <div className="text-xs font-mono text-white/50 mb-3">02 / 05</div>
-                <div className="text-xl font-extrabold leading-tight mb-3">
-                  Создай <span className="bg-[#F9A8D4] text-[#1A1A2E] px-2 py-0.5">контент</span>,<br />
-                  который цепляет
-                </div>
-                <div className="text-sm text-white/60">
-                  AI сделает тексты за вас
-                </div>
+        {/* Stats */}
+        <div className="flex flex-wrap justify-center gap-6 sm:gap-14 pt-10 mt-8 border-t border-border">
+          {[
+            { value: "16", label: "шаблонов" },
+            { value: "30с", label: "генерация" },
+            { value: "0₽", label: "старт" },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="text-2xl font-bold text-[#D4F542] tabular-nums">
+                {stat.value}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {stat.label}
               </div>
             </div>
-
-            {/* Card 3 (right) */}
-            <div className="absolute w-[260px] h-[325px] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 rotate-12 translate-x-14 group-hover:rotate-[18deg] group-hover:translate-x-24 group-hover:translate-y-5 z-[1]">
-              <div className="w-full h-full bg-gradient-to-br from-[#F0F4F8] to-white flex flex-col justify-center p-6 relative">
-                <div className="text-xs font-mono text-gray-400 mb-3">03 / 05</div>
-                <div className="text-xl font-extrabold leading-tight text-[#1A1A2E] mb-3">
-                  Экономьте<br />
-                  <span className="text-gradient">до 5 часов</span> в неделю
-                </div>
-                <div className="text-sm text-gray-500">
-                  Автоматизация вместо рутины
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
@@ -219,10 +142,10 @@ function HowItWorks() {
               key={step.title}
               className="relative bg-card rounded-3xl p-8 border border-border hover:border-[#D4F542]/30 hover:shadow-lg transition-all group"
             >
-              <div className="absolute -top-4 -left-2 w-8 h-8 rounded-full bg-[#D4F542] text-[#0D0D14] text-sm font-bold flex items-center justify-center font-[family-name:var(--font-mono)]">
+              <div className="absolute -top-4 -left-2 w-8 h-8 rounded-full bg-[#D4F542] text-[#0D0D14] text-sm font-bold flex items-center justify-center tabular-nums">
                 {i + 1}
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-[#D4F542]/15 flex items-center justify-center text-[#0D0D14] mb-5 group-hover:bg-[#D4F542] group-hover:text-[#0D0D14] transition-colors">
+              <div className="w-14 h-14 rounded-2xl bg-[#D4F542]/15 flex items-center justify-center text-[#D4F542] mb-5 group-hover:bg-[#D4F542] group-hover:text-[#0D0D14] transition-colors">
                 {step.icon}
               </div>
               <h3 className="text-xl font-bold mb-3">{step.title}</h3>
@@ -231,80 +154,6 @@ function HowItWorks() {
               </p>
             </div>
           ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Demo Section ─── */
-function Demo() {
-  return (
-    <section className="py-24 px-6 bg-[var(--swipely-charcoal)]">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <span className="section-tag mb-4 inline-block !bg-white/10 !border-white/20 !text-white">
-            Демо
-          </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4">
-            Попробуй прямо сейчас
-          </h2>
-          <p className="text-lg text-white/60 mt-4 max-w-xl mx-auto">
-            Вот так выглядит работа с ботом
-          </p>
-        </div>
-
-        <div className="max-w-md mx-auto">
-          {/* Chat messages */}
-          <div className="space-y-4">
-            {/* User message */}
-            <div className="flex justify-end">
-              <div className="bg-[var(--swipely-blue)] text-white rounded-2xl rounded-br-md px-5 py-3 max-w-[80%] text-sm">
-                Напиши карусель про 5 способов привлечь клиентов через контент
-              </div>
-            </div>
-
-            {/* Bot response */}
-            <div className="flex justify-start">
-              <div className="bg-white/10 text-white rounded-2xl rounded-bl-md px-5 py-3 max-w-[80%] text-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-4 w-4 text-[var(--swipely-lime)]" />
-                  <span className="font-semibold text-[var(--swipely-lime)]">
-                    Карусель готова!
-                  </span>
-                </div>
-                5 слайдов в стиле «Swipely»
-                <br />
-                <span className="text-white/50">+ подпись для поста</span>
-              </div>
-            </div>
-
-            {/* Result preview */}
-            <div className="flex justify-start">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 max-w-[90%]">
-                <div className="grid grid-cols-5 gap-2">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <div
-                      key={n}
-                      className="aspect-[4/5] rounded-lg bg-gradient-to-br from-[var(--swipely-blue)] to-[var(--swipely-blue-dark)] flex items-center justify-center"
-                    >
-                      <span className="text-white/60 text-xs font-mono">
-                        {n}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <div className="flex-1 bg-[var(--swipely-blue)] text-white text-xs rounded-full py-2 text-center font-medium">
-                    Скачать ZIP
-                  </div>
-                  <div className="flex-1 bg-white/10 text-white text-xs rounded-full py-2 text-center font-medium">
-                    Редактировать
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -351,7 +200,7 @@ function Benefits() {
               key={b.title}
               className="text-center p-8 rounded-3xl border border-border hover:border-[#D4F542]/20 hover:shadow-md transition-all"
             >
-              <div className="w-14 h-14 rounded-2xl bg-[#D4F542]/15 flex items-center justify-center text-[#0D0D14] mx-auto mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-[#D4F542]/15 flex items-center justify-center text-[#D4F542] mx-auto mb-4">
                 {b.icon}
               </div>
               <h3 className="text-lg font-bold mb-2">{b.title}</h3>
@@ -405,86 +254,112 @@ function TemplatesGallery() {
 }
 
 /* ─── Pricing Preview ─── */
+const PREVIEW_PLANS = [
+  {
+    id: "free",
+    name: "Бесплатный",
+    price: 0,
+    sub: "Навсегда бесплатно",
+    features: ["3 карусели в месяц", "Базовые шаблоны", "Подпись к посту", "PNG экспорт"],
+    popular: false,
+  },
+  {
+    id: "blogger",
+    name: "Блогер",
+    price: 890,
+    sub: "в месяц",
+    features: ["25 каруселей в месяц", "Все базовые шаблоны", "Подпись к посту", "PNG экспорт"],
+    popular: false,
+  },
+  {
+    id: "creator",
+    name: "Про",
+    price: 1990,
+    sub: "в месяц",
+    features: ["100 каруселей в месяц", "Все шаблоны", "Без водяного знака", "PNG экспорт"],
+    popular: true,
+  },
+  {
+    id: "agency",
+    name: "Агентство",
+    price: null,
+    sub: "по запросу",
+    features: ["Безлимит для команды", "Белый лейбл", "API доступ", "SLA поддержка"],
+    popular: false,
+  },
+];
+
 function PricingPreview() {
   return (
     <section className="py-24 px-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <SectionHeader
           tag="Тарифы"
           title="Простое ценообразование"
-          description="Начни бесплатно, переходи на PRO когда будешь готов"
+          description="Начни бесплатно, переходи на нужный тариф когда будешь готов"
         />
 
-        <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
-          {/* Free */}
-          <div className="rounded-2xl border border-border p-6 sm:p-8 bg-card flex flex-col">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Бесплатный</h3>
-            <div className="flex items-end gap-2 mb-1">
-              <span className="text-5xl font-black tracking-tight leading-none" style={{ fontFamily: "var(--font-mono)" }}>0</span>
-              <span className="text-xl text-muted-foreground mb-1">₽</span>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {PREVIEW_PLANS.map((plan) => (
+            <div
+              key={plan.id}
+              className={`rounded-2xl p-5 flex flex-col relative ${
+                plan.popular
+                  ? "border-2 border-[#D4F542] bg-[#D4F542]/5"
+                  : "border border-border bg-card"
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#D4F542] text-[#0D0D14] text-[10px] font-black px-3 py-1 rounded-full whitespace-nowrap">
+                  Популярный
+                </div>
+              )}
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">{plan.name}</p>
+              <div className="mb-1">
+                {plan.price === null ? (
+                  <span className="text-3xl font-black tracking-tight">—</span>
+                ) : plan.price === 0 ? (
+                  <span className="text-3xl font-black tracking-tight">0₽</span>
+                ) : (
+                  <span className="text-3xl font-black tracking-tight">{plan.price}₽</span>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-4">{plan.sub}</p>
+              <ul className="flex-1 space-y-2 mb-5">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-1.5 text-xs text-foreground/80">
+                    <Check className="h-3.5 w-3.5 text-[#D4F542] mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              {plan.id === "agency" ? (
+                <a href="https://t.me/lvmn_ai" target="_blank" rel="noopener noreferrer" className="block">
+                  <Button size="sm" className="w-full rounded-full text-xs bg-transparent border border-border hover:bg-white/5 text-foreground">
+                    Написать →
+                  </Button>
+                </a>
+              ) : (
+                <Link href={plan.price === 0 ? "/signup" : "/pricing"}>
+                  <Button
+                    size="sm"
+                    className={`w-full rounded-full text-xs ${
+                      plan.popular
+                        ? "bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] font-bold"
+                        : "bg-transparent border border-border hover:bg-white/5 text-foreground"
+                    }`}
+                  >
+                    {plan.price === 0 ? "Начать бесплатно" : "Выбрать →"}
+                  </Button>
+                </Link>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground mb-6">Навсегда бесплатно</p>
-            <ul className="flex-1 space-y-3 mb-8">
-              {[
-                "3 карусели в месяц",
-                "18 шаблонов дизайна",
-                "Подпись к посту",
-                "PNG экспорт",
-              ].map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-[#0D0D14]" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Link href="/signup">
-              <Button variant="outline" className="w-full rounded-full">
-                Начать бесплатно
-              </Button>
-            </Link>
-          </div>
-
-          {/* PRO */}
-          <div className="rounded-2xl border-2 border-[#D4F542] p-6 sm:p-8 bg-card relative overflow-hidden flex flex-col">
-            <div className="absolute top-4 right-4 bg-[#D4F542] text-[#0D0D14] text-xs font-black px-3 py-1 rounded-full">
-              −50%
-            </div>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">PRO</h3>
-            <div className="flex items-end gap-2 mb-1">
-              <span className="text-5xl font-black tracking-tight leading-none" style={{ fontFamily: "var(--font-mono)" }}>495</span>
-              <span className="text-xl text-muted-foreground mb-1">₽/мес</span>
-            </div>
-            <p className="text-sm text-muted-foreground mb-6">
-              было <span className="line-through">990₽</span> · или 4 950₽/год
-            </p>
-            <ul className="flex-1 space-y-3 mb-8">
-              {[
-                "Безлимит карусели в месяц",
-                "AI карусель с вашим фото",
-                "18 шаблонов дизайна",
-                "Без водяного знака",
-                "Приоритетная очередь",
-              ].map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-[#0D0D14]" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Link href="/signup">
-              <Button className="w-full rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] font-bold">
-                Попробовать PRO →
-              </Button>
-            </Link>
-          </div>
+          ))}
         </div>
 
         <div className="text-center mt-8">
-          <Link
-            href="/pricing"
-            className="text-sm text-[#0D0D14] hover:underline font-medium"
-          >
-            Все тарифы и пакеты слайдов →
+          <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Сравнить все тарифы подробно →
           </Link>
         </div>
       </div>
@@ -502,10 +377,6 @@ function FAQ() {
     {
       q: "Как начать пользоваться?",
       a: "Зарегистрируйся, отправь текст на странице генерации — получи готовую карусель за 30 секунд. 3 бесплатных генерации каждый месяц, без привязки карты.",
-    },
-    {
-      q: "Что такое AI карусель с вашим фото?",
-      a: "Карусель, где на каждом слайде — ваше фото или персонаж, стилизованное под выбранный жанр (реалистичный или мультяшный). Каждый слайд — уникальное AI-изображение с текстом. Доступно на PRO.",
     },
     {
       q: "Можно ли редактировать карусель?",
@@ -560,16 +431,7 @@ function CTA() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-          <Link href="https://t.me/swipelybot" target="_blank">
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-full px-10 text-base"
-            >
-              <Send className="mr-2 h-4 w-4" />
-              Telegram-бот
-            </Button>
-          </Link>
+
         </div>
       </div>
     </section>
@@ -586,9 +448,11 @@ export default function Home() {
         <Hero />
         <Platforms />
         <HowItWorks />
-        <Demo />
         <Benefits />
         <TemplatesGallery />
+        <Suspense fallback={<div className="py-20" />}>
+          <LiveStats />
+        </Suspense>
         <PricingPreview />
         <FAQ />
         <CTA />

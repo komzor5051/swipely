@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 export default function SwipelySlide({
   slide,
@@ -283,7 +284,7 @@ export default function SwipelySlide({
             letterSpacing: -0.5,
           }}
         >
-          {username || "Swipely"}
+          {username || ""}
         </span>
       </div>
 
@@ -315,19 +316,30 @@ export default function SwipelySlide({
         >
           {renderTitle(slide.title, highlightStyle)}
         </h1>
-        {slide.content && (
-          <p
-            style={{
-              fontSize: 34,
-              fontWeight: 400,
-              lineHeight: 1.6,
-              color: "rgba(255, 255, 255, 0.8)",
-              marginTop: 45,
-              maxWidth: 800,
-            }}
-          >
-            {renderContent(slide.content)}
-          </p>
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div style={{ marginTop: 45 }}>
+            {renderElement({ element: slide.element, textColor: "rgba(255,255,255,0.7)", accentColor: "#D4F542" })}
+            {slide.content && (
+              <p style={{ fontSize: 26, fontWeight: 400, lineHeight: 1.5, color: "rgba(255,255,255,0.65)", marginTop: 16 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          slide.content && (
+            <p
+              style={{
+                fontSize: 34,
+                fontWeight: 400,
+                lineHeight: 1.6,
+                color: "rgba(255, 255, 255, 0.8)",
+                marginTop: 45,
+                maxWidth: 800,
+              }}
+            >
+              {renderContent(slide.content)}
+            </p>
+          )
         )}
       </div>
 
@@ -355,26 +367,17 @@ export default function SwipelySlide({
         >
           {slideNumber} / {totalSlides}
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            padding: "16px 28px",
-            background: "rgba(255, 255, 255, 0.15)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            borderRadius: 100,
-            fontSize: 18,
-            fontWeight: 600,
-            color: "#FFFFFF",
-          }}
-        >
-          <svg width={22} height={22} viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
-          </svg>
-          @swipelybot
-        </div>
+        {username && (
+          <span
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: "rgba(255,255,255,0.7)",
+            }}
+          >
+            @{username}
+          </span>
+        )}
       </div>
     </div>
   );

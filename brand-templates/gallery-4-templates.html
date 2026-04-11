@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1080px;
+      height: 1920px;
+      background: #0D0D14;
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 54px 54px;
+    }
+
+    .logo-area {
+      position: absolute;
+      top: 100px;
+      left: 80px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo-icon {
+      width: 60px; height: 60px;
+      background: #1A1A2E; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(255,255,255,0.08);
+    }
+    .logo-icon-lime { width: 28px; height: 8px; background: #D4F542; border-radius: 4px; }
+    .logo-text { font-size: 36px; font-weight: 800; color: rgba(255,255,255,0.5); letter-spacing: -1px; }
+
+    .tag {
+      position: absolute;
+      top: 230px;
+      left: 80px;
+      background: rgba(212,245,66,0.12);
+      border: 1px solid rgba(212,245,66,0.3);
+      color: #D4F542;
+      font-size: 24px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 100px;
+    }
+
+    .headline {
+      position: absolute;
+      top: 340px;
+      left: 80px;
+      right: 80px;
+      font-size: 100px;
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 0.95;
+      letter-spacing: -4px;
+    }
+    .headline .lime { color: #D4F542; }
+
+    /* Templates grid */
+    .grid {
+      position: absolute;
+      top: 720px;
+      left: 60px;
+      right: 60px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .tpl {
+      border-radius: 20px;
+      overflow: hidden;
+      aspect-ratio: 4/5;
+      position: relative;
+    }
+
+    /* Template variants */
+    .tpl-1 { background: linear-gradient(135deg, #0A84FF 0%, #0055CC 100%); }
+    .tpl-2 { background: #1A1A2E; border: 1px solid rgba(255,255,255,0.06); }
+    .tpl-3 { background: linear-gradient(135deg, #F0F4F8 0%, #E8EDF4 100%); }
+    .tpl-4 { background: linear-gradient(135deg, #1A1A2E 0%, #2D1B4E 100%); }
+    .tpl-5 { background: linear-gradient(135deg, #D4F542 0%, #A8CC00 100%); }
+    .tpl-6 { background: linear-gradient(135deg, #FF6B6B 0%, #CC3333 100%); }
+    .tpl-7 { background: linear-gradient(135deg, #1A2E1A 0%, #0D1F0D 100%); }
+    .tpl-8 { background: linear-gradient(135deg, #2E1A1A 0%, #1F0D0D 100%); }
+    .tpl-9 { background: linear-gradient(135deg, #0D1F2E 0%, #0A1520 100%); }
+    .tpl-10 { background: linear-gradient(135deg, #2A2A3A 0%, #1A1A2E 100%); }
+    .tpl-11 { background: linear-gradient(135deg, #3A1A2E 0%, #2A0D1E 100%); }
+    .tpl-12 { background: linear-gradient(135deg, #1A2A3A 0%, #0D1A2A 100%); }
+
+    .tpl-inner {
+      position: absolute;
+      inset: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .tpl-bar {
+      height: 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .tpl-line {
+      height: 5px;
+      border-radius: 3px;
+      margin-bottom: 5px;
+    }
+
+    /* Bottom counter */
+    .counter {
+      position: absolute;
+      bottom: 200px;
+      left: 80px;
+      right: 80px;
+      text-align: center;
+    }
+    .counter-num {
+      font-size: 120px;
+      font-weight: 900;
+      color: #D4F542;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: -4px;
+      line-height: 1;
+    }
+    .counter-label {
+      font-size: 36px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 8px;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      color: #2D2D3A;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+
+  <div class="logo-area">
+    <div class="logo-icon"><div class="logo-icon-lime"></div></div>
+    <div class="logo-text">Swipely</div>
+  </div>
+
+  <div class="tag">Шаблоны</div>
+
+  <div class="headline">
+    <span class="lime">16</span><br>дизайн-<br>стилей
+  </div>
+
+  <div class="grid">
+    <!-- Row 1 -->
+    <div class="tpl tpl-1">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:rgba(255,255,255,0.9);width:70%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.4);width:90%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.25);width:75%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-2">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#D4F542;width:60%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.3);width:85%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.18);width:70%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-3">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#0A84FF;width:65%"></div>
+        <div class="tpl-line" style="background:rgba(0,0,0,0.2);width:80%"></div>
+        <div class="tpl-line" style="background:rgba(0,0,0,0.12);width:60%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-4">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#F9A8D4;width:55%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.3);width:80%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.18);width:65%"></div>
+      </div>
+    </div>
+    <!-- Row 2 -->
+    <div class="tpl tpl-5">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#0D0D14;width:70%"></div>
+        <div class="tpl-line" style="background:rgba(0,0,0,0.3);width:85%"></div>
+        <div class="tpl-line" style="background:rgba(0,0,0,0.18);width:70%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-6">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:rgba(255,255,255,0.9);width:60%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.4);width:80%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.22);width:65%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-7">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#4ADE80;width:65%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.3);width:85%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.18);width:70%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-8">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#FCA5A5;width:55%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.3);width:80%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.18);width:65%"></div>
+      </div>
+    </div>
+    <!-- Row 3 -->
+    <div class="tpl tpl-9">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#60A5FA;width:70%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.3);width:85%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.18);width:70%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-10">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#A78BFA;width:60%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.3);width:80%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.18);width:65%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-11">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#F472B6;width:65%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.3);width:85%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.18);width:70%"></div>
+      </div>
+    </div>
+    <div class="tpl tpl-12">
+      <div class="tpl-inner">
+        <div class="tpl-bar" style="background:#34D399;width:55%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.3);width:80%"></div>
+        <div class="tpl-line" style="background:rgba(255,255,255,0.18);width:65%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="counter">
+    <div class="counter-num">16</div>
+    <div class="counter-label">стилей на любой бренд</div>
+  </div>
+
+  <div class="footer">swipely.ru</div>
+</body>
+</html>

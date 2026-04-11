@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swipely — Финансовая модель</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0D0D14;
+      --ink2: #13131f;
+      --ink3: #1a1a2a;
+      --lime: #D4F542;
+      --lime-dim: rgba(212,245,66,0.12);
+      --lime-border: rgba(212,245,66,0.2);
+      --white: #F5F5F0;
+      --muted: rgba(245,245,240,0.4);
+      --muted2: rgba(245,245,240,0.15);
+      --red: #FF5C5C;
+      --green: #4AE89C;
+      --blue: #5C9EFF;
+      --orange: #FFB340;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--ink);
+      color: var(--white);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Grid texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      padding: 60px 0 48px;
+      border-bottom: 1px solid var(--muted2);
+      margin-bottom: 56px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: var(--lime);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-mark svg { width: 22px; height: 22px; }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .doc-badge {
+      margin-left: auto;
+      background: var(--lime-dim);
+      border: 1px solid var(--lime-border);
+      color: var(--lime);
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 4vw, 56px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+
+    h1 span { color: var(--lime); }
+
+    .header-sub {
+      font-size: 18px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    /* ── SECTION ── */
+    .section {
+      margin-bottom: 64px;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--lime-border);
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 24px;
+    }
+
+    /* ── CARDS GRID ── */
+    .cards {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cards-3 { grid-template-columns: repeat(3, 1fr); }
+    .cards-4 { grid-template-columns: repeat(4, 1fr); }
+    .cards-2 { grid-template-columns: repeat(2, 1fr); }
+
+    .card {
+      background: var(--ink2);
+      border: 1px solid var(--muted2);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    }
+
+    .card.highlight {
+      border-color: var(--lime-border);
+      background: linear-gradient(135deg, rgba(212,245,66,0.06) 0%, var(--ink2) 60%);
+    }
+
+    .card-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .card-value {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .card-value.lime { color: var(--lime); }
+    .card-value.green { color: var(--green); }
+    .card-value.orange { color: var(--orange); }
+    .card-value.blue { color: var(--blue); }
+
+    .card-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .card-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--muted2);
+    }
+
+    /* ── MARGIN BAR ── */
+    .margin-row {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .margin-item {
+      background: var(--ink2);
+      border: 1px solid var(--muted2);
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+
+    .margin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .margin-name { font-size: 15px; font-weight: 600; }
+    .margin-pct {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--lime);
+    }
+
+    .margin-bar-track {
+      width: 100%;
+      height: 6px;
+      background: var(--muted2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .margin-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--lime), #b8d90a);
+    }
+
+    .margin-detail {
+      display: flex;
+      gap: 24px;
+      margin-top: 12px;
+    }
+
+    .margin-detail-item { font-size: 13px; color: var(--muted); }
+    .margin-detail-item span { color: var(--white); font-weight: 600; }
+
+    /* ── CALC BLOCK ── */
+    .calc-block {
+      background: var(--ink3);
+      border: 1px solid var(--muted2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      line-height: 2;
+    }
+
+    .calc-block .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .calc-block .calc-row.divider {
+      border-top: 1px solid var(--muted2);
+      padding-top: 8px;
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    .calc-block .calc-row .label { color: var(--muted); }
+    .calc-block .calc-row .value { color: var(--white); }
+    .calc-block .calc-row.divider .value { color: var(--lime); }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: var(--ink2);
+      border: 1px solid var(--muted2);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      background: var(--ink3);
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--muted2);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    tbody tr.milestone { background: rgba(212,245,66,0.04); }
+
+    td {
+      padding: 13px 20px;
+      color: var(--white);
+    }
+
+    td.mono {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+    }
+
+    td.lime { color: var(--lime); font-weight: 700; }
+    td.green { color: var(--green); }
+    td.muted { color: var(--muted); }
+
+    .milestone-badge {
+      display: inline-block;
+      background: var(--lime);
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-left: 8px;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+    }
+
+    /* ── CHART ── */
+    .chart-wrap {
+      background: var(--ink2);
+      border: 1px solid var(--muted2);
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 20px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .chart-area {
+      position: relative;
+      height: 280px;
+    }
+
+    .chart-grid-lines {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .chart-grid-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chart-grid-line::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .grid-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      width: 60px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .bars-area {
+      position: absolute;
+      left: 72px;
+      right: 0;
+      bottom: 28px;
+      top: 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      position: relative;
+      transition: opacity 0.2s;
+    }
+
+    .bar:hover { opacity: 0.85; }
+
+    .bar-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      font-family: 'Space Mono', monospace;
+      text-align: center;
+    }
+
+    .x-axis {
+      position: absolute;
+      left: 72px;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      gap: 8px;
+    }
+
+    .x-label {
+      flex: 1;
+      text-align: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── SCENARIOS ── */
+    .scenario-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .scenario-card {
+      background: var(--ink2);
+      border: 1px solid var(--muted2);
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    .scenario-card.active {
+      border-color: var(--lime-border);
+    }
+
+    .scenario-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .scenario-name {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .scenario-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    .tag-base { background: rgba(255,255,255,0.08); color: var(--muted); }
+    .tag-active { background: var(--lime-dim); color: var(--lime); border: 1px solid var(--lime-border); }
+    .tag-boost { background: rgba(76,232,156,0.12); color: var(--green); }
+
+    .scenario-metric {
+      margin-bottom: 12px;
+    }
+
+    .scenario-metric-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .scenario-metric-value {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .scenario-result {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--muted2);
+    }
+
+    .scenario-result-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .scenario-result-value { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+
+    /* ── LEVERS ── */
+    .levers {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .lever {
+      background: var(--ink2);
+      border: 1px solid var(--muted2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .lever-num {
+      width: 36px;
+      height: 36px;
+      background: var(--lime-dim);
+      border: 1px solid var(--lime-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--lime);
+      flex-shrink: 0;
+    }
+
+    .lever-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .lever-desc { font-size: 14px; color: var(--muted); }
+
+    .lever-impact {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .impact-label { font-size: 11px; color: var(--muted); }
+    .impact-value { font-size: 18px; font-weight: 800; color: var(--green); letter-spacing: -0.5px; }
+
+    /* ── ACTION ITEMS ── */
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .action-item {
+      background: var(--ink2);
+      border: 1px solid var(--muted2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 16px;
+    }
+
+    .action-priority {
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 6px;
+    }
+
+    .priority-high { background: var(--lime); box-shadow: 0 0 8px rgba(212,245,66,0.4); }
+    .priority-med { background: var(--orange); }
+    .priority-low { background: var(--muted2); }
+
+    .action-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .action-desc { font-size: 13px; color: var(--muted); }
+    .action-meta { font-size: 12px; color: var(--lime); margin-top: 8px; font-weight: 500; }
+
+    /* ── ALERTS ── */
+    .alert {
+      background: rgba(255,179,64,0.08);
+      border: 1px solid rgba(255,179,64,0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 14px;
+      color: rgba(255,179,64,0.9);
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .alert-icon { flex-shrink: 0; font-size: 16px; }
+
+    .alert.info {
+      background: rgba(92,158,255,0.08);
+      border-color: rgba(92,158,255,0.2);
+      color: rgba(92,158,255,0.9);
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding-top: 40px;
+      border-top: 1px solid var(--muted2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .footer-mono { font-family: 'Space Mono', monospace; font-size: 11px; }
+
+    @media (max-width: 900px) {
+      .cards-3, .cards-4, .scenario-cards { grid-template-columns: 1fr 1fr; }
+      .actions { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .cards-3, .cards-4, .cards-2, .scenario-cards { grid-template-columns: 1fr; }
+      .container { padding: 0 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="logo-mark">
+        <svg viewBox="0 0 22 22" fill="none">
+          <rect x="2" y="2" width="8" height="8" rx="2" fill="#0D0D14"/>
+          <rect x="12" y="2" width="8" height="8" rx="2" fill="#0D0D14"/>
+          <rect x="2" y="12" width="8" height="8" rx="2" fill="#0D0D14"/>
+          <rect x="12" y="12" width="8" height="8" rx="2" fill="#0D0D14"/>
+        </svg>
+      </div>
+      <span class="brand">Swipely</span>
+      <span class="doc-badge">FIN MODEL v1.0 · 2026</span>
+    </div>
+    <h1>Финансовая модель<br><span>&amp; юнит-экономика</span></h1>
+    <p class="header-sub">Полный разбор экономики сервиса · Метрики · Прогнозы · Рекомендации</p>
+  </div>
+
+  <!-- КЛЮЧЕВЫЕ МЕТРИКИ -->
+  <div class="section">
+    <div class="section-label">01 — Ключевые метрики</div>
+    <div class="cards cards-4">
+      <div class="card highlight">
+        <div class="card-label">Gross Margin (PRO)</div>
+        <div class="card-value lime">91.5%</div>
+        <div class="card-sub">~906₽ с каждых 990₽</div>
+        <div class="card-note">Себестоимость AI ≈ 0₽ на Standard Mode</div>
+      </div>
+      <div class="card">
+        <div class="card-label">LTV (PRO, churn 10%)</div>
+        <div class="card-value green">9,060₽</div>
+        <div class="card-sub">906₽ × 10 мес жизни</div>
+        <div class="card-note">При churn 5% → LTV = 18,120₽</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Макс. допустимый CAC</div>
+        <div class="card-value orange">3,020₽</div>
+        <div class="card-sub">LTV / CAC ≥ 3x</div>
+        <div class="card-note">Органика даёт CAC ≈ 0–300₽</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Целевой Payback Period</div>
+        <div class="card-value blue">&lt; 3 мес</div>
+        <div class="card-sub">При CAC 500₽ → &lt; 1 мес</div>
+        <div class="card-note">Отличный показатель для SaaS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ЮНИТ ЭКОНОМИКА -->
+  <div class="section">
+    <div class="section-label">02 — Юнит-экономика по продуктам</div>
+
+    <div class="margin-row">
+
+      <div class="margin-item">
+        <div class="margin-header">
+          <div>
+            <div class="margin-name">PRO подписка — 990₽/мес</div>
+          </div>
+          <div class="margin-pct">91.5%</div>
+        </div>
+        <div class="margin-bar-track">
+          <div class="margin-bar-fill" style="width: 91.5%"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+          <div class="calc-block">
+            <div class="calc-row"><span class="label">Выручка</span><span class="value">990₽</span></div>
+            <div class="calc-row"><span class="label">Эквайринг (6.5%)</span><span class="value" style="color:var(--red)">−64₽</span></div>
+            <div class="calc-row"><span class="label">AI (≈20 каруселей)</span><span class="value" style="color:var(--red)">−20₽</span></div>
+            <div class="calc-row divider"><span class="label">Gross Profit</span><span class="value">906₽</span></div>
+          </div>
+          <div style="padding: 0 8px;">
+            <div class="margin-detail">
+              <div class="margin-detail-item">Эквайринг: <span>6.5%</span></div>
+              <div class="margin-detail-item">AI-себестоимость: <span>~0₽/карусель</span></div>
+            </div>
+            <div class="alert" style="margin-top: 12px; background: rgba(212,245,66,0.06); border-color: var(--lime-border); color: var(--lime);">
+              <span class="alert-icon">★</span>
+              Standard Mode практически бесплатен — Gemini Flash Lite укладывается в бесплатный tier.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="margin-item">
+        <div class="margin-header">
+          <div>
+            <div class="margin-name">Photo Pack Large — 50 слайдов за 1490₽</div>
+          </div>
+          <div class="margin-pct">48%</div>
+        </div>
+        <div class="margin-bar-track">
+          <div class="margin-bar-fill" style="width: 48%; background: linear-gradient(90deg, var(--orange), #e89400);"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+          <div class="calc-block">
+            <div class="calc-row"><span class="label">Выручка</span><span class="value">1490₽</span></div>
+            <div class="calc-row"><span class="label">Эквайринг (6.5%)</span><span class="value" style="color:var(--red)">−97₽</span></div>
+            <div class="calc-row"><span class="label">AI (50 × 13.5₽)</span><span class="value" style="color:var(--red)">−675₽</span></div>
+            <div class="calc-row divider"><span class="label">Gross Profit</span><span class="value">718₽</span></div>
+          </div>
+          <div style="padding: 0 8px;">
+            <div class="alert">
+              <span class="alert-icon">⚠</span>
+              Photo Mode дорогой по AI. Следи за себестоимостью — при падении цен Gemini маржа вырастет. Основной фокус монетизации → PRO подписка.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="margin-item">
+        <div class="margin-header">
+          <div>
+            <div class="margin-name">Разовый Photo (3 слайда) — 149₽</div>
+          </div>
+          <div class="margin-pct">66%</div>
+        </div>
+        <div class="margin-bar-track">
+          <div class="margin-bar-fill" style="width: 66%; background: linear-gradient(90deg, var(--blue), #3a7de0);"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+          <div class="calc-block">
+            <div class="calc-row"><span class="label">Выручка</span><span class="value">149₽</span></div>
+            <div class="calc-row"><span class="label">Эквайринг (6.5%)</span><span class="value" style="color:var(--red)">−10₽</span></div>
+            <div class="calc-row"><span class="label">AI (3 × 13.5₽)</span><span class="value" style="color:var(--red)">−40₽</span></div>
+            <div class="calc-row divider"><span class="label">Gross Profit</span><span class="value">99₽</span></div>
+          </div>
+          <div style="padding: 0 8px;">
+            <div class="alert info">
+              <span class="alert-icon">ℹ</span>
+              Разовые покупки — точка входа для новых платящих. Конвертируй их в PRO подписку follow-up сообщением через 3 дня.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LTV / CAC -->
+  <div class="section">
+    <div class="section-label">03 — LTV · CAC · Payback</div>
+    <div class="cards cards-3">
+      <div class="card">
+        <div class="card-label">LTV при churn 10%/мес</div>
+        <div class="card-value green">9,060₽</div>
+        <div class="card-sub">Срок жизни ≈ 10 месяцев</div>
+        <div class="calc-block" style="margin-top: 16px; font-size: 12px;">
+          <div class="calc-row"><span class="label">Avg Life = 1/churn</span><span class="value">10 мес</span></div>
+          <div class="calc-row"><span class="label">ARPU (gross)</span><span class="value">906₽</span></div>
+          <div class="calc-row divider"><span class="label">LTV</span><span class="value">9,060₽</span></div>
+        </div>
+      </div>
+      <div class="card highlight">
+        <div class="card-label">LTV при churn 5%/мес</div>
+        <div class="card-value lime">18,120₽</div>
+        <div class="card-sub">Срок жизни ≈ 20 месяцев</div>
+        <div class="calc-block" style="margin-top: 16px; font-size: 12px;">
+          <div class="calc-row"><span class="label">Avg Life = 1/churn</span><span class="value">20 мес</span></div>
+          <div class="calc-row"><span class="label">ARPU (gross)</span><span class="value">906₽</span></div>
+          <div class="calc-row divider"><span class="label">LTV</span><span class="value">18,120₽</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">CAC-анализ</div>
+        <div class="card-value orange">3,020₽</div>
+        <div class="card-sub">Макс. при LTV/CAC = 3x</div>
+        <div class="calc-block" style="margin-top: 16px; font-size: 12px;">
+          <div class="calc-row"><span class="label">Органика</span><span class="value" style="color:var(--green)">0–300₽</span></div>
+          <div class="calc-row"><span class="label">TG реклама</span><span class="value">500–1500₽</span></div>
+          <div class="calc-row"><span class="label">Таргет ВК</span><span class="value">700–2000₽</span></div>
+          <div class="calc-row divider"><span class="label">LTV/CAC (орг.)</span><span class="value" style="color:var(--green)">>30x 🎯</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 МЕСЯЦЕВ -->
+  <div class="section">
+    <div class="section-label">04 — Прогноз на 12 месяцев</div>
+
+    <div class="alert info" style="margin-bottom: 20px;">
+      <span class="alert-icon">ℹ</span>
+      Допущения: старт с ~50 free-users, рост базы +30%/мес (контент + WoM), конверсия Free→Paid 3%, churn 10%/мес, ARPU 900₽ (смешанный с разовыми).
+    </div>
+
+    <!-- BAR CHART -->
+    <div class="chart-wrap" style="margin-bottom: 20px;">
+      <div class="chart-title">
+        <span>Выручка по месяцам (MRR + разовые)</span>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--lime)"></div>
+            MRR (подписки)
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--blue)"></div>
+            Разовые продажи
+          </div>
+        </div>
+      </div>
+      <div class="chart-area">
+        <!-- Y grid lines -->
+        <div class="chart-grid-lines">
+          <div class="chart-grid-line"><span class="grid-label">150k</span></div>
+          <div class="chart-grid-line"><span class="grid-label">120k</span></div>
+          <div class="chart-grid-line"><span class="grid-label">90k</span></div>
+          <div class="chart-grid-line"><span class="grid-label">60k</span></div>
+          <div class="chart-grid-line"><span class="grid-label">30k</span></div>
+          <div class="chart-grid-line"><span class="grid-label">0</span></div>
+        </div>
+        <!-- Bars -->
+        <div class="bars-area" id="barsArea"></div>
+        <!-- X axis labels -->
+        <div class="x-axis" id="xAxis"></div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Месяц</th>
+            <th>Free users</th>
+            <th>Paid users</th>
+            <th>MRR</th>
+            <th>Разовые</th>
+            <th>Итого</th>
+            <th>Накопленно</th>
+          </tr>
+        </thead>
+        <tbody id="forecastTable">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- СЦЕНАРИИ -->
+  <div class="section">
+    <div class="section-label">05 — Сценарии роста</div>
+    <div class="scenario-cards">
+
+      <div class="scenario-card">
+        <div class="scenario-header">
+          <div class="scenario-name">Консервативный</div>
+          <span class="scenario-tag tag-base">Базовый</span>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Рост базы в месяц</div>
+          <div class="scenario-metric-value">+20%</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Конверсия Free→Paid</div>
+          <div class="scenario-metric-value">2%</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Churn</div>
+          <div class="scenario-metric-value">12%/мес</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Каналы</div>
+          <div class="scenario-metric-value" style="font-size: 13px; color: var(--muted)">Только органика</div>
+        </div>
+        <div class="scenario-result">
+          <div class="scenario-result-label">100к₽/мес достигается</div>
+          <div class="scenario-result-value" style="color: var(--muted)">Месяц 14–16</div>
+        </div>
+      </div>
+
+      <div class="scenario-card active">
+        <div class="scenario-header">
+          <div class="scenario-name">Умеренный</div>
+          <span class="scenario-tag tag-active">Текущий план</span>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Рост базы в месяц</div>
+          <div class="scenario-metric-value">+30%</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Конверсия Free→Paid</div>
+          <div class="scenario-metric-value">3%</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Churn</div>
+          <div class="scenario-metric-value">10%/мес</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Каналы</div>
+          <div class="scenario-metric-value" style="font-size: 13px;">Органика + TG контент</div>
+        </div>
+        <div class="scenario-result">
+          <div class="scenario-result-label">100к₽/мес достигается</div>
+          <div class="scenario-result-value" style="color: var(--lime)">Месяц 11–12</div>
+        </div>
+      </div>
+
+      <div class="scenario-card">
+        <div class="scenario-header">
+          <div class="scenario-name">Агрессивный</div>
+          <span class="scenario-tag tag-boost">Ускоренный</span>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Рост базы в месяц</div>
+          <div class="scenario-metric-value">+50%</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Конверсия Free→Paid</div>
+          <div class="scenario-metric-value">6%</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Churn</div>
+          <div class="scenario-metric-value">7%/мес</div>
+        </div>
+        <div class="scenario-metric">
+          <div class="scenario-metric-label">Каналы</div>
+          <div class="scenario-metric-value" style="font-size: 13px;">Реклама + реферралы + SEO</div>
+        </div>
+        <div class="scenario-result">
+          <div class="scenario-result-label">100к₽/мес достигается</div>
+          <div class="scenario-result-value" style="color: var(--green)">Месяц 6–7</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- РЫЧАГИ РОСТА -->
+  <div class="section">
+    <div class="section-label">06 — Главные рычаги</div>
+    <div class="levers">
+
+      <div class="lever">
+        <div class="lever-num">01</div>
+        <div>
+          <div class="lever-title">Снизить Churn: 10% → 5%</div>
+          <div class="lever-desc">Главный рычаг LTV. Email/push на 3-й и 7-й день бездействия, напоминание о лимитах перед сбросом, ежемесячный дайджест "что нового". Уведомление за 3 дня до списания. Годовая подписка снижает churn до ~2%.</div>
+        </div>
+        <div class="lever-impact">
+          <div class="impact-label">Эффект на LTV</div>
+          <div class="impact-value">+100%</div>
+        </div>
+      </div>
+
+      <div class="lever">
+        <div class="lever-num">02</div>
+        <div>
+          <div class="lever-title">Поднять конверсию: 3% → 6%</div>
+          <div class="lever-desc">Онбординг с готовой каруселью за 60 секунд, paywall в правильный момент (после 2-й генерации, не после 1-й), email-триггер "твоя карусель набрала X охват", social proof — счётчик созданных каруселей.</div>
+        </div>
+        <div class="lever-impact">
+          <div class="impact-label">Ускорение к цели</div>
+          <div class="impact-value">×2 быстрее</div>
+        </div>
+      </div>
+
+      <div class="lever">
+        <div class="lever-num">03</div>
+        <div>
+          <div class="lever-title">Продвигать Annual план</div>
+          <div class="lever-desc">9 900₽/год (825₽/мес) вместо 990₽/мес. Клиент платит сразу — ты получаешь кэш и снижаешь churn до ~2%/год. Предлагать Annual как "2 месяца бесплатно". Конверсия Monthly→Annual: цель 20-30% от PRO.</div>
+        </div>
+        <div class="lever-impact">
+          <div class="impact-label">Доп. cash upfront</div>
+          <div class="impact-value">+8,910₽</div>
+        </div>
+      </div>
+
+      <div class="lever">
+        <div class="lever-num">04</div>
+        <div>
+          <div class="lever-title">Сменить эквайринг при росте</div>
+          <div class="lever-desc">AuraPay берёт 6.5%. При обороте 150к₽+/мес переходи на ЮКассу (3.5%) или Тинькофф (2.9%). Экономия 3-4% на каждой транзакции — при 200к₽ обороте это +6,000–8,000₽ чистой маржи ежемесячно.</div>
+        </div>
+        <div class="lever-impact">
+          <div class="impact-label">При 200к обороте</div>
+          <div class="impact-value">+7k₽/мес</div>
+        </div>
+      </div>
+
+      <div class="lever">
+        <div class="lever-num">05</div>
+        <div>
+          <div class="lever-title">Реферральная программа — активировать</div>
+          <div class="lever-desc">Система уже встроена (+3 Photo-слайда обоим). Нужно добавить это в онбординг и на страницу дашборда. Виральный коэффициент K=0.2–0.3 снижает CAC до нуля. Цель: 15-20% новых пользователей через рефералы.</div>
+        </div>
+        <div class="lever-impact">
+          <div class="impact-label">Снижение CAC</div>
+          <div class="impact-value">−30%</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ПЛАН ДЕЙСТВИЙ -->
+  <div class="section">
+    <div class="section-label">07 — Что делать прямо сейчас</div>
+    <div class="actions">
+
+      <div class="action-item">
+        <div class="action-priority priority-high"></div>
+        <div>
+          <div class="action-title">Email-онбординг (день 1, 3, 7)</div>
+          <div class="action-desc">Триггерная цепочка после регистрации. День 1 — покажи готовый пример. День 3 — "остался 1 бесплатный". День 7 — предложи PRO со скидкой 20%.</div>
+          <div class="action-meta">↑ Конверсия +2–3pp · Приоритет: Высокий</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-priority priority-high"></div>
+        <div>
+          <div class="action-title">Paywall в правильный момент</div>
+          <div class="action-desc">Сейчас лимит срабатывает после 3-й генерации. Оптимально — показывать апгрейд после 2-й успешной генерации, пока пользователь в "эйфории результата".</div>
+          <div class="action-meta">↑ Конверсия +1–2pp · Приоритет: Высокий</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-priority priority-high"></div>
+        <div>
+          <div class="action-title">Годовая подписка на сайте</div>
+          <div class="action-desc">Добавить Annual toggle на страницу pricing. Подсветить "2 месяца в подарок". Показывать Annual как первый вариант, Monthly — как второй.</div>
+          <div class="action-meta">↑ LTV ×2 · Приоритет: Высокий</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-priority priority-med"></div>
+        <div>
+          <div class="action-title">Активировать реферральную программу</div>
+          <div class="action-desc">Система уже в коде — нужно добавить блок "Пригласи друга" в дашборд и онбординг. Мотивация: +3 Photo-слайда обоим + 7 дней PRO за каждого друга.</div>
+          <div class="action-meta">↓ CAC на 30% · Приоритет: Средний</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-priority priority-med"></div>
+        <div>
+          <div class="action-title">Контент в TG-канале (2–3 поста/нед)</div>
+          <div class="action-desc">Примеры готовых каруселей, советы по Instagram-маркетингу, кейсы пользователей. Каждый пост — это органические регистрации без CAC. Цель: 500 подписчиков за 3 месяца.</div>
+          <div class="action-meta">Снижение CAC · Приоритет: Средний</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-priority priority-low"></div>
+        <div>
+          <div class="action-title">Смена эквайринга при достижении 150к₽/мес</div>
+          <div class="action-desc">AuraPay 6.5% → ЮКасса 3.5%. При обороте 150–200к₽ экономия составит 4,500–6,500₽/мес чистыми. Не горит, но запланируй на месяц 8–10.</div>
+          <div class="action-meta">+4k–7k₽/мес · Приоритет: Низкий (пока)</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- МЕТРИКИ ДЛЯ ДАШБОРДА -->
+  <div class="section">
+    <div class="section-label">08 — Метрики для еженедельного трекинга</div>
+    <div class="cards cards-3">
+      <div class="card">
+        <div class="card-label">Финансовые</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">MRR</span><span style="color: var(--lime); font-weight: 700">рост +20%/мес</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">Gross Margin</span><span style="font-weight: 600">> 85%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">ARPU (paid)</span><span style="font-weight: 600">> 800₽/мес</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span style="color: var(--muted)">Revenue / user</span><span style="font-weight: 600">считать помесячно</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Удержание</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">Monthly Churn</span><span style="color: var(--green); font-weight: 700">< 8%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">LTV</span><span style="font-weight: 600">> 9,000₽</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">DAU/MAU</span><span style="font-weight: 600">> 20%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span style="color: var(--muted)">Gens / user / мес</span><span style="font-weight: 600">> 3 (PRO)</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Привлечение</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">Free→Paid conv.</span><span style="color: var(--orange); font-weight: 700">> 3%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">CAC</span><span style="font-weight: 600">< 1,000₽</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--muted2);">
+            <span style="color: var(--muted)">LTV/CAC</span><span style="font-weight: 600">> 3x</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span style="color: var(--muted)">Payback period</span><span style="font-weight: 600">< 3 мес</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>
+      <strong>Swipely</strong> — AI Carousel Generator
+      <br><span style="font-size: 12px; color: var(--muted)">Финансовая модель · Версия 1.0</span>
+    </div>
+    <div class="footer-mono" style="text-align: right;">
+      Март 2026<br>
+      <span style="color: var(--lime)">swipely.ru</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── DATA ──
+  const data = [
+    { m:'М1',  free:65,   paid:2,   mrr:1800,   once:300  },
+    { m:'М2',  free:85,   paid:4,   mrr:3600,   once:600  },
+    { m:'М3',  free:110,  paid:7,   mrr:6300,   once:1050 },
+    { m:'М4',  free:143,  paid:11,  mrr:9900,   once:1650 },
+    { m:'М5',  free:186,  paid:16,  mrr:14400,  once:2400 },
+    { m:'М6',  free:242,  paid:23,  mrr:20700,  once:3450 },
+    { m:'М7',  free:315,  paid:32,  mrr:28800,  once:4800 },
+    { m:'М8',  free:410,  paid:44,  mrr:39600,  once:6600 },
+    { m:'М9',  free:533,  paid:59,  mrr:53100,  once:8850 },
+    { m:'М10', free:693,  paid:79,  mrr:71100,  once:11850},
+    { m:'М11', free:901,  paid:105, mrr:94500,  once:15750},
+    { m:'М12', free:1171, paid:138, mrr:124200, once:20700},
+  ];
+
+  const maxTotal = Math.max(...data.map(d => d.mrr + d.once));
+  const chartMax = 150000;
+
+  // ── TABLE ──
+  const tbody = document.getElementById('forecastTable');
+  let cumulative = 0;
+  data.forEach((d, i) => {
+    const total = d.mrr + d.once;
+    cumulative += total;
+    const isMilestone = (d.mrr + d.once) >= 100000;
+    const tr = document.createElement('tr');
+    if (isMilestone) tr.classList.add('milestone');
+    tr.innerHTML = `
+      <td class="mono">${d.m}${isMilestone ? '<span class="milestone-badge">100k+</span>' : ''}</td>
+      <td class="muted">${d.free.toLocaleString('ru')}</td>
+      <td>${d.paid}</td>
+      <td class="lime mono">${d.mrr.toLocaleString('ru')}₽</td>
+      <td class="mono">${d.once.toLocaleString('ru')}₽</td>
+      <td class="mono" style="font-weight:700">${total.toLocaleString('ru')}₽</td>
+      <td class="mono muted">${Math.round(cumulative/1000)}k₽</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // ── CHART ──
+  const barsArea = document.getElementById('barsArea');
+  const xAxis = document.getElementById('xAxis');
+
+  data.forEach((d) => {
+    const total = d.mrr + d.once;
+    const mrrH = (d.mrr / chartMax) * 100;
+    const onceH = (d.once / chartMax) * 100;
+
+    const group = document.createElement('div');
+    group.className = 'bar-group';
+    group.innerHTML = `
+      <div class="bar" style="height:${onceH}%; background: rgba(92,158,255,0.6); margin-bottom:2px;" title="${d.once.toLocaleString('ru')}₽ разовые"></div>
+      <div class="bar" style="height:${mrrH}%; background: var(--lime);" title="${d.mrr.toLocaleString('ru')}₽ MRR"></div>
+    `;
+    barsArea.appendChild(group);
+
+    const xl = document.createElement('div');
+    xl.className = 'x-label';
+    xl.textContent = d.m;
+    xAxis.appendChild(xl);
+  });
+</script>
+</body>
+</html>

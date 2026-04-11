@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120">
+  <!-- transparent background -->
+
+  <!-- Icon: stacked cards -->
+  <g transform="translate(20, 10) scale(0.156)">
+    <!-- back card -->
+    <rect x="215" y="108" width="196" height="248" rx="28"
+      fill="#C8D4E8"
+      transform="rotate(14 313 232)"
+    />
+    <!-- middle card -->
+    <rect x="180" y="130" width="196" height="248" rx="28"
+      fill="#B0BFDA"
+      transform="rotate(6 278 254)"
+    />
+    <!-- front card -->
+    <rect x="120" y="152" width="220" height="248" rx="28" fill="#1A1A2E"/>
+    <!-- lime title bar -->
+    <rect x="148" y="192" width="108" height="22" rx="11" fill="#D4F542"/>
+    <!-- text lines -->
+    <rect x="148" y="230" width="164" height="14" rx="7" fill="rgba(26,26,46,0.4)"/>
+    <rect x="148" y="258" width="138" height="14" rx="7" fill="rgba(26,26,46,0.28)"/>
+    <rect x="148" y="286" width="112" height="14" rx="7" fill="rgba(26,26,46,0.18)"/>
+    <!-- carousel dots -->
+    <rect x="156" y="358" width="36" height="12" rx="6" fill="#D4F542"/>
+    <circle cx="210" cy="364" r="6" fill="rgba(26,26,46,0.2)"/>
+    <circle cx="234" cy="364" r="6" fill="rgba(26,26,46,0.2)"/>
+  </g>
+
+  <!-- Wordmark: Swipely (dark for light backgrounds) -->
+  <text
+    x="108"
+    y="72"
+    font-family="'Outfit', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+    font-size="52"
+    font-weight="800"
+    letter-spacing="-1"
+    fill="#0D0D14"
+  >Swipely</text>
+
+  <!-- Lime dot accent -->
+  <circle cx="94" cy="58" r="5" fill="#D4F542"/>
+</svg>

@@ -13,8 +13,22 @@ function getSupabaseAdmin() {
 
 // Product → subscription duration mapping
 const PRODUCT_DURATION: Record<string, number> = {
+  blogger_monthly: 30,
+  blogger_yearly: 365,
+  creator_monthly: 30,
+  creator_yearly: 365,
   pro_monthly: 30,
   pro_yearly: 365,
+};
+
+// Product → subscription tier mapping
+const PRODUCT_TIER: Record<string, string> = {
+  blogger_monthly: "start",
+  blogger_yearly: "start",
+  creator_monthly: "creator",
+  creator_yearly: "creator",
+  pro_monthly: "pro",
+  pro_yearly: "pro",
 };
 
 // Slide pack products
@@ -118,10 +132,11 @@ export async function POST(request: Request) {
       const baseDate = currentEnd && currentEnd > now ? currentEnd : now;
       const endsAt = new Date(baseDate.getTime() + days * 24 * 60 * 60 * 1000);
 
+      const newTier = PRODUCT_TIER[productId] ?? "pro";
       const { error: subErr } = await supabaseAdmin
         .from("profiles")
         .update({
-          subscription_tier: "pro",
+          subscription_tier: newTier,
           subscription_end: endsAt.toISOString(),
         })
         .eq("id", userId);
@@ -180,7 +195,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("Webhook error:", error);
-    return NextResponse.json({ ok: true }); // Always return 200 to AuraPay
+    console.error("Webhook unexpected error:", error);
+    // Return 500 so AuraPay retries on transient failures (DB down, network errors).
+    // Intentional early returns above (unknown invoice, already processed) still return 200.
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,700&family=Inter:wght@300;400&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { width: 1080px; height: 1080px; overflow: hidden; }
+.slide {
+  width: 1080px; height: 1080px;
+  background: #f0ebe2;
+  position: relative;
+  overflow: hidden;
+}
+.kanji {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 340px;
+  color: rgba(139,115,85,0.07);
+  font-family: serif;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.bottom {
+  position: absolute;
+  bottom: 80px;
+  left: 80px;
+  right: 80px;
+}
+.tag { font-family: 'Inter', sans-serif; font-weight: 300; font-size: 20px; color: #8b7355; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 24px; }
+.brush-line { margin-bottom: 28px; }
+.title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 86px; color: #2a2018; line-height: 1.15; }
+.body { font-family: 'Inter', sans-serif; font-weight: 300; font-size: 32px; color: #6b5d4e; line-height: 1.75; margin-top: 32px; }
+.dots { display: flex; gap: 10px; align-items: center; margin-top: 36px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.active { background: #8b7355; }
+.dot.inactive { background: rgba(139,115,85,0.2); }
+</style>
+</head>
+<body>
+<div class="slide">
+  <svg style="position:absolute;top:60px;right:60px;opacity:0.18" width="140" height="140" viewBox="0 0 140 140" fill="none">
+    <circle cx="70" cy="70" r="65" stroke="#8b7355" stroke-width="2.5" stroke-dasharray="8 5"/>
+  </svg>
+  <div class="kanji">無</div>
+  <div class="bottom">
+    <div class="tag">mindfulness</div>
+    <svg class="brush-line" width="120" height="14" viewBox="0 0 120 14" fill="none">
+      <path d="M0 7 C20 3, 40 11, 60 7 C80 3, 100 11, 120 7" stroke="#8b7355" stroke-width="1.5" fill="none" opacity="0.7"/>
+    </svg>
+    <div class="title">Пространство между словами — тоже смысл</div>
+    <div class="body">Японский принцип «ма» учит ценить паузы, пустоту и незавершённость как форму красоты</div>
+    <div class="dots">
+      <div class="dot active"></div>
+      <div class="dot inactive"></div>
+      <div class="dot inactive"></div>
+      <div class="dot inactive"></div>
+      <div class="dot inactive"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

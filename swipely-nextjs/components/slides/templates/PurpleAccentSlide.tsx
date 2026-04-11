@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 export default function PurpleAccentSlide({
   slide,
@@ -144,20 +145,31 @@ export default function PurpleAccentSlide({
         </h1>
 
         {/* Content text (subtitle) */}
-        <p
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 34,
-            fontWeight: 500,
-            lineHeight: 1.5,
-            color: "#0A0A0A",
-            marginTop: 40,
-            maxWidth: 700,
-            opacity: 0.85,
-          }}
-        >
-          {renderContent(slide.content)}
-        </p>
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div style={{ marginTop: 40 }}>
+            {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#A855F7" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 500, lineHeight: 1.5, color: "#0A0A0A", marginTop: 16, opacity: 0.7 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 34,
+              fontWeight: 500,
+              lineHeight: 1.5,
+              color: "#0A0A0A",
+              marginTop: 40,
+              maxWidth: 700,
+              opacity: 0.85,
+            }}
+          >
+            {renderContent(slide.content)}
+          </p>
+        )}
       </div>
 
       {/* Footer */}

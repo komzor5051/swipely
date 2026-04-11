@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1080px;
+      height: 1920px;
+      background: #0D0D14;
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grid texture */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 54px 54px;
+    }
+
+    /* Lime glow top */
+    .glow-top {
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 700px;
+      background: radial-gradient(ellipse, rgba(212,245,66,0.12) 0%, transparent 70%);
+    }
+
+    /* Logo mark */
+    .logo-area {
+      position: absolute;
+      top: 100px;
+      left: 80px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo-icon {
+      width: 72px;
+      height: 72px;
+      background: #1A1A2E;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border: 1.5px solid rgba(255,255,255,0.08);
+    }
+    .logo-icon-lime {
+      width: 34px;
+      height: 10px;
+      background: #D4F542;
+      border-radius: 5px;
+    }
+    .logo-text {
+      font-size: 42px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    /* Tag */
+    .tag {
+      position: absolute;
+      top: 240px;
+      left: 80px;
+      background: rgba(212,245,66,0.12);
+      border: 1px solid rgba(212,245,66,0.3);
+      color: #D4F542;
+      font-size: 26px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 100px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Headline */
+    .headline {
+      position: absolute;
+      top: 350px;
+      left: 80px;
+      right: 80px;
+      font-size: 112px;
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 0.95;
+      letter-spacing: -5px;
+    }
+    .headline .lime { color: #D4F542; }
+
+    /* Sub */
+    .sub {
+      position: absolute;
+      top: 820px;
+      left: 80px;
+      right: 80px;
+      font-size: 40px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.4;
+      font-weight: 400;
+    }
+
+    /* Card stack visual */
+    .cards-area {
+      position: absolute;
+      bottom: 220px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 680px;
+    }
+    .card {
+      position: absolute;
+      width: 420px;
+      height: 540px;
+      border-radius: 36px;
+      overflow: hidden;
+    }
+    .card-back {
+      background: #1C1C2C;
+      top: 60px;
+      left: 240px;
+      transform: rotate(14deg);
+    }
+    .card-mid {
+      background: #232338;
+      top: 80px;
+      left: 120px;
+      transform: rotate(5deg);
+    }
+    .card-front {
+      background: #1A1A2E;
+      top: 100px;
+      left: 0;
+      border: 1.5px solid rgba(255,255,255,0.06);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+    }
+    .card-front-inner {
+      padding: 40px 36px;
+    }
+    .card-lime-bar {
+      width: 200px;
+      height: 24px;
+      background: #D4F542;
+      border-radius: 12px;
+      margin-bottom: 28px;
+    }
+    .card-line {
+      height: 14px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 7px;
+      margin-bottom: 16px;
+    }
+    .card-dots {
+      position: absolute;
+      bottom: 32px;
+      left: 36px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .dot-active {
+      width: 48px;
+      height: 12px;
+      background: #D4F542;
+      border-radius: 6px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+    }
+
+    /* Stats row */
+    .stats {
+      position: absolute;
+      bottom: 120px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      gap: 0;
+    }
+    .stat {
+      flex: 1;
+      border-left: 2px solid rgba(255,255,255,0.08);
+      padding-left: 32px;
+    }
+    .stat:first-child { border-left: none; padding-left: 0; }
+    .stat-val {
+      font-size: 52px;
+      font-weight: 900;
+      color: #D4F542;
+      font-family: 'Space Mono', monospace;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+    .stat-label {
+      font-size: 24px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 6px;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      color: #2D2D3A;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow-top"></div>
+
+  <div class="logo-area">
+    <div class="logo-icon">
+      <div class="logo-icon-lime"></div>
+    </div>
+    <div class="logo-text">Swipely</div>
+  </div>
+
+  <div class="tag">AI-генератор каруселей</div>
+
+  <div class="headline">
+    От текста<br>к карусели<br><span class="lime">за 30 сек.</span>
+  </div>
+
+  <div class="sub">
+    Отправь текст — получи<br>дизайнерские слайды для Instagram
+  </div>
+
+  <div class="cards-area">
+    <div class="card card-back"></div>
+    <div class="card card-mid"></div>
+    <div class="card card-front">
+      <div class="card-front-inner">
+        <div class="card-lime-bar"></div>
+        <div class="card-line" style="width:88%"></div>
+        <div class="card-line" style="width:72%"></div>
+        <div class="card-line" style="width:55%"></div>
+        <div class="card-line" style="width:80%"></div>
+        <div class="card-line" style="width:65%"></div>
+      </div>
+      <div class="card-dots">
+        <div class="dot-active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val">30с</div>
+      <div class="stat-label">генерация</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">16</div>
+      <div class="stat-label">шаблонов</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">0₽</div>
+      <div class="stat-label">старт</div>
+    </div>
+  </div>
+
+  <div class="footer">swipely.ru</div>
+</body>
+</html>

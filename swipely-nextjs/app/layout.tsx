@@ -1,18 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Space_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import Script from "next/script";
 import "./globals.css";
 
-const outfit = Outfit({
+const inter = Inter({
   variable: "--font-body",
-  subsets: ["latin", "latin-ext"],
-});
-
-const spaceMono = Space_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "700"],
+  subsets: ["latin", "cyrillic"],
 });
 
 export const viewport: Viewport = {
@@ -22,6 +16,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://swipely.ru"),
   title: "Swipely — AI-генератор каруселей для соцсетей",
   description:
     "Создавай карусели для ВКонтакте, Instagram и Telegram за 30 секунд с помощью AI. 18 дизайн-шаблонов, бесплатный старт без карты.",
@@ -69,7 +64,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body
-        className={`${outfit.variable} ${spaceMono.variable} antialiased font-[family-name:var(--font-body)]`}
+        className={`${inter.variable} antialiased font-[family-name:var(--font-body)]`}
       >
         {children}
 
@@ -78,7 +73,7 @@ export default function RootLayout({
           {"@context":"https://schema.org","@type":"WebApplication","@id":"https://swipely.ru/#app","name":"Swipely","url":"https://swipely.ru","description":"AI-генератор каруселей для ВКонтакте, Instagram и Telegram. Создайте профессиональные слайды из текста за 30 секунд.","applicationCategory":"DesignApplication","operatingSystem":"Web","inLanguage":"ru","featureList":["AI-генерация каруселей из текста","18 дизайн-шаблонов","Экспорт в PNG","Редактор слайдов","Поддержка ВКонтакте, Instagram, Telegram","Автоматические подписи к постам","Голосовой ввод"],"offers":{"@type":"Offer","price":"0","priceCurrency":"RUB","description":"Бесплатный план — 3 карусели в месяц без привязки карты"}}
         `}</Script>
         <Script id="ld-json-org" type="application/ld+json" strategy="beforeInteractive">{`
-          {"@context":"https://schema.org","@type":"Organization","@id":"https://swipely.ru/#org","name":"Swipely","url":"https://swipely.ru","logo":"https://swipely.ru/icon.svg","sameAs":["https://t.me/swipelybot"]}
+          {"@context":"https://schema.org","@type":"Organization","@id":"https://swipely.ru/#org","name":"Swipely","url":"https://swipely.ru","logo":"https://swipely.ru/icon.svg"}
         `}</Script>
         <Script id="ld-json-faq" type="application/ld+json" strategy="beforeInteractive">{`
           {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Для каких социальных сетей подходит Swipely?","acceptedAnswer":{"@type":"Answer","text":"Swipely создаёт карусели для любых социальных сетей: ВКонтакте, Instagram, Telegram-каналы, LinkedIn и других платформ. Доступны два формата: квадратный 1080×1080 пикселей и вертикальный 1080×1350 пикселей."}},{"@type":"Question","name":"Что такое карусель в соцсетях?","acceptedAnswer":{"@type":"Answer","text":"Карусель в социальных сетях — это публикация из нескольких слайдов, которую пользователи листают горизонтально. Карусели получают в среднем в 3 раза больше охвата, чем обычные посты, потому что алгоритмы засчитывают каждое свайпание как взаимодействие."}},{"@type":"Question","name":"Как создать карусель для ВКонтакте с помощью AI?","acceptedAnswer":{"@type":"Answer","text":"Зайдите на swipely.ru, вставьте текст или тему поста, выберите шаблон и формат. AI сгенерирует карусель из 3–12 слайдов за 30 секунд. Скачайте PNG-файлы и загрузите их в запись ВКонтакте как фотоальбом."}},{"@type":"Question","name":"Сколько стоит создание карусели?","acceptedAnswer":{"@type":"Answer","text":"Бесплатный план включает 3 карусели в месяц без привязки карты. PRO-план — от 495 ₽/месяц с безлимитными каруселями, AI-генерацией с вашим фото и 18 шаблонами."}},{"@type":"Question","name":"Можно ли редактировать карусель после генерации?","acceptedAnswer":{"@type":"Answer","text":"Да. После генерации доступен встроенный редактор: можно изменить текст, цвет, шрифт, выравнивание и позицию элементов. Готовый результат экспортируется в PNG."}}]}

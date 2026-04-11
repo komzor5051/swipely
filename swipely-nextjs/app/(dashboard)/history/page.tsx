@@ -89,7 +89,7 @@ export default function HistoryPage() {
   }, [filterTemplate]);
 
   useEffect(() => {
-    loadGenerations();
+    loadGenerations(); // eslint-disable-line react-hooks/set-state-in-effect
   }, [loadGenerations]);
 
   const handleDelete = async (id: string) => {
@@ -289,7 +289,7 @@ export default function HistoryPage() {
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-1.5">
                         <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#D4F542]/15 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[10px] sm:text-xs font-bold font-[family-name:var(--font-mono)] text-[#0D0D14]">
+                          <span className="text-[10px] sm:text-xs font-bold tabular-nums text-[#0D0D14]">
                             {gen.slide_count}
                           </span>
                         </div>
@@ -416,7 +416,7 @@ export default function HistoryPage() {
                         onClick={() => setCurrentSlide(i)}
                         className={`rounded-full transition-all duration-300 ${
                           i === currentSlide
-                            ? "w-5 h-2 bg-[#0D0D14]"
+                            ? "w-5 h-2 bg-[#1E1E1E]"
                             : "w-2 h-2 bg-muted-foreground/20 hover:bg-muted-foreground/40"
                         }`}
                       />

@@ -1,0 +1,36 @@
+User-agent: *
+Allow: /
+
+# Allow all major AI search crawlers (citation requires crawling)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Block training-only crawlers (no search/citation benefit)
+User-agent: CCBot
+Disallow: /
+
+User-agent: ia_archiver
+Disallow: /
+
+Sitemap: https://swipely.ru/sitemap.xml

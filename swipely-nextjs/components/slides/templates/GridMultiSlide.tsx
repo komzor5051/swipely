@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 export default function GridMultiSlide({
   slide,
@@ -124,7 +125,7 @@ export default function GridMultiSlide({
               fontFamily: "'Inter', sans-serif",
             }}
           >
-            {username || "Swipely"}
+            {username || ""}
           </span>
           <span
             style={{
@@ -134,7 +135,7 @@ export default function GridMultiSlide({
               fontFamily: "'Inter', sans-serif",
             }}
           >
-            @{username || "swipely"}
+            {username ? `@${username}` : ""}
           </span>
         </div>
       </div>
@@ -183,19 +184,30 @@ export default function GridMultiSlide({
         </h1>
 
         {/* Content */}
-        <p
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 32,
-            fontWeight: 500,
-            lineHeight: 1.5,
-            color: "#888888",
-            marginTop: 50,
-            maxWidth: 700,
-          }}
-        >
-          {renderContent(slide.content)}
-        </p>
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div style={{ marginTop: 50 }}>
+            {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#D4F542" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 500, lineHeight: 1.5, color: "#888888", marginTop: 16 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 32,
+              fontWeight: 500,
+              lineHeight: 1.5,
+              color: "#888888",
+              marginTop: 50,
+              maxWidth: 700,
+            }}
+          >
+            {renderContent(slide.content)}
+          </p>
+        )}
       </div>
 
       {/* Footer */}

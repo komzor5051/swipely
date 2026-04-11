@@ -2,11 +2,8 @@
 
 import Link from "next/link";
 import { useState, useRef } from "react";
-import { Check, Minus, Camera, Zap, ArrowRight, ChevronDown } from "lucide-react";
-import { CustomSlidePicker } from "@/components/pricing/CustomSlidePicker";
+import { Check, Zap, ArrowRight, ChevronDown, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { ProButton } from "./ProButton";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
@@ -14,44 +11,51 @@ import NumberFlow from "@number-flow/react";
 
 // ─── Data ───
 
-const FREE_FEATURES = [
-  { text: "3 карусели в месяц", ok: true },
-  { text: "18 шаблонов дизайна", ok: true },
-  { text: "Подпись к посту", ok: true },
-  { text: "PNG экспорт", ok: true },
-  { text: "AI карусель с вашим фото", ok: false },
-  { text: "Без водяного знака", ok: false },
-  { text: "Приоритетная очередь", ok: false },
-];
-
-const PRO_FEATURES = [
-  { text: "Безлимит карусели в месяц", highlight: false },
-  { text: "AI карусель с вашим фото/персонажем", highlight: true },
-  { text: "18 шаблонов дизайна", highlight: false },
-  { text: "Подпись к посту", highlight: false },
-  { text: "PNG экспорт", highlight: false },
-  { text: "Без водяного знака", highlight: false },
-  { text: "Приоритетная очередь", highlight: false },
-];
-
-const PHOTO_PACKS = [
-  { slides: 15, price: 490, per: "~33₽/слайд", productId: "pack_15" },
-  { slides: 50, price: 1490, per: "~30₽/слайд", productId: "pack_50", popular: true },
-  { slides: 150, price: 3990, per: "~27₽/слайд", productId: "pack_150", best: true },
-];
-
 const FAQS = [
   {
-    q: "Что такое AI карусель с вашим фото?",
-    a: "Генерируем карусель с вашим фото или персонажем на каждом слайде. Вместо стоковых картинок — уникальные изображения с вашим героем и текстом.",
-  },
-  {
-    q: "Зачем покупать кредиты AI карусели?",
-    a: "PRO-подписка открывает доступ к AI карусели с вашим фото. Кредиты — дополнительный запас для больших объёмов. 1 кредит = 1 слайд с вашим персонажем.",
+    q: "Чем отличаются тарифы?",
+    a: "Блогер — 25 каруселей/мес и базовые шаблоны. Про — 100 каруселей и все премиальные шаблоны без ограничений.",
   },
   {
     q: "Можно ли отменить подписку?",
-    a: "Да. Подписка действует до конца оплаченного периода (30 или 365 дней). Автоматического продления нет.",
+    a: "Да. Подписка действует до конца оплаченного периода. Автоматического продления нет.",
+  },
+];
+
+const PLANS = [
+  {
+    id: "free",
+    name: "Бесплатный",
+    tier: "free",
+    monthly: 0,
+    yearly: 0,
+    limit: "3 карусели / мес",
+    productMonthly: null as string | null,
+    productYearly: null as string | null,
+    features: ["3 карусели в месяц", "Базовые шаблоны", "Подпись к посту", "PNG экспорт"],
+  },
+  {
+    id: "blogger",
+    name: "Блогер",
+    tier: "start",
+    monthly: 890,
+    yearly: 712,
+    limit: "25 каруселей / мес",
+    productMonthly: "blogger_monthly",
+    productYearly: "blogger_yearly",
+    features: ["25 каруселей в месяц", "Все базовые шаблоны", "Подпись к посту", "PNG экспорт"],
+  },
+  {
+    id: "creator",
+    name: "Про",
+    tier: "creator",
+    monthly: 1990,
+    yearly: 1592,
+    limit: "100 каруселей / мес",
+    productMonthly: "creator_monthly",
+    productYearly: "creator_yearly",
+    popular: true,
+    features: ["100 каруселей в месяц", "Все шаблоны включая премиальные", "Без водяного знака", "Подпись к посту", "PNG экспорт"],
   },
 ];
 
@@ -60,22 +64,23 @@ const FAQS = [
 function BillingToggle({ billing, onChange }: { billing: "monthly" | "yearly"; onChange: (b: "monthly" | "yearly") => void }) {
   const switchRef = useRef<HTMLButtonElement>(null);
 
-  const handleToggle = (checked: boolean) => {
-    onChange(checked ? "yearly" : "monthly");
-    if (checked && switchRef.current) {
+  const handleToggle = () => {
+    const next = billing === "monthly" ? "yearly" : "monthly";
+    onChange(next);
+    if (next === "yearly" && switchRef.current) {
       const rect = switchRef.current.getBoundingClientRect();
       confetti({
-        particleCount: 50,
-        spread: 60,
+        particleCount: 40,
+        spread: 55,
         origin: {
           x: (rect.left + rect.width / 2) / window.innerWidth,
           y: (rect.top + rect.height / 2) / window.innerHeight,
         },
-        colors: ["#D4F542", "#0D0D14", "#a3e635", "#84cc16"],
-        ticks: 200,
+        colors: ["#D4F542", "#0D0D14", "#a3e635"],
+        ticks: 150,
         gravity: 1.2,
         decay: 0.94,
-        startVelocity: 30,
+        startVelocity: 25,
         shapes: ["circle"],
       });
     }
@@ -86,211 +91,108 @@ function BillingToggle({ billing, onChange }: { billing: "monthly" | "yearly"; o
       <span className={cn("text-sm font-medium", billing === "monthly" ? "text-white" : "text-white/40")}>
         По месяцам
       </span>
-      <Label>
-        <Switch
-          ref={switchRef as React.RefObject<HTMLButtonElement>}
-          checked={billing === "yearly"}
-          onCheckedChange={handleToggle}
-        />
-      </Label>
+      <button
+        ref={switchRef}
+        onClick={handleToggle}
+        className={cn(
+          "relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none",
+          billing === "yearly" ? "bg-[#D4F542]" : "bg-white/20"
+        )}
+      >
+        <span className={cn(
+          "absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200",
+          billing === "yearly" ? "translate-x-5" : "translate-x-0"
+        )} />
+      </button>
       <span className={cn("text-sm font-medium flex items-center gap-1.5", billing === "yearly" ? "text-white" : "text-white/40")}>
         За год
-        <span className="text-[11px] font-bold bg-[#D4F542] text-[#0D0D14] px-1.5 py-0.5 rounded-full leading-none">
-          −17%
-        </span>
+        <span className="text-[10px] font-bold bg-[#D4F542] text-[#0D0D14] px-1.5 py-0.5 rounded-full">−20%</span>
       </span>
     </div>
   );
 }
 
-// ─── Main Plans ───
+// ─── Plans ───
 
 function Plans({ billing }: { billing: "monthly" | "yearly" }) {
-  const proPrice = billing === "yearly" ? 412 : 495;
-  const proProductId = billing === "yearly" ? "pro_yearly" : "pro_monthly";
-  const proLabel = billing === "yearly" ? "Купить PRO · 4 950₽/год →" : "Купить PRO · 495₽/мес →";
-
   return (
-    <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
-      {/* FREE */}
-      <div className="rounded-2xl border border-white/8 bg-white/4 p-5 sm:p-7 flex flex-col backdrop-blur-sm">
-        <div className="mb-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Бесплатный</p>
-          <div className="flex items-end gap-2 mb-1">
-            <span className="text-[56px] font-black tracking-tight leading-none text-white" style={{ fontFamily: "var(--font-mono)" }}>
-              0
-            </span>
-            <span className="text-xl text-white/30 mb-2">₽</span>
-          </div>
-          <p className="text-sm text-white/35">Навсегда бесплатно</p>
-        </div>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-5xl mx-auto">
+      {PLANS.map((plan) => {
+        const price = billing === "yearly" ? plan.yearly : plan.monthly;
+        const productId = billing === "yearly" ? plan.productYearly : plan.productMonthly;
 
-        <ul className="flex-1 space-y-3 mb-8">
-          {FREE_FEATURES.map((f) => (
-            <li key={f.text} className="flex items-center gap-3 text-sm">
-              <span className={cn(
-                "w-5 h-5 rounded-full flex items-center justify-center shrink-0",
-                f.ok ? "bg-white/12" : "bg-white/4"
-              )}>
-                {f.ok
-                  ? <Check className="h-3 w-3 text-white/70" />
-                  : <Minus className="h-3 w-3 text-white/20" />
-                }
-              </span>
-              <span className={f.ok ? "text-white/70" : "text-white/20 line-through decoration-white/15"}>
-                {f.text}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        <Link href="/signup">
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full rounded-xl border-white/15 bg-transparent text-white/60 hover:bg-white/8 hover:text-white hover:border-white/25 transition-all"
+        return (
+          <div
+            key={plan.id}
+            className={cn(
+              "relative rounded-2xl p-5 flex flex-col",
+              plan.popular
+                ? "border-2 border-[#D4F542]/50 bg-[#D4F542]/5 backdrop-blur-sm"
+                : "border border-white/10 bg-white/4 backdrop-blur-sm"
+            )}
           >
-            Начать бесплатно
-          </Button>
-        </Link>
-      </div>
-
-      {/* PRO */}
-      <div className="rounded-2xl border-2 border-[#D4F542]/40 bg-[#0D0D14] p-5 sm:p-7 flex flex-col relative overflow-hidden shadow-2xl shadow-[#D4F542]/5">
-        {/* Glow effects */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-[#D4F542]/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-[#0A84FF]/8 blur-2xl pointer-events-none" />
-        {/* Grid texture */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: "linear-gradient(rgba(212,245,66,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(212,245,66,0.04) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-
-        <div className="absolute top-5 right-5 bg-[#D4F542] text-[#0D0D14] text-xs font-black px-3 py-1 rounded-full z-10">
-          Популярный
-        </div>
-
-        <div className="relative z-10 mb-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">PRO</p>
-          <div className="flex items-end gap-2 mb-1">
-            <span
-              className="text-[56px] font-black tracking-tight leading-none text-white"
-              style={{ fontFamily: "var(--font-mono)" }}
-            >
-              <NumberFlow
-                value={proPrice}
-                format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }}
-                transformTiming={{ duration: 500, easing: "ease-out" }}
-                willChange
-              />
-            </span>
-            <span className="text-xl text-white/35 mb-2">₽/мес</span>
-          </div>
-          <p className="text-sm text-white/30">
-            {billing === "yearly"
-              ? "4 950₽/год · было 9 900₽"
-              : <>было <span className="line-through">990₽</span> · −50%</>}
-          </p>
-        </div>
-
-        <ul className="relative z-10 flex-1 space-y-3 mb-8">
-          {PRO_FEATURES.map((f) => (
-            <li key={f.text} className="flex items-center gap-3 text-sm">
-              <span className={cn(
-                "w-5 h-5 rounded-full flex items-center justify-center shrink-0",
-                f.highlight ? "bg-[#D4F542]" : "bg-white/12"
-              )}>
-                <Check className={cn("h-3 w-3", f.highlight ? "text-[#0D0D14]" : "text-white/80")} />
-              </span>
-              <span className={f.highlight ? "text-[#D4F542] font-semibold" : "text-white/75"}>
-                {f.text}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        <div className="relative z-10">
-          <ProButton
-            productId={proProductId}
-            label={proLabel}
-            className="w-full rounded-xl bg-[#D4F542] hover:bg-[#c8e83a] text-[#0D0D14] font-bold border-0 text-sm"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Photo Mode Credits ───
-
-function PhotoCredits() {
-  return (
-    <div className="max-w-3xl mx-auto">
-      <div className="rounded-2xl border border-white/8 bg-white/4 backdrop-blur-sm p-6">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 rounded-xl bg-[#0A84FF]/15 border border-[#0A84FF]/20 flex items-center justify-center">
-            <Camera className="h-4 w-4 text-[#0A84FF]" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-white text-sm">AI карусель с вашим фото — кредиты</h3>
-            <p className="text-xs text-white/35">Ваш персонаж на каждом слайде · 1 кредит = 1 слайд</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {PHOTO_PACKS.map((pack) => (
-            <div
-              key={pack.productId}
-              className={cn(
-                "rounded-xl p-4 text-center relative flex flex-col items-center",
-                pack.popular
-                  ? "border-2 border-[#0A84FF]/50 bg-[#0A84FF]/8"
-                  : pack.best
-                  ? "border border-[#D4F542]/25 bg-[#D4F542]/4"
-                  : "border border-white/8 bg-white/4"
-              )}
-            >
-              {pack.popular && (
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#0A84FF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">
-                  Выгодно
-                </div>
-              )}
-              {pack.best && (
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#D4F542] text-[#0D0D14] text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">
-                  Максимум
-                </div>
-              )}
-
-              <div
-                className="text-2xl font-black mb-0.5"
-                style={{ fontFamily: "var(--font-mono)", color: pack.best ? "#D4F542" : pack.popular ? "#60A5FA" : "rgba(255,255,255,0.7)" }}
-              >
-                {pack.slides}
+            {plan.popular && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#D4F542] text-[#0D0D14] text-[10px] font-black px-3 py-1 rounded-full whitespace-nowrap">
+                Популярный
               </div>
-              <div className="text-xs text-white/30 mb-3">слайдов</div>
-              <div className="text-lg font-black text-white mb-0.5">{pack.price.toLocaleString("ru-RU")}₽</div>
-              <div className="text-xs text-white/30 mb-4">{pack.per}</div>
+            )}
 
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-3">{plan.name}</p>
+
+            <div className="mb-1">
+              {price === 0 ? (
+                <span className="text-4xl font-black text-white tracking-tight">0₽</span>
+              ) : (
+                <span className="text-4xl font-black text-white tracking-tight">
+                  <NumberFlow
+                    value={price}
+                    format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }}
+                    transformTiming={{ duration: 400, easing: "ease-out" }}
+                    willChange
+                  />₽
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-white/30 mb-0.5">
+              {price === 0 ? "навсегда" : billing === "monthly" ? "в месяц" : "в месяц · при оплате за год"}
+            </p>
+
+            <p className="text-[11px] font-semibold text-white/50 mb-4 mt-1">{plan.limit}</p>
+
+            <ul className="flex-1 space-y-2 mb-5">
+              {plan.features.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <Check className="h-3.5 w-3.5 text-white/50 mt-0.5 shrink-0" />
+                  <span className="text-[11px] text-white/60 leading-tight">{f}</span>
+                </li>
+              ))}
+            </ul>
+
+            {productId ? (
               <ProButton
-                productId={pack.productId}
-                label="Купить"
-                size="sm"
+                productId={productId}
+                label={price === 0 ? "Начать бесплатно" : `Перейти · ${price.toLocaleString("ru-RU")}₽`}
                 className={cn(
-                  "w-full rounded-lg text-xs h-8 px-3 font-semibold border-0",
-                  pack.popular
-                    ? "bg-[#0A84FF] hover:bg-[#0066CC] text-white"
-                    : pack.best
+                  "w-full rounded-xl text-xs font-semibold border-0 h-9",
+                  plan.popular
                     ? "bg-[#D4F542] hover:bg-[#c8e83a] text-[#0D0D14]"
-                    : "bg-white/10 hover:bg-white/15 text-white"
+                    : "bg-white/10 hover:bg-white/18 text-white"
                 )}
               />
-            </div>
-          ))}
-        </div>
-      </div>
+            ) : (
+              <Link href="/signup" className="block">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full rounded-xl text-xs font-semibold bg-white/8 hover:bg-white/14 text-white/70 h-9 border-0"
+                >
+                  Начать бесплатно
+                </Button>
+              </Link>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -303,26 +205,16 @@ function FAQ() {
   return (
     <div className="max-w-2xl mx-auto space-y-2">
       {FAQS.map((faq, i) => (
-        <div
-          key={i}
-          className="rounded-xl border border-white/8 bg-white/4 overflow-hidden"
-        >
+        <div key={i} className="rounded-xl border border-white/8 bg-white/4 overflow-hidden">
           <button
             onClick={() => setOpen(open === i ? null : i)}
             className="w-full flex items-center justify-between px-5 py-4 text-left text-sm font-medium text-white/75 hover:text-white transition-colors"
           >
             {faq.q}
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 text-white/30 transition-transform duration-200 shrink-0 ml-4",
-                open === i && "rotate-180"
-              )}
-            />
+            <ChevronDown className={cn("h-4 w-4 text-white/30 transition-transform duration-200 shrink-0 ml-4", open === i && "rotate-180")} />
           </button>
           {open === i && (
-            <div className="px-5 pb-4 text-sm text-white/40 leading-relaxed">
-              {faq.a}
-            </div>
+            <div className="px-5 pb-4 text-sm text-white/40 leading-relaxed">{faq.a}</div>
           )}
         </div>
       ))}
@@ -336,7 +228,7 @@ export default function PricingPage() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
   return (
-    <div className="min-h-screen bg-[#0D0D14] text-white">
+    <div className="min-h-screen bg-[#1E1E1E] text-white">
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[600px] h-[400px] rounded-full bg-[#D4F542]/4 blur-[120px]" />
@@ -393,14 +285,24 @@ export default function PricingPage() {
         {/* Plans */}
         <Plans billing={billing} />
 
-        {/* Photo Mode Credits */}
-        <div className="space-y-4">
-          <div className="text-center">
-            <p className="text-xs text-white/25 uppercase tracking-widest font-semibold">Дополнительно</p>
-          </div>
-          <PhotoCredits />
-          <div className="max-w-3xl mx-auto">
-            <CustomSlidePicker variant="dark" />
+        {/* Agentstvo */}
+        <div className="max-w-5xl mx-auto">
+          <div className="rounded-2xl border border-white/8 bg-white/4 p-5 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center shrink-0">
+              <Building2 className="h-5 w-5 text-white/50" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white">Агентство</p>
+              <p className="text-xs text-white/35 mt-0.5">Безлимит для команды, белый лейбл, API доступ, SLA</p>
+            </div>
+            <a
+              href="https://t.me/lvmn_ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 rounded-xl px-4 py-2 text-xs font-semibold bg-white text-[#0D0D14] hover:bg-white/90 transition-colors"
+            >
+              Написать
+            </a>
           </div>
         </div>
 

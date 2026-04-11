@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');`;
 
@@ -11,6 +12,7 @@ export default function ReceiptSlide({
   slideNumber,
   totalSlides,
   format,
+  username,
 }: SlideProps) {
   const { width, height } = getSlideDimensions(format);
   const isHook = slideNumber === 1;
@@ -111,9 +113,7 @@ export default function ReceiptSlide({
 
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 800, color: "#1A1A1A", letterSpacing: 3 }}>
-              Swipely
-            </div>
+            {username && <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 800, color: "#1A1A1A", letterSpacing: 3 }}>@{username}</div>}
           </div>
 
           <hr style={{ border: "none", borderTop: "2px dashed #DDDDDD", margin: "20px 0" }} />
@@ -139,9 +139,20 @@ export default function ReceiptSlide({
 
           <hr style={{ border: "none", borderTop: "2px dashed #DDDDDD", margin: "20px 0" }} />
 
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#444", textAlign: "center", margin: "20px 0" }}>
-            {renderContent(slide.content)}
-          </p>
+          {slide.element?.type && slide.element.type !== "none" ? (
+            <div style={{ margin: "20px 0" }}>
+              {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#E8725C" })}
+              {slide.content && (
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 18, fontWeight: 500, lineHeight: 1.4, color: "#666", textAlign: "center", marginTop: 12 }}>
+                  {slide.content}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#444", textAlign: "center", margin: "20px 0" }}>
+              {renderContent(slide.content)}
+            </p>
+          )}
 
           <hr style={{ border: "none", borderTop: "2px dashed #DDDDDD", margin: "20px 0" }} />
 
@@ -153,7 +164,7 @@ export default function ReceiptSlide({
           </div>
 
           <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#AAAAAA", textAlign: "center", letterSpacing: 1 }}>
-            swipely.ai &bull; 01/{String(totalSlides).padStart(2, "0")}
+            &#x2022; 01/{String(totalSlides).padStart(2, "0")}
           </p>
         </div>
       </div>
@@ -211,7 +222,7 @@ export default function ReceiptSlide({
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 800, color: "#1A1A1A", letterSpacing: 2 }}>Swipely</div>
+          {username && <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 800, color: "#1A1A1A", letterSpacing: 2 }}>@{username}</div>}
         </div>
 
         <hr style={{ border: "none", borderTop: "2px dashed #CCCCCC", margin: "18px 0" }} />
@@ -236,9 +247,20 @@ export default function ReceiptSlide({
 
         <hr style={{ border: "none", borderTop: "2px dashed #CCCCCC", margin: "18px 0" }} />
 
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#1A1A1A", textAlign: "center", margin: "18px 0" }}>
-          {slide.content}
-        </p>
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div style={{ margin: "18px 0" }}>
+            {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#E8725C" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 18, fontWeight: 500, lineHeight: 1.4, color: "#555", textAlign: "center", marginTop: 12 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 500, lineHeight: 1.5, color: "#1A1A1A", textAlign: "center", margin: "18px 0" }}>
+            {slide.content}
+          </p>
+        )}
 
         <hr style={{ border: "none", borderTop: "2px dashed #CCCCCC", margin: "18px 0" }} />
 
@@ -249,7 +271,7 @@ export default function ReceiptSlide({
         </div>
 
         <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#888", textAlign: "center", letterSpacing: 1 }}>
-          swipely.ai &bull; {slideNumber}/{totalSlides}
+          &#x2022; {slideNumber}/{totalSlides}
         </p>
       </div>
     </div>

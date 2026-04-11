@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1080px;
+      height: 1920px;
+      background: #0D0D14;
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 54px 54px;
+    }
+
+    /* Big lime glow center */
+    .glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1100px;
+      height: 1100px;
+      background: radial-gradient(ellipse, rgba(212,245,66,0.13) 0%, transparent 65%);
+    }
+
+    .logo-area {
+      position: absolute;
+      top: 100px;
+      left: 80px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo-icon {
+      width: 60px; height: 60px;
+      background: #1A1A2E; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(255,255,255,0.08);
+    }
+    .logo-icon-lime { width: 28px; height: 8px; background: #D4F542; border-radius: 4px; }
+    .logo-text { font-size: 36px; font-weight: 800; color: rgba(255,255,255,0.5); letter-spacing: -1px; }
+
+    /* Center content */
+    .center {
+      position: absolute;
+      top: 50%;
+      left: 80px;
+      right: 80px;
+      transform: translateY(-55%);
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-block;
+      background: rgba(212,245,66,0.12);
+      border: 1px solid rgba(212,245,66,0.3);
+      color: #D4F542;
+      font-size: 26px;
+      font-weight: 700;
+      padding: 12px 32px;
+      border-radius: 100px;
+      margin-bottom: 52px;
+    }
+
+    .headline {
+      font-size: 110px;
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 0.92;
+      letter-spacing: -5px;
+      margin-bottom: 48px;
+    }
+    .headline .lime { color: #D4F542; }
+
+    .sub {
+      font-size: 38px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.4;
+      margin-bottom: 80px;
+    }
+
+    /* Pricing cards */
+    .plans {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 80px;
+    }
+    .plan {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 44px 36px;
+      text-align: left;
+    }
+    .plan.pro {
+      background: rgba(212,245,66,0.06);
+      border-color: rgba(212,245,66,0.25);
+    }
+    .plan-name {
+      font-size: 28px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .plan-name.pro { color: #D4F542; }
+    .plan-price {
+      font-size: 64px;
+      font-weight: 900;
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .plan-period {
+      font-size: 24px;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 28px;
+    }
+    .plan-feature {
+      font-size: 24px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 10px;
+      padding-left: 28px;
+      position: relative;
+    }
+    .plan-feature::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #D4F542;
+      font-weight: 700;
+    }
+
+    /* CTA button */
+    .cta-btn {
+      display: inline-block;
+      background: #D4F542;
+      color: #0D0D14;
+      font-size: 44px;
+      font-weight: 800;
+      padding: 32px 80px;
+      border-radius: 100px;
+      letter-spacing: -0.5px;
+      box-shadow: 0 20px 60px rgba(212,245,66,0.3);
+    }
+
+    /* URL big */
+    .url-big {
+      position: absolute;
+      bottom: 160px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 38px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      color: #2D2D3A;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow"></div>
+
+  <div class="logo-area">
+    <div class="logo-icon"><div class="logo-icon-lime"></div></div>
+    <div class="logo-text">Swipely</div>
+  </div>
+
+  <div class="center">
+    <div class="tag">Попробуй бесплатно</div>
+
+    <div class="headline">
+      Первые<br>3 карусели<br><span class="lime">бесплатно.</span>
+    </div>
+
+    <div class="sub">
+      Без привязки карты.<br>Без лишних шагов.
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">0₽</div>
+        <div class="plan-period">навсегда</div>
+        <div class="plan-feature">3 карусели / мес</div>
+        <div class="plan-feature">16 шаблонов</div>
+        <div class="plan-feature">PNG экспорт</div>
+      </div>
+      <div class="plan pro">
+        <div class="plan-name pro">PRO</div>
+        <div class="plan-price">990₽</div>
+        <div class="plan-period">в месяц</div>
+        <div class="plan-feature">Безлимит</div>
+        <div class="plan-feature">AI-фото слайды</div>
+        <div class="plan-feature">Без водяного знака</div>
+      </div>
+    </div>
+
+    <div class="cta-btn">swipely.ru →</div>
+  </div>
+
+  <div class="url-big">@swipelybot в Telegram</div>
+
+  <div class="footer">swipely.ru</div>
+</body>
+</html>

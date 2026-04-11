@@ -48,13 +48,15 @@ function Sidebar({
 
   const tier = profile?.subscription_tier || "free";
   const used = profile?.standard_used || 0;
-  const limit = tier === "pro" ? -1 : 3;
-  const remaining = tier === "pro" ? "∞" : Math.max(0, limit - used);
-  const limitLabel = tier === "pro" ? "∞" : String(limit);
+  const tierLimits: Record<string, number> = { free: 3, start: 25, creator: 100, pro: -1 };
+  const limit = tierLimits[tier] ?? 3;
+  const remaining = limit === -1 ? null : Math.max(0, limit - used);
+  const limitLabel = limit === -1 ? "∞" : String(limit);
+  const remainingLabel = remaining === null ? "∞" : String(remaining);
 
   return (
     <aside
-      className={`bg-[#0D0D14] text-white p-6 flex flex-col ${className}`}
+      className={`bg-[#1E1E1E] text-white p-6 flex flex-col ${className}`}
     >
       {/* Logo */}
       <div className="mb-8">
@@ -76,23 +78,23 @@ function Sidebar({
       {/* Balance card */}
       <div className="mb-6 rounded-2xl bg-[#D4F542] p-4">
         <div className="text-xs text-[#0D0D14]/60 mb-1">Генерации</div>
-        <div className="text-2xl font-bold font-[family-name:var(--font-mono)] text-[#0D0D14]">
-          {loading ? "—" : remaining}{" "}
+        <div className="text-2xl font-bold tabular-nums text-[#0D0D14]">
+          {loading ? "—" : remainingLabel}
           <span className="text-sm font-normal text-[#0D0D14]/50">
-            / {loading ? "—" : limitLabel}
+            {" "}/ {loading ? "—" : limitLabel}
           </span>
         </div>
         <div className="text-xs text-[#0D0D14]/50 mt-1">
-          {tier === "pro" ? "PRO тариф" : "Бесплатный тариф"}
+          {tier === "pro" ? "PRO тариф" : tier === "creator" ? "Про тариф" : tier === "start" ? "Блогер тариф" : "Бесплатный тариф"}
         </div>
-        {tier !== "pro" && (
+        {tier === "free" && (
           <Link href="/dashboard/pricing">
             <Button
               size="sm"
-              className="w-full mt-3 rounded-full bg-[#0D0D14] text-white hover:bg-[#1A1A2E] active:scale-[0.98] text-xs font-semibold transition-all"
+              className="w-full mt-3 rounded-full bg-[#1E1E1E] text-white hover:bg-[#2e2e2e] active:scale-[0.98] text-xs font-semibold transition-all"
             >
               <CreditCard className="h-3 w-3 mr-1.5" />
-              Перейти на PRO
+              Посмотреть тарифы
             </Button>
           </Link>
         )}
@@ -179,7 +181,7 @@ export default function DashboardLayout({
 
   // Close mobile menu on route change
   useEffect(() => {
-    setMobileOpen(false);
+    setMobileOpen(false); // eslint-disable-line react-hooks/set-state-in-effect
   }, [pathname]);
 
   useEffect(() => {
@@ -259,7 +261,7 @@ export default function DashboardLayout({
     <div className="min-h-screen flex">
       {/* Desktop sidebar */}
       <Sidebar
-        className="hidden md:flex w-64"
+        className="hidden md:flex w-64 sticky top-0 h-screen overflow-y-auto"
         profile={profile}
         email={email}
         loading={loading}
@@ -298,9 +300,9 @@ export default function DashboardLayout({
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 dashboard-light">
         {/* Top bar */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-border/50 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-30">
+        <header className="bg-white/80 backdrop-blur-md border-b border-border/50 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-30 text-[#0D0D14]">
           <button
             className="md:hidden p-2 -ml-1 rounded-lg hover:bg-muted transition-colors active:scale-95"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -312,20 +314,10 @@ export default function DashboardLayout({
             )}
           </button>
 
-          <div className="flex items-center gap-3 ml-auto">
-            <Link href="/generate">
-              <Button
-                size="sm"
-                className="rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] active:scale-[0.98] transition-all shadow-sm hover:shadow-md font-semibold"
-              >
-                <Sparkles className="h-3.5 w-3.5 sm:mr-1.5" />
-                <span className="hidden sm:inline">Создать карусель</span>
-              </Button>
-            </Link>
-          </div>
+          <div className="ml-auto" />
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 md:p-8 bg-grid overflow-x-clip">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 md:p-8 bg-grid overflow-x-clip text-[#0D0D14]">{children}</main>
       </div>
 
       {/* Promo popup — only for non-PRO users */}

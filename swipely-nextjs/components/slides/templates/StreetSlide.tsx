@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500&family=Barlow+Condensed:wght@400;500;600&display=swap');`;
 
@@ -94,19 +95,30 @@ export default function StreetSlide({
           />
 
           {/* CONTENT */}
-          <p
-            style={{
-              fontFamily: "'Barlow', sans-serif",
-              fontSize: 42,
-              fontWeight: 300,
-              lineHeight: 1.6,
-              color: "rgba(244, 243, 241, 0.72)",
-              letterSpacing: 0.2,
-              maxWidth: 820,
-            }}
-          >
-            {renderContent(slide.content)}
-          </p>
+          {slide.element?.type && slide.element.type !== "none" ? (
+            <div>
+              {renderElement({ element: slide.element, textColor: "rgba(244,243,241,0.7)", accentColor: "#FFFFFF" })}
+              {slide.content && (
+                <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: 32, fontWeight: 300, lineHeight: 1.5, color: "rgba(244,243,241,0.55)", letterSpacing: 0.2, marginTop: 16 }}>
+                  {slide.content}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p
+              style={{
+                fontFamily: "'Barlow', sans-serif",
+                fontSize: 42,
+                fontWeight: 300,
+                lineHeight: 1.6,
+                color: "rgba(244, 243, 241, 0.72)",
+                letterSpacing: 0.2,
+                maxWidth: 820,
+              }}
+            >
+              {renderContent(slide.content)}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -190,19 +202,30 @@ export default function StreetSlide({
         />
 
         {/* CONTENT */}
-        <p
-          style={{
-            fontFamily: "'Barlow', sans-serif",
-            fontSize: 44,
-            fontWeight: 300,
-            lineHeight: 1.65,
-            color: "#0A0A0A",
-            letterSpacing: 0.2,
-            maxWidth: 870,
-          }}
-        >
-          {slide.content}
-        </p>
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div>
+            {renderElement({ element: slide.element, textColor: "#555555", accentColor: "#E8001D" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: 32, fontWeight: 300, lineHeight: 1.5, color: "rgba(10,10,10,0.6)", letterSpacing: 0.2, marginTop: 16 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p
+            style={{
+              fontFamily: "'Barlow', sans-serif",
+              fontSize: 44,
+              fontWeight: 300,
+              lineHeight: 1.65,
+              color: "#0A0A0A",
+              letterSpacing: 0.2,
+              maxWidth: 870,
+            }}
+          >
+            {slide.content}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -8,7 +8,6 @@ const footerLinks = {
     { href: "#templates", label: "Шаблоны" },
   ],
   support: [
-    { href: "https://t.me/swipelybot", label: "Telegram-бот" },
     { href: "https://t.me/lyaminvl", label: "Тех. поддержка" },
   ],
   legal: [

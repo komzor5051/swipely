@@ -50,33 +50,33 @@
 :root {
   --radius: 0.625rem;
 
-  /* Swipely Brand Colors — Ink & Lime */
-  --background: #FAFAF9;
-  --foreground: #0D0D14;
-  --card: #FFFFFF;
-  --card-foreground: #0D0D14;
-  --popover: #FFFFFF;
-  --popover-foreground: #0D0D14;
+  /* Swipely — Dark theme as global default */
+  --background: #0D0D0D;
+  --foreground: #FFFFFF;
+  --card: #141414;
+  --card-foreground: #FFFFFF;
+  --popover: #141414;
+  --popover-foreground: #FFFFFF;
   --primary: #D4F542;
   --primary-foreground: #0D0D14;
-  --secondary: #F0F7FF;
-  --secondary-foreground: #0A84FF;
-  --muted: #F0F0ED;
-  --muted-foreground: #6B7280;
+  --secondary: #1A1A1A;
+  --secondary-foreground: #D4F542;
+  --muted: #141414;
+  --muted-foreground: #888888;
   --accent: #D4F542;
   --accent-foreground: #0D0D14;
-  --destructive: #EF4444;
-  --border: #E8E8E4;
-  --input: #E8E8E4;
+  --destructive: #F87171;
+  --border: #2A2A2A;
+  --input: #1A1A1A;
   --ring: #D4F542;
   --chart-1: #D4F542;
   --chart-2: #0A84FF;
   --chart-3: #F9A8D4;
   --chart-4: #3D9FFF;
-  --chart-5: #0066CC;
+  --chart-5: #60A5FA;
 
   /* Sidebar */
-  --sidebar: #0D0D14;
+  --sidebar: #141414;
   --sidebar-foreground: #FFFFFF;
   --sidebar-primary: #D4F542;
   --sidebar-primary-foreground: #0D0D14;
@@ -99,40 +99,39 @@
   --swipely-charcoal-light: #2D2D44;
 }
 
-/* Dark mode — --primary is blue here intentionally; dark mode is not currently
-   active in the dashboard UI. Align to lime if dark mode is ever enabled. */
+/* Dark mode — active on landing page via .dark wrapper div */
 .dark {
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --card: #1E293B;
-  --card-foreground: #F8FAFC;
-  --popover: #1E293B;
-  --popover-foreground: #F8FAFC;
-  --primary: #3D9FFF;
-  --primary-foreground: #FFFFFF;
-  --secondary: #1E293B;
-  --secondary-foreground: #3D9FFF;
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
+  --background: #0D0D0D;
+  --foreground: #FFFFFF;
+  --card: #141414;
+  --card-foreground: #FFFFFF;
+  --popover: #141414;
+  --popover-foreground: #FFFFFF;
+  --primary: #D4F542;
+  --primary-foreground: #0D0D14;
+  --secondary: #1A1A1A;
+  --secondary-foreground: #D4F542;
+  --muted: #141414;
+  --muted-foreground: #888888;
   --accent: #D4F542;
-  --accent-foreground: #1A1A2E;
+  --accent-foreground: #0D0D14;
   --destructive: #F87171;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: #3D9FFF;
-  --chart-1: #3D9FFF;
-  --chart-2: #D4F542;
+  --border: #2A2A2A;
+  --input: #1A1A1A;
+  --ring: #D4F542;
+  --chart-1: #D4F542;
+  --chart-2: #0A84FF;
   --chart-3: #F9A8D4;
-  --chart-4: #0A84FF;
+  --chart-4: #3D9FFF;
   --chart-5: #60A5FA;
-  --sidebar: #1E293B;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #3D9FFF;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: rgba(255, 255, 255, 0.1);
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: rgba(255, 255, 255, 0.2);
+  --sidebar: #141414;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #D4F542;
+  --sidebar-primary-foreground: #0D0D14;
+  --sidebar-accent: rgba(212, 245, 66, 0.12);
+  --sidebar-accent-foreground: #D4F542;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(212, 245, 66, 0.3);
 }
 
 @layer base {
@@ -152,7 +151,7 @@
     color: inherit;
   }
   :focus-visible {
-    outline: 2px solid #0D0D14;
+    outline: 2px solid #D4F542;
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -165,7 +164,7 @@
 
 /* ===== Swipely Utility Classes ===== */
 
-/* Blueprint grid background with lime radial glows */
+/* Blueprint grid background — dark with lime radial glows */
 .gradient-bg {
   position: fixed;
   top: 0;
@@ -173,15 +172,15 @@
   width: 100%;
   height: 100%;
   z-index: -1;
-  background-color: #FAFAF9;
+  background-color: #0D0D0D;
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.045) 1px, transparent 1px),
-    linear-gradient(rgba(0, 0, 0, 0.085) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.085) 1px, transparent 1px),
-    radial-gradient(ellipse 70% 50% at 15% 30%, rgba(212, 245, 66, 0.08) 0%, transparent 55%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    radial-gradient(ellipse 70% 50% at 15% 30%, rgba(212, 245, 66, 0.07) 0%, transparent 55%),
     radial-gradient(ellipse 55% 60% at 85% 15%, rgba(10, 132, 255, 0.04) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 70% at 65% 85%, rgba(212, 245, 66, 0.05) 0%, transparent 55%);
+    radial-gradient(ellipse 60% 70% at 65% 85%, rgba(212, 245, 66, 0.04) 0%, transparent 55%);
   background-size:
     24px 24px,
     24px 24px,
@@ -192,24 +191,24 @@
     100% 100%;
 }
 
-/* Gradient text effect */
+/* Gradient text effect — light for dark backgrounds */
 .text-gradient {
-  background: linear-gradient(135deg, #0D0D14 0%, #2D2D44 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #D4D4D4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Frosted glass */
+/* Frosted glass — dark variant for dark backgrounds */
 .glass {
   backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(13, 13, 13, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-dark {
   backdrop-filter: blur(20px);
-  background: rgba(26, 26, 46, 0.8);
+  background: rgba(13, 13, 13, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -224,7 +223,7 @@
   border-radius: 100px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0D0D14;
+  color: #FFFFFF;
   letter-spacing: 0.01em;
 }
 
@@ -295,6 +294,29 @@
     linear-gradient(rgba(0, 0, 0, 0.10) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.10) 1px, transparent 1px);
   background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+}
+
+/* ===== Dashboard light theme override ===== */
+/* Applied to the dashboard content area so CSS vars resolve to light values,
+   while the landing page retains the dark :root defaults. */
+.dashboard-light {
+  --background: #FAFAF9;
+  --foreground: #0D0D14;
+  --card: #FFFFFF;
+  --card-foreground: #0D0D14;
+  --popover: #FFFFFF;
+  --popover-foreground: #0D0D14;
+  --primary: #D4F542;
+  --primary-foreground: #0D0D14;
+  --secondary: #F0F0EE;
+  --secondary-foreground: #0D0D14;
+  --muted: #F0F0EE;
+  --muted-foreground: #6B6B6B;
+  --accent: #D4F542;
+  --accent-foreground: #0D0D14;
+  --border: #E5E5E0;
+  --input: #F0F0EE;
+  --ring: #D4F542;
 }
 
 /* ===== Hide scrollbar utility ===== */

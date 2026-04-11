@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap');`;
 
@@ -106,18 +107,29 @@ export default function ChapterSlide({
             }}
           />
 
-          <p
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 38,
-              fontWeight: 300,
-              lineHeight: 1.7,
-              color: "#5A5246",
-              maxWidth: 800,
-            }}
-          >
-            {renderContent(slide.content)}
-          </p>
+          {slide.element?.type && slide.element.type !== "none" ? (
+            <div>
+              {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#8B7355" })}
+              {slide.content && (
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 300, lineHeight: 1.6, color: "#8B7355", marginTop: 16 }}>
+                  {slide.content}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 38,
+                fontWeight: 300,
+                lineHeight: 1.7,
+                color: "#5A5246",
+                maxWidth: 800,
+              }}
+            >
+              {renderContent(slide.content)}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -218,18 +230,29 @@ export default function ChapterSlide({
           }}
         />
 
-        <p
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 38,
-            fontWeight: 300,
-            lineHeight: 1.72,
-            color: "#3A3328",
-            flex: 1,
-          }}
-        >
-          {slide.content}
-        </p>
+        {slide.element?.type && slide.element.type !== "none" ? (
+          <div style={{ flex: 1 }}>
+            {renderElement({ element: slide.element, textColor: "#666666", accentColor: "#8B7355" })}
+            {slide.content && (
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 300, lineHeight: 1.6, color: "#8B7355", marginTop: 16 }}>
+                {slide.content}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 38,
+              fontWeight: 300,
+              lineHeight: 1.72,
+              color: "#3A3328",
+              flex: 1,
+            }}
+          >
+            {slide.content}
+          </p>
+        )}
 
         {/* Footer */}
         <div

@@ -18,6 +18,17 @@ import ChapterSlide from "./templates/ChapterSlide";
 import DispatchSlide from "./templates/DispatchSlide";
 import FrameSlide from "./templates/FrameSlide";
 import NewspaperSlide from "./templates/NewspaperSlide";
+import TerminalSlide from "./templates/TerminalSlide";
+import NikkeiSlide from "./templates/NikkeiSlide";
+import SwissSlide from "./templates/SwissSlide";
+import KinfolkSlide from "./templates/KinfolkSlide";
+import BlueprintSlide from "./templates/BlueprintSlide";
+import PolaroidSlide from "./templates/PolaroidSlide";
+import MagazineSlide from "./templates/MagazineSlide";
+import WabiSlide from "./templates/WabiSlide";
+import OneTwoPrimeDarkSlide from "./templates/OneTwoPrimeDarkSlide";
+import OneTwoPrimeWhiteSlide from "./templates/OneTwoPrimeWhiteSlide";
+import TerracotSlide from "./templates/TerracotSlide";
 
 const TEMPLATE_MAP: Record<string, React.ComponentType<SlideProps>> = {
   swipely: SwipelySlide,
@@ -33,6 +44,17 @@ const TEMPLATE_MAP: Record<string, React.ComponentType<SlideProps>> = {
   dispatch: DispatchSlide,
   frame: FrameSlide,
   newspaper: NewspaperSlide,
+  terminal: TerminalSlide,
+  nikkei: NikkeiSlide,
+  swiss: SwissSlide,
+  kinfolk: KinfolkSlide,
+  blueprint: BlueprintSlide,
+  polaroid: PolaroidSlide,
+  magazine: MagazineSlide,
+  wabi: WabiSlide,
+  onetwo_dark: OneTwoPrimeDarkSlide,
+  onetwo_white: OneTwoPrimeWhiteSlide,
+  terracot: TerracotSlide,
 };
 
 interface SlideRendererProps extends SlideProps {

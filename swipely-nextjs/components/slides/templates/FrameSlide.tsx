@@ -3,6 +3,7 @@
 import React from "react";
 import type { SlideProps } from "../types";
 import { renderTitle, renderContent, getSlideDimensions } from "../utils";
+import { renderElement } from "../elements";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap');`;
 
@@ -126,20 +127,31 @@ export default function FrameSlide({
             }}
           />
 
-          <p
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 34,
-              fontWeight: 300,
-              lineHeight: 1.7,
-              color: "rgba(245,244,240,0.45)",
-              maxWidth: 760,
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            {renderContent(slide.content)}
-          </p>
+          {slide.element?.type && slide.element.type !== "none" ? (
+            <div style={{ position: "relative", zIndex: 1 }}>
+              {renderElement({ element: slide.element, textColor: "rgba(255,255,255,0.7)", accentColor: GOLD })}
+              {slide.content && (
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 300, lineHeight: 1.6, color: "rgba(245,244,240,0.35)", marginTop: 16 }}>
+                  {slide.content}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 34,
+                fontWeight: 300,
+                lineHeight: 1.7,
+                color: "rgba(245,244,240,0.45)",
+                maxWidth: 760,
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              {renderContent(slide.content)}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -234,17 +246,28 @@ export default function FrameSlide({
             }}
           />
 
-          <p
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 36,
-              fontWeight: 300,
-              lineHeight: 1.75,
-              color: "rgba(245,244,240,0.45)",
-            }}
-          >
-            {renderContent(slide.content)}
-          </p>
+          {slide.element?.type && slide.element.type !== "none" ? (
+            <div>
+              {renderElement({ element: slide.element, textColor: "rgba(255,255,255,0.7)", accentColor: GOLD })}
+              {slide.content && (
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 300, lineHeight: 1.6, color: "rgba(245,244,240,0.35)", marginTop: 16 }}>
+                  {slide.content}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 36,
+                fontWeight: 300,
+                lineHeight: 1.75,
+                color: "rgba(245,244,240,0.45)",
+              }}
+            >
+              {renderContent(slide.content)}
+            </p>
+          )}
         </div>
       </div>
 

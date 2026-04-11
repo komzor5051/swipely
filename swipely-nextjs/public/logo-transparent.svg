@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 48" fill="none">
+  <g transform="translate(2, 2)">
+    <path d="
+      M22 2  C22.8 15, 25 20, 42 22
+                C25 24, 22.8 29, 22 42
+                C21.2 29, 19 24, 2 22
+                C19 20, 21.2 15, 22 2 Z
+    " fill="#FFFFFF" opacity="0.9"/>
+    <circle cx="22" cy="22" r="3" fill="#D4F542"/>
+  </g>
+  <text x="56" y="34" font-family="'Outfit', 'Manrope', 'Inter', -apple-system, sans-serif" font-weight="700" font-size="30" fill="#FFFFFF" letter-spacing="0.5">swipely</text>
+</svg>
