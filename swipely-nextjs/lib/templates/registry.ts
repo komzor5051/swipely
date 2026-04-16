@@ -1,3 +1,5 @@
+import { designPresets } from "@/lib/generation/presets";
+
 export interface Template {
   id: string;
   name: string;
@@ -20,7 +22,7 @@ export const templates: Template[] = [
     description: "Фирменный стиль Swipely с синим градиентом и лайм-акцентами",
     preview: "/previews/swipely.png",
     tags: ["фирменный", "градиенты"],
-    maxWordsPerSlide: 30,
+    maxWordsPerSlide: presetWords("swipely", 35),
     tone: "professional",
   },
   {
@@ -41,7 +43,7 @@ export const templates: Template[] = [
     description: "Стиль с фиолетовыми акцентами на светлом фоне",
     preview: "/previews/purple_accent.png",
     tags: ["светлый", "элегантный"],
-    maxWordsPerSlide: 30,
+    maxWordsPerSlide: presetWords("purple_accent", 35),
     tone: "professional",
   },
   {
@@ -53,6 +55,7 @@ export const templates: Template[] = [
     tags: ["креативный", "моно"],
     maxWordsPerSlide: 25,
     tone: "friendly",
+    startOnly: true,
   },
   {
     id: "quote_doodle",
@@ -61,8 +64,9 @@ export const templates: Template[] = [
     description: "Рисованный стиль с дудлами и цитатами",
     preview: "/previews/quote_doodle.png",
     tags: ["рисованный", "креативный"],
-    maxWordsPerSlide: 20,
+    maxWordsPerSlide: presetWords("quote_doodle", 30),
     tone: "friendly",
+    startOnly: true,
   },
   {
     id: "speech_bubble",
@@ -71,8 +75,9 @@ export const templates: Template[] = [
     description: "Стиль с пузырями сообщений как в мессенджере",
     preview: "/previews/speech_bubble.png",
     tags: ["общение", "яркий"],
-    maxWordsPerSlide: 25,
+    maxWordsPerSlide: presetWords("speech_bubble", 20),
     tone: "friendly",
+    startOnly: true,
   },
   {
     id: "star_highlight",
@@ -83,6 +88,7 @@ export const templates: Template[] = [
     tags: ["яркий", "акценты"],
     maxWordsPerSlide: 25,
     tone: "energetic",
+    startOnly: true,
   },
   {
     id: "street",
@@ -91,7 +97,7 @@ export const templates: Template[] = [
     description: "Жёсткий чёрно-белый стиль — огромный заголовок, clean разделитель",
     preview: "/previews/street.png",
     tags: ["светлый", "bold", "минималистичный"],
-    maxWordsPerSlide: 30,
+    maxWordsPerSlide: presetWords("street", 25),
     tone: "provocative",
     proOnly: true,
   },

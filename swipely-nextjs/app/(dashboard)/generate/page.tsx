@@ -65,6 +65,15 @@ const TONES = [
   { id: "provocative", label: "Провокационный", emoji: "🔥" },
   { id: "motivational", label: "Мотивационный", emoji: "💪" },
 ];
+
+const FRAMEWORK_OPTIONS = [
+  { id: "mistakes", label: "3 ошибки" },
+  { id: "case-study", label: "Кейс-разбор" },
+  { id: "step-by-step", label: "Пошаговый гайд" },
+  { id: "before-after", label: "До/После" },
+  { id: "myths-vs-reality", label: "Мифы vs Реальность" },
+  { id: "checklist", label: "Чек-лист" },
+] as const;
 const IMAGE_STYLES: { id: ImageStyle; label: string; description: string }[] = [
   {
     id: "cartoon",
@@ -99,6 +108,7 @@ function GeneratePage() {
   const [slideCount, setSlideCount] = useState(5);
   const [format, setFormat] = useState("portrait");
   const [tone, setTone] = useState("educational");
+  const [framework, setFramework] = useState<string | null>(null);
   const [result, setResult] = useState<CarouselResult | null>(null);
   const [preserveText, setPreserveText] = useState(false);
   const [_error, setError] = useState("");
@@ -1223,7 +1233,7 @@ function GeneratePage() {
                       transition={{ duration: 0.5, ease: "easeOut" }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2 font-[family-name:var(--font-mono)]">
+                  <p className="text-xs text-muted-foreground mt-2 tabular-nums">
                     {photoGen.progress} / {photoGen.totalSlides} слайдов
                   </p>
                 </div>
