@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [username, setUsername] = useState("");
+  const [telegramUsername, setTelegramUsername] = useState("");
   const [tovGuidelines, setTovGuidelines] = useState("");
   const [tovProfile, setTovProfile] = useState<Record<string, string> | null>(null);
   const [tovUrl, setTovUrl] = useState("");
@@ -54,6 +55,7 @@ export default function SettingsPage() {
         setProfile(p);
         setFirstName(p.first_name || "");
         setUsername(p.username || "");
+        setTelegramUsername(p.telegram_username || "");
         setTovGuidelines(p.tov_guidelines || "");
         if (p.tov_profile && typeof p.tov_profile === 'object') {
           setTovProfile(p.tov_profile as unknown as Record<string, string>);
@@ -73,6 +75,7 @@ export default function SettingsPage() {
     const updates: Record<string, unknown> = {
       first_name: firstName,
       username,
+      telegram_username: telegramUsername || null,
       tov_guidelines: tovGuidelines,
     };
     if (tovProfile) {
@@ -186,14 +189,26 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  value={profile?.email || ""}
-                  disabled
-                  className="rounded-xl"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    value={profile?.email || ""}
+                    disabled
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="telegramUsername">Telegram</Label>
+                  <Input
+                    id="telegramUsername"
+                    value={telegramUsername}
+                    onChange={(e) => setTelegramUsername(e.target.value.replace(/^@/, ""))}
+                    placeholder="@username"
+                    className="rounded-xl"
+                  />
+                </div>
               </div>
             </div>
 

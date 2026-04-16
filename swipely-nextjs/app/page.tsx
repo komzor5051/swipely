@@ -21,12 +21,24 @@ import {
 /* ─── Hero ─── */
 function Hero() {
   return (
-    <section className="min-h-screen flex items-center pt-32 pb-16 px-6 relative">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center w-full">
+    <section className="min-h-screen flex items-center pt-24 sm:pt-32 pb-16 px-6 relative overflow-hidden">
+      {/* Ambient background video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style={{ opacity: 0.6 }}
+      >
+        <source src="/hero-ambient.webm" type="video/webm" />
+        <source src="/hero-ambient.mp4" type="video/mp4" />
+      </video>
+      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center w-full relative z-10">
         {/* Left content */}
         <div>
           <span className="section-tag mb-6 inline-block">
-            AI-генератор каруселей
+            AI-генератор каруселей для соцсетей
           </span>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-6">
@@ -37,7 +49,7 @@ function Hero() {
 
           <p className="text-lg text-muted-foreground max-w-lg mb-8 leading-relaxed">
             Отправь текст или голосовое — AI создаст дизайнерские слайды для
-            Instagram. 16 шаблонов, автоматические подписи, экспорт в PNG.
+            ВКонтакте, Instagram и Telegram. 18 шаблонов, автоматические подписи, экспорт в PNG.
           </p>
 
           <div className="flex flex-wrap gap-4 mb-10">
@@ -62,7 +74,7 @@ function Hero() {
           </div>
 
           {/* Stats */}
-          <div className="flex gap-10 pt-6 border-t border-border">
+          <div className="flex flex-wrap gap-6 sm:gap-10 pt-6 border-t border-border">
             {[
               { value: "16", label: "шаблонов" },
               { value: "30с", label: "генерация" },
@@ -136,6 +148,39 @@ function Hero() {
   );
 }
 
+/* ─── Platforms ─── */
+function Platforms() {
+  const platforms = [
+    { name: "ВКонтакте", formats: "1080×1080 · 1080×1350" },
+    { name: "Instagram", formats: "1080×1080 · 1080×1350" },
+    { name: "Telegram", formats: "1080×1080 · 1080×1350" },
+    { name: "LinkedIn", formats: "1080×1080" },
+    { name: "Pinterest", formats: "1080×1350" },
+    { name: "Facebook", formats: "1080×1080 · 1080×1350" },
+  ];
+
+  return (
+    <section className="py-10 px-6 border-y border-border">
+      <div className="max-w-5xl mx-auto">
+        <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">
+          Карусели для любых соцсетей
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          {platforms.map((p) => (
+            <div
+              key={p.name}
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card text-sm"
+            >
+              <span className="font-semibold">{p.name}</span>
+              <span className="text-muted-foreground text-xs">{p.formats}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ─── How It Works ─── */
 function HowItWorks() {
   const steps = [
@@ -155,7 +200,7 @@ function HowItWorks() {
       icon: <Download className="h-7 w-7" />,
       title: "Скачай и публикуй",
       description:
-        "Готовые PNG-слайды с подписью для поста. Скачай и выложи в Instagram.",
+        "Готовые PNG-слайды с подписью для поста. Выложи в ВКонтакте, Instagram, Telegram или любую другую соцсеть.",
     },
   ];
 
@@ -370,18 +415,19 @@ function PricingPreview() {
           description="Начни бесплатно, переходи на PRO когда будешь готов"
         />
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
           {/* Free */}
-          <div className="rounded-3xl border border-border p-8 bg-card">
-            <h3 className="text-xl font-bold mb-1">Бесплатный</h3>
-            <p className="text-sm text-muted-foreground mb-6">Для старта</p>
-            <div className="text-4xl font-extrabold mb-6">
-              0<span className="text-lg text-muted-foreground font-normal">₽</span>
+          <div className="rounded-2xl border border-border p-6 sm:p-8 bg-card flex flex-col">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Бесплатный</h3>
+            <div className="flex items-end gap-2 mb-1">
+              <span className="text-5xl font-black tracking-tight leading-none" style={{ fontFamily: "var(--font-mono)" }}>0</span>
+              <span className="text-xl text-muted-foreground mb-1">₽</span>
             </div>
-            <ul className="space-y-3 mb-8">
+            <p className="text-sm text-muted-foreground mb-6">Навсегда бесплатно</p>
+            <ul className="flex-1 space-y-3 mb-8">
               {[
                 "3 карусели в месяц",
-                "16 шаблонов",
+                "18 шаблонов дизайна",
                 "Подпись к посту",
                 "PNG экспорт",
               ].map((f) => (
@@ -399,29 +445,25 @@ function PricingPreview() {
           </div>
 
           {/* PRO */}
-          <div className="rounded-3xl border-2 border-[#D4F542] p-8 bg-card relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-[#D4F542] text-[#0D0D14] text-xs font-bold px-4 py-1.5 rounded-bl-xl">
-              PRO
+          <div className="rounded-2xl border-2 border-[#D4F542] p-6 sm:p-8 bg-card relative overflow-hidden flex flex-col">
+            <div className="absolute top-4 right-4 bg-[#D4F542] text-[#0D0D14] text-xs font-black px-3 py-1 rounded-full">
+              −50%
             </div>
-            <h3 className="text-xl font-bold mb-1">PRO</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">PRO</h3>
+            <div className="flex items-end gap-2 mb-1">
+              <span className="text-5xl font-black tracking-tight leading-none" style={{ fontFamily: "var(--font-mono)" }}>495</span>
+              <span className="text-xl text-muted-foreground mb-1">₽/мес</span>
+            </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Для профессионалов
+              было <span className="line-through">990₽</span> · или 4 950₽/год
             </p>
-            <div className="text-4xl font-extrabold mb-1">
-              990
-              <span className="text-lg text-muted-foreground font-normal">
-                ₽/мес
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mb-6">
-              или 9 900₽/год (2 мес бесплатно)
-            </p>
-            <ul className="space-y-3 mb-8">
+            <ul className="flex-1 space-y-3 mb-8">
               {[
-                "Безлимит Standard",
-                "Photo Mode (20% скидка)",
-                "Приоритетная очередь",
+                "Безлимит карусели в месяц",
+                "AI карусель с вашим фото",
+                "18 шаблонов дизайна",
                 "Без водяного знака",
+                "Приоритетная очередь",
               ].map((f) => (
                 <li key={f} className="flex items-center gap-2 text-sm">
                   <Check className="h-4 w-4 text-[#0D0D14]" />
@@ -430,8 +472,8 @@ function PricingPreview() {
               ))}
             </ul>
             <Link href="/signup">
-              <Button className="w-full rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a]">
-                Попробовать PRO
+              <Button className="w-full rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] font-bold">
+                Попробовать PRO →
               </Button>
             </Link>
           </div>
@@ -454,20 +496,20 @@ function PricingPreview() {
 function FAQ() {
   const faqs = [
     {
+      q: "Для каких соцсетей подходит Swipely?",
+      a: "Для любых: ВКонтакте, Instagram, Telegram-каналы, LinkedIn и других. Доступны квадратный формат (1080×1080) и вертикальный (1080×1350) — оба подходят для всех перечисленных платформ.",
+    },
+    {
       q: "Как начать пользоваться?",
-      a: "Зарегистрируйся, отправь текст на странице генерации — получи готовую карусель за 30 секунд. 3 бесплатных генерации каждый месяц.",
+      a: "Зарегистрируйся, отправь текст на странице генерации — получи готовую карусель за 30 секунд. 3 бесплатных генерации каждый месяц, без привязки карты.",
     },
     {
-      q: "Какие форматы поддерживаются?",
-      a: "Квадратный (1080×1080) и вертикальный (1080×1350). Экспорт в PNG с качеством 2x.",
-    },
-    {
-      q: "Что такое Photo Mode?",
-      a: "Режим с AI-генерацией фото-слайдов. Каждый слайд — уникальное изображение с текстом. Оплата за карусель или пакетами слайдов.",
+      q: "Что такое AI карусель с вашим фото?",
+      a: "Карусель, где на каждом слайде — ваше фото или персонаж, стилизованное под выбранный жанр (реалистичный или мультяшный). Каждый слайд — уникальное AI-изображение с текстом. Доступно на PRO.",
     },
     {
       q: "Можно ли редактировать карусель?",
-      a: "Да! После генерации можно открыть карусель в редакторе, изменить текст, переставить элементы и скачать результат.",
+      a: "Да. После генерации открывается редактор: меняй текст, шрифт, цвет, позицию элементов — и скачивай результат в PNG.",
     },
   ];
 
@@ -542,6 +584,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <Platforms />
         <HowItWorks />
         <Demo />
         <Benefits />

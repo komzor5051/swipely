@@ -10,6 +10,7 @@ const navLinks = [
   { href: "#how-it-works", label: "Как это работает" },
   { href: "#templates", label: "Шаблоны" },
   { href: "/pricing", label: "Тарифы" },
+  { href: "/blog", label: "Блог" },
 ];
 
 export function Navbar() {

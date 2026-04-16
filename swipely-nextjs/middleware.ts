@@ -42,7 +42,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/generate") ||
       pathname.startsWith("/history") ||
       pathname.startsWith("/editor") ||
-      pathname.startsWith("/referral"))
+      pathname.startsWith("/referral") ||
+      pathname.startsWith("/admin"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -68,6 +69,8 @@ export const config = {
     "/editor/:path*",
     "/referral/:path*",
     "/referral",
+    "/admin/:path*",
+    "/admin",
     "/login",
     "/signup",
   ],

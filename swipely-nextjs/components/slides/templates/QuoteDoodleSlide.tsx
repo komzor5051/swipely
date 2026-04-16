@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 export default function QuoteDoodleSlide({
   slide,
@@ -17,8 +17,8 @@ export default function QuoteDoodleSlide({
     display: "inline",
     background: "#A3E635",
     color: "#0A0A0A",
-    padding: "6px 16px",
-    margin: "0 -6px",
+    padding: "0px 12px",
+    margin: "0 -4px",
     boxDecorationBreak: "clone",
     WebkitBoxDecorationBreak: "clone",
   };
@@ -154,7 +154,7 @@ export default function QuoteDoodleSlide({
             fontFamily: "'Inter', sans-serif",
             fontSize: isHook ? 90 : 82,
             fontWeight: 900,
-            lineHeight: 1.05,
+            lineHeight: 1.15,
             color: "#0A0A0A",
             letterSpacing: -3,
             maxWidth: 850,
@@ -177,7 +177,7 @@ export default function QuoteDoodleSlide({
               maxWidth: 700,
             }}
           >
-            {slide.content}
+            {renderContent(slide.content)}
           </p>
         )}
       </div>
@@ -199,62 +199,13 @@ export default function QuoteDoodleSlide({
         {"\u201D"}
       </div>
 
-      {/* Dashed arrow decoration */}
-      <div
-        style={{
-          position: "absolute",
-          right: 180,
-          top: "55%",
-          width: 200,
-          height: 200,
-        }}
-      >
-        <svg width="100%" height="100%" viewBox="0 0 200 200">
-          <path
-            d="M 20 100 Q 100 20, 100 100 Q 100 160, 140 180 L 160 160 M 140 180 L 130 155"
-            fill="none"
-            stroke="#0A0A0A"
-            strokeWidth={3}
-            strokeDasharray="12, 8"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
-      {/* CTA circle button */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 100,
-          right: 100,
-          width: 80,
-          height: 80,
-          background: "#1A1A1A",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <svg
-          width={28}
-          height={28}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#A3E635"
-          strokeWidth={2.5}
-        >
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
-      </div>
-
       {/* Footer */}
       <div
         style={{
           position: "absolute",
           bottom: 50,
           left: 60,
-          right: 200,
+          right: 60,
           display: "flex",
           justifyContent: "space-between",
           fontFamily: "'Inter', sans-serif",

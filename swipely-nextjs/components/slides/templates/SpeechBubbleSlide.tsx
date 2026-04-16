@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 export default function SpeechBubbleSlide({
   slide,
@@ -196,7 +196,7 @@ export default function SpeechBubbleSlide({
                 color: "#F26B3A",
               }}
             >
-              {slide.content}
+              {renderContent(slide.content)}
             </span>
           </div>
         </div>

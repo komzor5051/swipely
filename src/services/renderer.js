@@ -181,6 +181,12 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
     case 'street':
       templatePath = path.join(TEMPLATES_DIR, 'street.html');
       break;
+    case 'photo_split_light':
+      templatePath = path.join(TEMPLATES_DIR, 'photo_split_light.html');
+      break;
+    case 'photo_split_dark':
+      templatePath = path.join(TEMPLATES_DIR, 'photo_split_dark.html');
+      break;
     default:
       templatePath = path.join(TEMPLATES_DIR, 'notebook.html');
   }
@@ -201,12 +207,25 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
     .replace(/height:\s*1350px/g, `height: ${height}px`);
 
   // Заменяем плейсхолдеры
+  const photoUrl = slide.photoUrl || slide.userPhotoUrl || '';
+  const photoPosition = slide.photoPosition || slide.userPhotoPosition || 'top';
+  const hasPhoto = !!photoUrl;
+
   let html = template
     .replace(/\{\{SLIDE_NUMBER\}\}/g, slideNumber)
     .replace(/\{\{TOTAL_SLIDES\}\}/g, totalSlides)
     .replace(/\{\{TITLE\}\}/g, slide.title || '')
     .replace(/\{\{CONTENT\}\}/g, slide.content || '')
-    .replace(/\{\{TYPE\}\}/g, slide.type || 'statement');
+    .replace(/\{\{TYPE\}\}/g, slide.type || 'statement')
+    .replace(/\{\{PHOTO_URL\}\}/g, photoUrl)
+    .replace(/\{\{PHOTO_ORDER_TOP\}\}/g, photoPosition === 'top' ? '0' : '1')
+    .replace(/\{\{PHOTO_ORDER_BOTTOM\}\}/g, photoPosition === 'top' ? '1' : '0')
+    .replace(/\{\{PHOTO_HIDDEN\}\}/g, hasPhoto ? '' : 'hidden')
+    .replace(/\{\{TEXT_FULL_HEIGHT\}\}/g, hasPhoto ? '' : 'full-height')
+    .replace(/\{\{NO_PHOTO_COUNTER\}\}/g, hasPhoto ? '' :
+      `<div class="slide-counter no-photo">${slideNumber}/${totalSlides}</div>`)
+    .replace(/\{\{USERNAME\}\}/g, options.username ?
+      `<div class="username">@${options.username}</div>` : '');
 
   // Обработка выделенных слов (emphasize)
   if (slide.emphasize && slide.emphasize.length > 0) {

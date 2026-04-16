@@ -11,6 +11,7 @@ interface ExportPanelProps {
   template: string;
   format: "square" | "portrait";
   username?: string;
+  showWatermark?: boolean;
 }
 
 export default function ExportPanel({
@@ -18,6 +19,7 @@ export default function ExportPanel({
   template,
   format,
   username,
+  showWatermark = false,
 }: ExportPanelProps) {
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
@@ -28,30 +30,32 @@ export default function ExportPanel({
     setExported(false);
 
     try {
-      // Dynamic import — html2canvas loaded only on export
-      const html2canvas = (await import("html2canvas")).default;
+      const { toPng } = await import("html-to-image");
 
       const container = containerRef.current;
       if (!container) return;
+
+      // Wait for all Google Fonts to finish loading
+      await document.fonts.ready;
 
       const previewSlides = container.querySelectorAll("[data-slide-export]");
 
       for (let i = 0; i < slides.length; i++) {
         if (previewSlides[i]) {
-          const canvas = await html2canvas(previewSlides[i] as HTMLElement, {
-            scale: 1,
-            useCORS: true,
-            backgroundColor: null,
+          const el = previewSlides[i] as HTMLElement;
+          const dataUrl = await toPng(el, {
+            width: el.offsetWidth,
+            height: el.offsetHeight,
+            pixelRatio: 1,
+            skipAutoScale: true,
           });
 
-          // Download
           const link = document.createElement("a");
           link.download = `slide-${String(i + 1).padStart(2, "0")}.png`;
-          link.href = canvas.toDataURL("image/png");
+          link.href = dataUrl;
           link.click();
         }
 
-        // Small delay between downloads
         if (i < slides.length - 1) {
           await new Promise((r) => setTimeout(r, 300));
         }
@@ -84,6 +88,7 @@ export default function ExportPanel({
               totalSlides={slides.length}
               format={format}
               username={username}
+              showWatermark={showWatermark}
             />
           </div>
         ))}

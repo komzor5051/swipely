@@ -14,11 +14,13 @@ import {
   CreditCard,
   Gift,
   Layers,
+  MessageCircle,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/queries";
 import { motion, AnimatePresence } from "@/components/ui/motion";
+import { PromoPopup } from "@/components/pricing/PromoPopup";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Дашборд" },
@@ -52,7 +54,7 @@ function Sidebar({
 
   return (
     <aside
-      className={`w-64 bg-[#0D0D14] text-white p-6 flex flex-col ${className}`}
+      className={`bg-[#0D0D14] text-white p-6 flex flex-col ${className}`}
     >
       {/* Logo */}
       <div className="mb-8">
@@ -132,9 +134,22 @@ function Sidebar({
         <div className="mb-3 px-2">
           <p className="text-xs text-white/40">Вход как:</p>
           <p className="text-sm font-medium truncate">
-            {loading ? "..." : email || "—"}
+            {loading ? "..." : (
+              profile?.telegram_username
+                ? `@${profile.telegram_username}`
+                : profile?.first_name || email || "—"
+            )}
           </p>
         </div>
+        <a
+          href="https://t.me/lyaminvl"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-white/50 hover:bg-white/10 hover:text-white transition-all duration-200 w-full"
+        >
+          <MessageCircle className="h-4 w-4" />
+          Тех. поддержка
+        </a>
         <button
           onClick={onLogout}
           className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 cursor-pointer w-full"
@@ -244,7 +259,7 @@ export default function DashboardLayout({
     <div className="min-h-screen flex">
       {/* Desktop sidebar */}
       <Sidebar
-        className="hidden md:flex"
+        className="hidden md:flex w-64"
         profile={profile}
         email={email}
         loading={loading}
@@ -264,13 +279,14 @@ export default function DashboardLayout({
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
-              initial={{ x: -264 }}
+              initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: -264 }}
+              exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="relative w-64 h-full"
+              className="relative w-[75vw] max-w-64 h-full"
             >
               <Sidebar
+                className="h-full"
                 profile={profile}
                 email={email}
                 loading={loading}
@@ -284,9 +300,9 @@ export default function DashboardLayout({
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-border/50 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+        <header className="bg-white/80 backdrop-blur-md border-b border-border/50 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-30">
           <button
-            className="md:hidden p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
+            className="md:hidden p-2 -ml-1 rounded-lg hover:bg-muted transition-colors active:scale-95"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? (
@@ -296,21 +312,24 @@ export default function DashboardLayout({
             )}
           </button>
 
-          <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-3 ml-auto">
             <Link href="/generate">
               <Button
                 size="sm"
                 className="rounded-full bg-[#D4F542] text-[#0D0D14] hover:bg-[#c8e83a] active:scale-[0.98] transition-all shadow-sm hover:shadow-md font-semibold"
               >
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                Создать карусель
+                <Sparkles className="h-3.5 w-3.5 sm:mr-1.5" />
+                <span className="hidden sm:inline">Создать карусель</span>
               </Button>
             </Link>
           </div>
         </header>
 
-        <main className="flex-1 p-6 md:p-8 bg-grid">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 md:p-8 bg-grid overflow-x-clip">{children}</main>
       </div>
+
+      {/* Promo popup — only for non-PRO users */}
+      {!loading && profile?.subscription_tier !== "pro" && <PromoPopup />}
     </div>
   );
 }

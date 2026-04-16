@@ -2,7 +2,7 @@
 
 import React from "react";
 import type { SlideProps } from "../types";
-import { renderTitle, getSlideDimensions } from "../utils";
+import { renderTitle, renderContent, getSlideDimensions } from "../utils";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@500;600;700;800&display=swap');`;
 
@@ -45,12 +45,7 @@ export default function PhotoSlide({
 
   const highlightStyle: React.CSSProperties = {
     display: "inline",
-    background: "#D4F542",
-    color: "#0A0A0A",
-    padding: "6px 16px",
-    margin: "0 -6px",
-    boxDecorationBreak: "clone",
-    WebkitBoxDecorationBreak: "clone",
+    color: "#D4F542",
   };
 
   return (
@@ -72,7 +67,7 @@ export default function PhotoSlide({
           position: "absolute", inset: 0,
           ...(hasImage
             ? { backgroundImage: `url('${slide.imageUrl}')`, backgroundSize: "cover", backgroundPosition: "center" }
-            : { background: "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)" }),
+            : { background: "#0A0A0A" }),
         }}
       />
 
@@ -82,20 +77,20 @@ export default function PhotoSlide({
           position: "absolute", inset: 0,
           background: isHook
             ? `linear-gradient(180deg,
-                rgba(0,0,0,0.75) 0%,
-                rgba(0,0,0,0.3) 25%,
+                rgba(0,0,0,0.6) 0%,
+                rgba(0,0,0,0.2) 25%,
                 rgba(0,0,0,0.0) 45%,
                 rgba(0,0,0,0.0) 55%,
-                rgba(0,0,0,0.55) 72%,
-                rgba(0,0,0,0.95) 100%
+                rgba(0,0,0,0.45) 72%,
+                rgba(0,0,0,0.85) 100%
               )`
             : `linear-gradient(180deg,
-                rgba(0,0,0,0.85) 0%,
-                rgba(0,0,0,0.4) 15%,
-                rgba(0,0,0,0.0) 30%,
+                rgba(0,0,0,0.7) 0%,
+                rgba(0,0,0,0.3) 15%,
+                rgba(0,0,0,0.0) 35%,
                 rgba(0,0,0,0.0) 55%,
-                rgba(0,0,0,0.5) 70%,
-                rgba(0,0,0,0.92) 100%
+                rgba(0,0,0,0.4) 70%,
+                rgba(0,0,0,0.85) 100%
               )`,
         }}
       />
@@ -193,7 +188,7 @@ export default function PhotoSlide({
                   margin: 0,
                 }}
               >
-                {slide.content}
+                {renderContent(slide.content)}
               </p>
             </div>
           </div>

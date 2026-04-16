@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 const AURAPAY_API = "https://app.aurapay.tech";
@@ -14,12 +15,12 @@ const PRODUCTS: Record<
     type: "test",
   },
   pro_monthly: {
-    amount: 50, // TODO: вернуть 990 после теста
+    amount: 495, // Promo -50% (было 990)
     description: "Swipely PRO — месячная подписка",
     type: "subscription",
   },
   pro_yearly: {
-    amount: 9900,
+    amount: 4950, // Promo -50% (было 9900)
     description: "Swipely PRO — годовая подписка",
     type: "subscription",
   },
@@ -144,18 +145,28 @@ export async function POST(request: Request) {
 
     console.log(`Payment timing: auth=${tAuth}ms, aurapay=${tAura}ms, total=${Date.now() - t0}ms`);
 
-    // Save payment record (non-blocking)
-    supabase.from("payments").insert({
-      user_id: user.id,
+    // Save payment record BEFORE returning to client — webhook may fire immediately after payment
+    // and requires this record to exist (it's the trusted source for user_id + product).
+    // Use admin client to bypass RLS — user_id is already verified above.
+    const adminClient = createAdminClient();
+    const { error: dbErr } = await adminClient.from("payments").insert({
       payment_id: invoice.id,
       amount: finalAmount,
       currency: "RUB",
       status: "pending",
-      provider: "aurapay",
+      payment_method: "aurapay",
       product_type: productId,
-    }).then(({ error: dbErr }) => {
-      if (dbErr) console.error("DB save error:", dbErr.message);
+      user_id: user.id,
+      product_data: {
+        user_id: user.id,
+        user_email: user.email,
+        ...(finalSlides !== undefined && { custom_slides: finalSlides }),
+      },
     });
+    if (dbErr) {
+      console.error("DB save error:", dbErr.message);
+      return NextResponse.json({ error: "Ошибка сохранения платежа" }, { status: 500 });
+    }
 
     return NextResponse.json({
       confirmationUrl: invoice.payment_data.url,

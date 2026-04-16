@@ -1,35 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, Minus, Camera, Zap, ChevronDown, CreditCard } from "lucide-react";
+import { Camera, Zap, ChevronDown, CreditCard } from "lucide-react";
 import { CustomSlidePicker } from "@/components/pricing/CustomSlidePicker";
 import { Button } from "@/components/ui/button";
+import { Pricing } from "@/components/ui/pricing";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/queries";
 import { ProButton } from "@/app/pricing/ProButton";
 import { cn } from "@/lib/utils";
 
 // ─── Data ───
-
-const FREE_FEATURES = [
-  { text: "3 карусели в месяц", ok: true },
-  { text: "18 шаблонов дизайна", ok: true },
-  { text: "Подпись к посту", ok: true },
-  { text: "PNG экспорт", ok: true },
-  { text: "Photo Mode", ok: false },
-  { text: "Без водяного знака", ok: false },
-  { text: "Приоритетная очередь", ok: false },
-];
-
-const PRO_FEATURES = [
-  { text: "Безлимит карусели в месяц", highlight: false },
-  { text: "Photo Mode — AI-фото слайды", highlight: true },
-  { text: "18 шаблонов дизайна", highlight: false },
-  { text: "Подпись к посту", highlight: false },
-  { text: "PNG экспорт", highlight: false },
-  { text: "Без водяного знака", highlight: false },
-  { text: "Приоритетная очередь", highlight: false },
-];
 
 const PHOTO_PACKS = [
   { slides: 15, price: 490, per: "~33₽/слайд", productId: "pack_15" },
@@ -39,8 +20,8 @@ const PHOTO_PACKS = [
 
 const FAQS = [
   {
-    q: "Что такое Photo Mode?",
-    a: "Photo Mode генерирует уникальные AI-изображения для каждого слайда. Каждый слайд — это сгенерированная картинка со встроенным текстом. Требует кредиты слайдов.",
+    q: "Что такое AI карусель с вашим фото?",
+    a: "Генерируем уникальные AI-изображения с вашим фото или персонажем для каждого слайда. Каждый слайд — картинка с вашим героем и текстом. Требует кредиты слайдов.",
   },
   {
     q: "Что произойдёт после истечения PRO?",
@@ -48,51 +29,14 @@ const FAQS = [
   },
 ];
 
-// ─── Billing Toggle ───
-
-function BillingToggle({
-  billing,
-  onChange,
-}: {
-  billing: "monthly" | "yearly";
-  onChange: (b: "monthly" | "yearly") => void;
-}) {
-  return (
-    <div className="inline-flex items-center bg-muted rounded-full p-1 gap-0.5">
-      {(["monthly", "yearly"] as const).map((b) => (
-        <button
-          key={b}
-          onClick={() => onChange(b)}
-          className={cn(
-            "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
-            billing === b
-              ? "bg-white shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          {b === "monthly" ? (
-            "По месяцам"
-          ) : (
-            <span className="flex items-center gap-1.5">
-              За год
-              <span className="text-[10px] font-bold bg-[var(--lime)] text-[var(--on-lime)] px-1.5 py-0.5 rounded-full leading-none">
-                −17%
-              </span>
-            </span>
-          )}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 // ─── Page ───
 
 export default function DashboardPricingPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [isMonthly, setIsMonthly] = useState(true);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [proLoading, setProLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -113,9 +57,72 @@ export default function DashboardPricingPage() {
   }, []);
 
   const tier = profile?.subscription_tier ?? "free";
+  const isPro = tier === "pro";
   const photoBalance = profile?.photo_slides_balance ?? 0;
-  const proPrice = billing === "yearly" ? 825 : 990;
-  const proProductId = billing === "yearly" ? "pro_yearly" : "pro_monthly";
+
+  const handleProPurchase = async () => {
+    const productId = isMonthly ? "pro_monthly" : "pro_yearly";
+    setProLoading(true);
+    try {
+      const res = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || "Ошибка при создании платежа"); return; }
+      window.location.href = data.confirmationUrl;
+    } catch {
+      alert("Ошибка сети. Попробуйте позже.");
+    } finally {
+      setProLoading(false);
+    }
+  };
+
+  const plans = [
+    {
+      name: "Бесплатный",
+      price: 0,
+      yearlyPrice: 0,
+      period: "навсегда",
+      features: [
+        "3 карусели в месяц",
+        "18 шаблонов дизайна",
+        "Подпись к посту",
+        "PNG экспорт",
+      ],
+      description: "Без кредитной карты",
+      buttonText: isPro ? "Бесплатный тариф" : "Текущий тариф",
+      isPopular: false,
+      disabled: !isPro || loading,
+    },
+    {
+      name: "PRO",
+      price: 495,
+      yearlyPrice: 412,
+      period: "в месяц",
+      features: [
+        "Безлимит карусели в месяц",
+        "AI карусель с вашим фото",
+        "18 шаблонов дизайна",
+        "Подпись к посту",
+        "PNG экспорт",
+        "Без водяного знака",
+        "Приоритетная очередь",
+      ],
+      description: isMonthly ? "было 990₽ · −50%" : "4 950₽/год · было 9 900₽",
+      buttonText: isPro
+        ? "Активный тариф"
+        : proLoading
+        ? "Создание платежа..."
+        : isMonthly
+        ? "Купить PRO · 495₽/мес →"
+        : "Купить PRO · 4 950₽/год →",
+      isPopular: true,
+      onClick: isPro ? undefined : handleProPurchase,
+      disabled: isPro || loading || proLoading,
+    },
+  ];
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -130,164 +137,25 @@ export default function DashboardPricingPage() {
         {!loading && (
           <div className={cn(
             "flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border",
-            tier === "pro"
+            isPro
               ? "bg-[var(--lime)]/10 border-[var(--lime)]/25 text-[#1a2e00]"
               : "bg-muted border-border text-muted-foreground"
           )}>
             <span className={cn(
               "w-1.5 h-1.5 rounded-full",
-              tier === "pro" ? "bg-[var(--lime)]" : "bg-muted-foreground/50"
+              isPro ? "bg-[var(--lime)]" : "bg-muted-foreground/50"
             )} />
-            {tier === "pro" ? "PRO тариф" : "Бесплатный тариф"}
+            {isPro ? "PRO тариф" : "Бесплатный тариф"}
           </div>
         )}
       </div>
 
-      {/* Billing Toggle */}
-      <div className="flex justify-center pt-1">
-        <BillingToggle billing={billing} onChange={setBilling} />
-      </div>
-
-      {/* Plan Cards */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* FREE */}
-        <div className="relative rounded-2xl border border-border bg-card p-7 flex flex-col">
-          {tier === "free" && !loading && (
-            <div className="absolute top-4 right-4 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-              Ваш тариф
-            </div>
-          )}
-
-          <div className="mb-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50 mb-3">
-              Бесплатный
-            </p>
-            <div className="flex items-end gap-2 mb-1">
-              <span
-                className="text-[52px] font-black tracking-tight leading-none text-foreground"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                0
-              </span>
-              <span className="text-xl text-muted-foreground mb-2">₽</span>
-            </div>
-            <p className="text-sm text-muted-foreground">Навсегда бесплатно</p>
-          </div>
-
-          <ul className="flex-1 space-y-2.5 mb-7">
-            {FREE_FEATURES.map((f) => (
-              <li key={f.text} className="flex items-center gap-2.5 text-sm">
-                <span className={cn(
-                  "w-[18px] h-[18px] rounded-full flex items-center justify-center shrink-0",
-                  f.ok ? "bg-foreground/8" : "bg-muted"
-                )}>
-                  {f.ok
-                    ? <Check className="h-2.5 w-2.5 text-foreground/60" />
-                    : <Minus className="h-2.5 w-2.5 text-muted-foreground/30" />
-                  }
-                </span>
-                <span className={f.ok ? "text-foreground/80" : "text-muted-foreground/35 line-through"}>
-                  {f.text}
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <Button
-            variant="outline"
-            className="w-full rounded-xl"
-            disabled={tier === "free" || loading}
-          >
-            {tier === "free" ? "Текущий тариф" : "Бесплатный тариф"}
-          </Button>
-        </div>
-
-        {/* PRO */}
-        <div className="rounded-2xl bg-[#0D0D14] p-7 flex flex-col relative overflow-hidden shadow-xl">
-          {/* Glow */}
-          <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-[#D4F542]/10 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-44 h-44 rounded-full bg-[#0A84FF]/8 blur-2xl pointer-events-none" />
-          {/* Grid texture */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-60"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(212,245,66,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(212,245,66,0.04) 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
-            }}
-          />
-
-          <div className="absolute top-4 right-4 bg-[#D4F542] text-[#0D0D14] text-[11px] font-black px-2.5 py-1 rounded-full z-10">
-            Популярный
-          </div>
-
-          {tier === "pro" && !loading && (
-            <div className="absolute top-4 left-4 flex items-center gap-1.5 text-[11px] font-semibold text-white/50 bg-white/8 px-2.5 py-1 rounded-full z-10">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4F542] inline-block" />
-              Активен
-            </div>
-          )}
-
-          <div className="relative z-10 mb-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">PRO</p>
-            <div className="flex items-end gap-2 mb-1">
-              <span
-                className="text-[52px] font-black tracking-tight leading-none text-white transition-all duration-300"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                {proPrice.toLocaleString("ru-RU")}
-              </span>
-              <span className="text-xl text-white/35 mb-2">₽/мес</span>
-            </div>
-            <p className="text-sm text-white/30">
-              {billing === "yearly"
-                ? `9 900₽/год · сэкономишь ${(990 * 12 - 9900).toLocaleString("ru-RU")}₽`
-                : "или 825₽/мес при оплате за год"}
-            </p>
-          </div>
-
-          <ul className="relative z-10 flex-1 space-y-2.5 mb-7">
-            {PRO_FEATURES.map((f) => (
-              <li key={f.text} className="flex items-center gap-2.5 text-sm">
-                <span className={cn(
-                  "w-[18px] h-[18px] rounded-full flex items-center justify-center shrink-0",
-                  f.highlight ? "bg-[#D4F542]" : "bg-white/10"
-                )}>
-                  <Check className={cn(
-                    "h-2.5 w-2.5",
-                    f.highlight ? "text-[#0D0D14]" : "text-white/80"
-                  )} />
-                </span>
-                <span className={f.highlight ? "text-[#D4F542] font-semibold" : "text-white/70"}>
-                  {f.text}
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="relative z-10">
-            {tier === "pro" ? (
-              <Button
-                className="w-full rounded-xl bg-white/8 text-white hover:bg-white/12 border border-white/10"
-                disabled
-              >
-                Активный тариф
-              </Button>
-            ) : (
-              <ProButton
-                productId={proProductId}
-                label={
-                  billing === "yearly"
-                    ? "Купить PRO · 9 900₽/год →"
-                    : "Купить PRO · 990₽/мес →"
-                }
-                className="w-full rounded-xl bg-[#D4F542] hover:bg-[#c8e83a] text-[#0D0D14] font-bold border-0 text-sm"
-              />
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Pricing cards with animated toggle */}
+      <Pricing
+        plans={plans}
+        isMonthly={isMonthly}
+        onToggle={(monthly) => setIsMonthly(monthly)}
+      />
 
       {/* Photo Mode Credits */}
       <div className="rounded-2xl border border-border bg-card p-5">
@@ -297,8 +165,8 @@ export default function DashboardPricingPage() {
               <Camera className="h-4 w-4 text-[var(--swipely-blue)]" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold">Photo Mode — кредиты</h3>
-              <p className="text-xs text-muted-foreground">AI-изображения для слайдов · 1 кредит = 1 слайд</p>
+              <h3 className="text-sm font-semibold">AI карусель с вашим фото — кредиты</h3>
+              <p className="text-xs text-muted-foreground">Ваш персонаж на каждом слайде · 1 кредит = 1 слайд</p>
             </div>
           </div>
           {!loading && (
@@ -315,7 +183,7 @@ export default function DashboardPricingPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {PHOTO_PACKS.map((pack) => (
             <div
               key={pack.productId}
@@ -380,7 +248,7 @@ export default function DashboardPricingPage() {
       <CustomSlidePicker variant="light" />
 
       {/* Usage Stats */}
-      {!loading && tier === "free" && (
+      {!loading && !isPro && (
         <div className="rounded-2xl border border-amber-200/60 bg-amber-50/50 p-4 flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
             <Zap className="h-4 w-4 text-amber-600" />
@@ -397,13 +265,13 @@ export default function DashboardPricingPage() {
             productId="pro_monthly"
             label="Купить PRO"
             size="sm"
-            className="shrink-0 rounded-xl bg-amber-500 hover:bg-amber-600 text-white border-0 font-semibold text-xs px-4 h-8"
+            className="shrink-0 w-auto rounded-xl bg-amber-500 hover:bg-amber-600 text-white border-0 font-semibold text-xs px-4 h-8"
           />
         </div>
       )}
 
       {/* Pro expiry warning */}
-      {!loading && tier === "pro" && profile?.subscription_end && (() => {
+      {!loading && isPro && profile?.subscription_end && (() => {
         const days = Math.ceil((new Date(profile.subscription_end).getTime() - Date.now()) / 86400000);
         return days <= 7 ? (
           <div className="rounded-2xl border border-orange-200/60 bg-orange-50/50 p-4 flex items-center gap-4">
@@ -415,7 +283,7 @@ export default function DashboardPricingPage() {
               productId="pro_monthly"
               label="Продлить"
               size="sm"
-              className="shrink-0 rounded-xl bg-orange-500 hover:bg-orange-600 text-white border-0 font-semibold text-xs px-4 h-8"
+              className="shrink-0 w-auto rounded-xl bg-orange-500 hover:bg-orange-600 text-white border-0 font-semibold text-xs px-4 h-8"
             />
           </div>
         ) : null;

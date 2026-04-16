@@ -5,6 +5,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 export interface Profile {
   id: string;
   telegram_id?: number;
+  telegram_username?: string;
   email?: string;
   username?: string;
   first_name?: string;
@@ -196,13 +197,25 @@ export async function checkSubscriptionExpiry(
   userId: string,
   profile: Pick<Profile, "subscription_tier" | "subscription_end">
 ): Promise<"free" | "pro"> {
+  // Self-healing: subscription_end in the future → must be "pro" regardless of stored tier
+  if (profile.subscription_end) {
+    const expiry = new Date(profile.subscription_end);
+    if (expiry > new Date()) {
+      if (profile.subscription_tier !== "pro") {
+        // Tier out of sync — heal it silently
+        await supabase
+          .from("profiles")
+          .update({ subscription_tier: "pro" })
+          .eq("id", userId);
+      }
+      return "pro";
+    }
+  }
+
+  // No active subscription_end
   if (profile.subscription_tier !== "pro") return profile.subscription_tier;
-  if (!profile.subscription_end) return "pro";
 
-  const expiry = new Date(profile.subscription_end);
-  if (expiry > new Date()) return "pro";
-
-  // Expired — downgrade in DB
+  // Was "pro" but no valid subscription_end — downgrade
   await supabase
     .from("profiles")
     .update({ subscription_tier: "free" })

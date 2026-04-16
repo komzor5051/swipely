@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -14,16 +14,45 @@ import {
   CreditCard,
   Gift,
   AlertTriangle,
+  CheckCircle2,
+  X,
 } from "lucide-react";
 import { FadeIn, StaggerList, StaggerItem } from "@/components/ui/motion";
+import TemplatePicker from "@/components/dashboard/TemplatePicker";
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [recentGenerations, setRecentGenerations] = useState<Generation[]>([]);
   const [totalGenerations, setTotalGenerations] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const loadProfile = async () => {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    return data as Profile | null;
+  };
 
   useEffect(() => {
+    const isPaymentSuccess =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("payment") === "success";
+
+    if (isPaymentSuccess) {
+      setPaymentSuccess(true);
+      // Remove query param from URL without reload
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
     const load = async () => {
       const supabase = createClient();
       const {
@@ -62,9 +91,26 @@ export default function DashboardPage() {
 
       setTotalGenerations(count ?? 0);
       setLoading(false);
+
+      // If payment just happened — poll until tier becomes 'pro' (webhook may be slightly delayed)
+      if (isPaymentSuccess) {
+        let attempts = 0;
+        pollRef.current = setInterval(async () => {
+          attempts++;
+          const fresh = await loadProfile();
+          if (fresh) setProfile(fresh);
+          if (fresh?.subscription_tier === "pro" || fresh?.photo_slides_balance !== profileData?.photo_slides_balance || attempts >= 10) {
+            clearInterval(pollRef.current!);
+          }
+        }, 1500);
+      }
     };
 
     load();
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, []);
 
   const tier = profile?.subscription_tier || "free";
@@ -81,12 +127,56 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* Payment success banner */}
+      {paymentSuccess && (
+        <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-center gap-3">
+          <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-green-800">Оплата прошла успешно!</p>
+            <p className="text-xs text-green-600 mt-0.5">
+              Тариф обновляется — обычно это занимает несколько секунд.
+            </p>
+          </div>
+          <button
+            onClick={() => setPaymentSuccess(false)}
+            className="text-green-400 hover:text-green-600 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <FadeIn>
         <h1 className="text-3xl font-bold mb-1 text-[#0D0D14]">
           Привет{profile?.first_name ? `, ${profile.first_name}` : ""}!
         </h1>
         <p className="text-[#6B7280]">Обзор твоего аккаунта Swipely</p>
+      </FadeIn>
+
+      {/* Primary CTA */}
+      <FadeIn delay={0.05}>
+        <Link href="/generate" className="block">
+          <div className="rounded-2xl bg-[#D4F542] p-5 hover:bg-[#c8e83a] active:scale-[0.98] transition-all cursor-pointer group shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-[#0D0D14] text-[#D4F542] flex items-center justify-center shadow-sm">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-[#0D0D14] text-lg">Создать карусель</h3>
+                <p className="text-sm text-[#0D0D14]/60">
+                  Текст → AI → готовые слайды за 30 секунд
+                </p>
+              </div>
+              <ArrowRight className="h-6 w-6 text-[#0D0D14] group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Link>
+      </FadeIn>
+
+      {/* Template picker */}
+      <FadeIn delay={0.08}>
+        <TemplatePicker isPro={tier === "pro"} />
       </FadeIn>
 
       {/* Stats Grid */}
@@ -203,24 +293,7 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <FadeIn delay={0.3}>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Link href="/generate">
-            <div className="rounded-2xl border border-[#D4F542]/30 bg-[#D4F542]/10 p-6 hover:bg-[#D4F542]/15 hover:shadow-sm transition-all cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#D4F542] text-[#0D0D14] flex items-center justify-center shadow-sm">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Создать карусель</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Текст → AI → готовые слайды
-                  </p>
-                </div>
-                <ArrowRight className="h-5 w-5 text-[#0D0D14] group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </Link>
-
+        <div className="grid gap-4 sm:grid-cols-2">
           <Link href="/dashboard/pricing">
             <div className="rounded-2xl border border-[#E8E8E4] p-6 hover:border-[#D4F542]/30 hover:shadow-sm transition-all cursor-pointer group">
               <div className="flex items-center gap-4">

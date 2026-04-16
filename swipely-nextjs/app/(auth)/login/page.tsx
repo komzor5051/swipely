@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { TelegramLoginButton } from '@/components/auth/TelegramLoginButton'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -65,7 +66,15 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Пароль</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-gray-500 hover:text-gray-700 hover:underline"
+                >
+                  Забыли пароль?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -80,6 +89,15 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Загрузка...' : 'Войти'}
             </Button>
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#E8E8E4]" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-white px-2 text-[#6B7280]">или</span>
+              </div>
+            </div>
+            <TelegramLoginButton />
             <p className="text-sm text-center text-gray-600">
               Нет аккаунта?{' '}
               <Link href="/signup" className="text-blue-600 hover:underline">
