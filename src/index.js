@@ -1,5 +1,7 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
+const cron = require('node-cron');
+const { sendDailyReport, ADMIN_CHAT_ID } = require('./services/dailyReport');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
   polling: {
@@ -33,6 +35,11 @@ const REDIRECT_TEXT = `👋 Привет\!
 Заходи → *swipely\.ru* 🚀`;
 
 bot.on('message', async (msg) => {
+  // Admin-only: /report — отправить отчёт за сегодня прямо сейчас (для теста).
+  if (msg.chat.id === ADMIN_CHAT_ID && msg.text && msg.text.trim() === '/report') {
+    await sendDailyReport(bot);
+    return;
+  }
   try {
     await bot.sendMessage(msg.chat.id, REDIRECT_TEXT, { parse_mode: 'MarkdownV2' });
   } catch (err) {
@@ -49,4 +56,8 @@ bot.on('callback_query', async (query) => {
   }
 });
 
+// Daily report — каждый день в 22:00 по Москве для админа (chat 843512517).
+cron.schedule('0 22 * * *', () => sendDailyReport(bot), { timezone: 'Europe/Moscow' });
+
 console.log('🤖 Swipely Bot (заглушка) запущен — редирект на swipely.ru');
+console.log('📊 Daily report scheduled: 22:00 Europe/Moscow → chat ' + ADMIN_CHAT_ID);
