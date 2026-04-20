@@ -350,6 +350,27 @@ function App() {
   if (!session) return null;
 
   const totalSlides = session.carouselData.slides.length;
+  const isExternal = session.carouselData.external === true || session.stylePreset === '__external__';
+
+  const handlePhotoUpload = (index: number, file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      if (!dataUrl) return;
+      const nextImages = [...(session.images ?? [])];
+      while (nextImages.length < session.carouselData.slides.length) nextImages.push('');
+      nextImages[index] = dataUrl;
+      setSession({ ...session, images: nextImages });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handlePhotoRemove = (index: number) => {
+    if (!session.images) return;
+    const nextImages = [...session.images];
+    nextImages[index] = '';
+    setSession({ ...session, images: nextImages });
+  };
 
   return (
     <div className="h-screen flex flex-col overflow-hidden blueprint-bg">
@@ -393,6 +414,7 @@ function App() {
               stylePreset={localStylePreset}
               format={session.format}
               username={session.username}
+              images={session.images}
             />
           </div>
         </div>
@@ -405,7 +427,7 @@ function App() {
           ref={scrollContainerRef}
           onScroll={handleContainerScroll}
           className={`flex-1 overflow-x-auto overflow-y-hidden flex items-center transition-all duration-300 snap-x snap-mandatory ${
-            activeTab ? 'mb-[calc(56px+50vh)]' : 'mb-[56px]'
+            isExternal ? '' : activeTab ? 'mb-[calc(56px+50vh)]' : 'mb-[56px]'
           } lg:mb-0`}
         >
           <div className="flex flex-row items-center gap-4 lg:gap-6 h-full px-4 sm:px-8 py-4" style={{ minWidth: 'max-content' }}>
@@ -420,10 +442,13 @@ function App() {
                 format={session.format}
                 image={session.images?.[index]}
                 selectedElement={selectedElement}
+                readOnly={isExternal}
                 onSelect={() => setCurrentSlideIndex(index)}
                 onSelectElement={setSelectedElement}
                 onUpdate={(updatedSlide) => handleSlideUpdate(index, updatedSlide)}
                 onPositionChange={handlePositionChange}
+                onPhotoUpload={isExternal ? (file) => handlePhotoUpload(index, file) : undefined}
+                onPhotoRemove={isExternal ? () => handlePhotoRemove(index) : undefined}
               />
             ))}
           </div>
@@ -431,8 +456,17 @@ function App() {
 
         {/* Desktop sidebar only */}
         <div className="hidden lg:flex flex-col w-80 bg-[#0D0D14] border-l border-white/10 overflow-y-auto flex-shrink-0 p-5">
-          <h3 className="font-semibold text-white mb-3 sm:mb-4">Редактирование</h3>
-          {renderEditControls()}
+          <h3 className="font-semibold text-white mb-3 sm:mb-4">
+            {isExternal ? 'Фото на слайдах' : 'Редактирование'}
+          </h3>
+          {isExternal ? (
+            <div className="text-sm text-white/60 space-y-3">
+              <p>Текст и дизайн зафиксированы. На каждый слайд можно загрузить фото через кнопку на самом слайде.</p>
+              <p className="text-white/40 text-xs">После добавления фото нажмите «Скачать PNG».</p>
+            </div>
+          ) : (
+            renderEditControls()
+          )}
         </div>
       </div>
 
@@ -459,7 +493,8 @@ function App() {
         </div>
       )}
 
-      {/* Bottom tab bar — mobile only */}
+      {/* Bottom tab bar — mobile only (hidden in external mode) */}
+      {!isExternal && (
       <div className="fixed bottom-0 left-0 right-0 bg-[#0D0D14] border-t border-white/10 z-40 lg:hidden">
         <div className="flex items-stretch h-14">
           {([
@@ -498,6 +533,7 @@ function App() {
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -511,10 +547,13 @@ interface SlideCardProps {
   format: 'square' | 'portrait';
   image?: string;
   selectedElement: ElementType;
+  readOnly?: boolean;
   onSelect: () => void;
   onSelectElement: (element: ElementType) => void;
   onUpdate: (slide: Slide) => void;
   onPositionChange: (element: ElementType, position: TextPosition) => void;
+  onPhotoUpload?: (file: File) => void;
+  onPhotoRemove?: () => void;
 }
 
 function SlideCard({
@@ -526,10 +565,13 @@ function SlideCard({
   format,
   image,
   selectedElement,
+  readOnly,
   onSelect,
   onSelectElement,
   onUpdate,
   onPositionChange,
+  onPhotoUpload,
+  onPhotoRemove,
 }: SlideCardProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -587,7 +629,7 @@ function SlideCard({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    let html = renderTemplate(stylePreset, {
+    const rendered: string | null = slide.html ?? renderTemplate(stylePreset, {
       title: slide.title,
       content: slide.content,
       slideNumber: index + 1,
@@ -596,20 +638,27 @@ function SlideCard({
       height,
     });
 
-    if (!html) return;
+    if (!rendered) return;
+    let html: string = rendered;
 
     if (image) {
       const isUrl = image.startsWith('http://') || image.startsWith('https://');
       const imageUrl = isUrl ? image : `data:image/png;base64,${image}`;
-      const bgImageStyle = `
-        body {
-          background-image: url('${imageUrl}');
-          background-size: cover;
-          background-position: center;
-        }
-        .photo-hint { display: none !important; }
-      `;
-      html = html.replace('</style>', `${bgImageStyle}</style>`);
+
+      if (html.includes('{{PHOTO_BG}}') || html.includes('{{PHOTO_INSET}}')) {
+        html = html.replace(/\{\{PHOTO_BG\}\}/g, imageUrl);
+        html = html.replace(/\{\{PHOTO_INSET\}\}/g, imageUrl);
+      } else {
+        const bgImageStyle = `
+          body {
+            background-image: url('${imageUrl}');
+            background-size: cover;
+            background-position: center;
+          }
+          .photo-hint { display: none !important; }
+        `;
+        html = html.replace('</style>', `${bgImageStyle}</style>`);
+      }
     }
 
     const doc = iframe.contentDocument;
@@ -622,6 +671,9 @@ function SlideCard({
     const setupEditing = () => {
       const iframeDoc = iframe.contentDocument;
       if (!iframeDoc) return;
+
+      // External (API-provided) slides are not editable inside the editor
+      if (readOnly) return;
 
       // Find elements by multiple possible selectors (different templates use different classes)
       const headlineEl = (
@@ -803,7 +855,7 @@ function SlideCard({
     };
 
     setTimeout(setupEditing, 100);
-  }, [slide, index, totalSlides, stylePreset, width, height, image, isActive, selectedElement, onSelectElement, onPositionChange, scale, onUpdate]);
+  }, [slide, index, totalSlides, stylePreset, width, height, image, isActive, selectedElement, readOnly, onSelectElement, onPositionChange, scale, onUpdate]);
 
   return (
     <div
@@ -838,6 +890,39 @@ function SlideCard({
       <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 bg-black/60 text-white text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md backdrop-blur-sm">
         {index + 1}/{totalSlides}
       </div>
+
+      {onPhotoUpload && (
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex gap-1.5 z-10">
+          <label
+            onClick={(e) => e.stopPropagation()}
+            className="bg-black/70 hover:bg-black/85 text-white text-[10px] sm:text-xs font-medium px-2 py-1 rounded-md backdrop-blur-sm cursor-pointer transition-colors"
+          >
+            {image ? 'Заменить фото' : 'Добавить фото'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onPhotoUpload(file);
+                e.target.value = '';
+              }}
+            />
+          </label>
+          {image && onPhotoRemove && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPhotoRemove();
+              }}
+              className="bg-black/70 hover:bg-red-600/85 text-white text-[10px] sm:text-xs font-medium px-2 py-1 rounded-md backdrop-blur-sm transition-colors"
+              title="Убрать фото"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

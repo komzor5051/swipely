@@ -101,7 +101,7 @@ export default function SlideCanvas({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    let html = renderTemplate(stylePreset, {
+    const rendered: string | null = slide.html ?? renderTemplate(stylePreset, {
       title: slide.title,
       content: slide.content,
       slideNumber: slideIndex + 1,
@@ -110,24 +110,30 @@ export default function SlideCanvas({
       height,
     });
 
-    if (!html) return;
+    if (!rendered) return;
+    let html: string = rendered;
 
-    // If image is provided (Photo Mode), inject it as background
+    // If image is provided (Photo Mode), inject it into photo slots
     if (image) {
-      // Determine if image is a URL or base64
       const isUrl = image.startsWith('http://') || image.startsWith('https://');
       const imageUrl = isUrl ? image : `data:image/png;base64,${image}`;
 
-      // Add background image style to body
-      const bgImageStyle = `
-        body {
-          background-image: url('${imageUrl}');
-          background-size: cover;
-          background-position: center;
-        }
-        .photo-hint { display: none !important; }
-      `;
-      html = html.replace('</style>', `${bgImageStyle}</style>`);
+      if (html.includes('{{PHOTO_BG}}') || html.includes('{{PHOTO_INSET}}')) {
+        // Templates with named photo zones — replace slots directly
+        html = html.replace(/\{\{PHOTO_BG\}\}/g, imageUrl);
+        html = html.replace(/\{\{PHOTO_INSET\}\}/g, imageUrl);
+      } else {
+        // Legacy templates — fall back to full body background
+        const bgImageStyle = `
+          body {
+            background-image: url('${imageUrl}');
+            background-size: cover;
+            background-position: center;
+          }
+          .photo-hint { display: none !important; }
+        `;
+        html = html.replace('</style>', `${bgImageStyle}</style>`);
+      }
     }
 
     // Write HTML to iframe

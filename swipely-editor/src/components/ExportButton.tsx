@@ -21,12 +21,14 @@ interface ExportButtonProps {
   stylePreset: string;
   format: 'square' | 'portrait';
   username?: string;
+  images?: string[];
 }
 
 export default function ExportButton({
   slides,
   stylePreset,
   format,
+  images,
 }: ExportButtonProps) {
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -67,8 +69,8 @@ export default function ExportButton({
         `;
         container.appendChild(iframe);
 
-        // Write HTML to iframe
-        const html = renderTemplate(stylePreset, {
+        // Prefer pre-rendered HTML (external templates); fall back to built-in template
+        const rendered: string | null = slide.html ?? renderTemplate(stylePreset, {
           title: slide.title,
           content: slide.content,
           slideNumber: i + 1,
@@ -77,7 +79,29 @@ export default function ExportButton({
           height,
         });
 
-        if (!html) continue;
+        if (!rendered) continue;
+        let html: string = rendered;
+
+        // Inject per-slide photo if provided
+        const image = images?.[i];
+        if (image) {
+          const isUrl = image.startsWith('http://') || image.startsWith('https://') || image.startsWith('data:');
+          const imageUrl = isUrl ? image : `data:image/png;base64,${image}`;
+          if (html.includes('{{PHOTO_BG}}') || html.includes('{{PHOTO_INSET}}')) {
+            html = html.replace(/\{\{PHOTO_BG\}\}/g, imageUrl);
+            html = html.replace(/\{\{PHOTO_INSET\}\}/g, imageUrl);
+          } else {
+            const bgImageStyle = `
+              body {
+                background-image: url('${imageUrl}');
+                background-size: cover;
+                background-position: center;
+              }
+              .photo-hint { display: none !important; }
+            `;
+            html = html.replace('</style>', `${bgImageStyle}</style>`);
+          }
+        }
 
         const doc = iframe.contentDocument;
         if (!doc) continue;
@@ -89,7 +113,7 @@ export default function ExportButton({
         // Wait for fonts and resources to load
         await new Promise((resolve) => setTimeout(resolve, 300));
 
-        // Apply custom positions and styles
+        // Apply custom positions and styles (legacy templates only; external templates have their own layout)
         const headlineEl = doc.querySelector('.headline') as HTMLElement;
         const contentEl = doc.querySelector('.content') as HTMLElement;
 

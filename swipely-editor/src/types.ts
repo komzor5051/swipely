@@ -10,7 +10,7 @@ export interface TextStyles {
 }
 
 export interface Slide {
-  type: 'hook' | 'content' | 'cta' | 'intro' | 'tip' | 'example' | 'story';
+  type: 'hook' | 'content' | 'cta' | 'intro' | 'tip' | 'example' | 'story' | 'cover';
   title: string;
   content: string;
   emphasize?: string[];
@@ -18,10 +18,16 @@ export interface Slide {
   contentPosition?: TextPosition;
   titleStyles?: TextStyles;
   contentStyles?: TextStyles;
+  // External/API-provided templates: pre-rendered HTML replaces the global template
+  html?: string;
 }
 
 export interface CarouselData {
   slides: Slide[];
+  // External sessions (created via /api/external/session) are locked to inline HTML
+  external?: boolean;
+  source?: string;
+  meta?: Record<string, unknown> | null;
 }
 
 export interface EditSession {
