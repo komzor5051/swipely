@@ -51,9 +51,9 @@ const CHAPTER_HTML = `<!DOCTYPE html>
   <div class="top-line"></div>
   <div class="watermark">1</div>
   <div class="content">
-    <h1>Всё начинается <em style="color:#8B7355">с одной идеи</em></h1>
+    <h1>Заголовок <em style="color:#8B7355">карусели</em></h1>
     <div class="rule"></div>
-    <p>Самые большие перемены начинаются с маленького решения. Вот как это работает</p>
+    <p>Короткое описание темы поста</p>
   </div>
 </div>
 </body>
@@ -117,8 +117,8 @@ const DISPATCH_HTML = `<!DOCTYPE html>
   <div class="top-stripe"></div>
   <div class="content">
     <div class="label">Dispatch</div>
-    <h1>3 вещи, которые <em>меняют</em> всё</h1>
-    <p>Разбираем то, о чём не говорят вслух — но все думают</p>
+    <h1>Заголовок <em>карусели</em></h1>
+    <p>Короткое описание темы поста</p>
   </div>
 </div>
 </body>
@@ -199,9 +199,9 @@ const FRAME_HTML = `<!DOCTYPE html>
   <div class="corner corner-br"></div>
   <div class="content">
     <div class="ornament">✦</div>
-    <h1>Момент, когда всё <em>изменилось</em></h1>
+    <h1>Заголовок <em>карусели</em></h1>
     <div class="rule"></div>
-    <p>Некоторые идеи не ждут подходящего момента. Они его создают.</p>
+    <p>Короткое описание темы поста</p>
   </div>
 </div>
 </body>
