@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .photo-zone {
+      width: 1080px;
+      height: 702px;
+      flex-shrink: 0;
+      position: relative;
+      background-size: cover;
+      background-position: center;
+      background-image: url('{{PHOTO_URL}}');
+      order: {{PHOTO_ORDER_TOP}};
+    }
+
+    .text-zone {
+      width: 1080px;
+      height: 648px;
+      flex-shrink: 0;
+      background: #111111;
+      padding: 52px 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      order: {{PHOTO_ORDER_BOTTOM}};
+    }
+
+    .photo-zone.hidden { display: none; }
+    .text-zone.full-height {
+      height: 1350px;
+      padding: 80px 64px;
+    }
+
+    .slide-counter {
+      position: absolute;
+      top: 28px;
+      right: 36px;
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(0,0,0,0.55);
+      padding: 6px 16px;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .slide-counter.no-photo {
+      color: #333;
+      background: transparent;
+      border: none;
+    }
+
+    h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 72px;
+      font-weight: 800;
+      color: #F0F0F0;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 28px;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+      max-width: 95%;
+    }
+
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: #888888;
+      line-height: 1.65;
+    }
+
+    .username {
+      position: absolute;
+      bottom: 28px;
+      right: 40px;
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: #3A3A3A;
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="photo-zone {{PHOTO_HIDDEN}}">
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+</div>
+
+<div class="text-zone {{TEXT_FULL_HEIGHT}}">
+  {{NO_PHOTO_COUNTER}}
+  <h2>{{TITLE}}</h2>
+  <div class="content">{{CONTENT}}</div>
+  {{USERNAME}}
+</div>
+
+</body>
+</html>
