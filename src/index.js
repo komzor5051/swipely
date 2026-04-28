@@ -140,8 +140,8 @@ bot.on('callback_query', async (query) => {
   }
 });
 
-// Daily report — каждый день в 22:00 по Москве для админа (chat 843512517).
-cron.schedule('0 22 * * *', () => sendDailyReport(bot), { timezone: 'Europe/Moscow' });
+// Daily report — каждый день в 23:00 по Москве для админа (chat 843512517).
+cron.schedule('0 23 * * *', () => sendDailyReport(bot), { timezone: 'Europe/Moscow' });
 
-console.log('🤖 Swipely Bot (заглушка) запущен — редирект на swipely.ru');
-console.log('📊 Daily report scheduled: 22:00 Europe/Moscow → chat ' + ADMIN_CHAT_ID);
+console.log('Swipely Bot запущен — редирект на swipely.ru');
+console.log('Daily report scheduled: 23:00 Europe/Moscow → chat ' + ADMIN_CHAT_ID);
