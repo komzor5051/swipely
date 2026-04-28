@@ -85,28 +85,19 @@ async function handleLinkStart(msg) {
   return true;
 }
 
-const REDIRECT_TEXT = `👋 Привет\!
+const REDIRECT_TEXT = `Бот Swipely переехал на сайт — теперь всё работает там:
 
-Бот Swipely переехал на сайт — теперь всё работает там:
+<b>swipely.ru</b>
 
-🌐 *swipely\.ru*
+Что появилось на сайте:
 
-━━━━━━━━━━━━━━━━━━━━
+✦ <b>18 шаблонов дизайна</b> — меняй прямо в редакторе
+✦ <b>AI карусель с твоим фото</b> — твой персонаж на каждом слайде
+✦ <b>Редактор слайдов</b> — правь текст и стиль после генерации
+✦ <b>История</b> — все карусели сохраняются, скачивай в любой момент
+✦ <b>Бесплатный тариф</b> — 3 карусели в месяц без карты
 
-🎁 *Акция* — первый месяц PRO всего *495 ₽* вместо 990 ₽\. Прямо сейчас\.
-
-━━━━━━━━━━━━━━━━━━━━
-
-Что появилось на сайте, чего не было в боте:
-
-✦ *18 шаблонов дизайна* — меняй прямо в редакторе
-✦ *AI карусель с твоим фото* — твой персонаж на каждом слайде
-✦ *Редактор слайдов* — правь текст и стиль после генерации
-✦ *История* — все карусели сохраняются, скачивай в любой момент
-✦ *Подпись к посту* — AI пишет caption автоматически
-✦ *Бесплатный тариф* — 3 карусели в месяц без карты
-
-Заходи → *swipely\.ru* 🚀`;
+Заходи → swipely.ru`;
 
 bot.on('message', async (msg) => {
   // Admin-only: /report — отправить отчёт за сегодня прямо сейчас (для теста).
@@ -125,7 +116,7 @@ bot.on('message', async (msg) => {
     }
   }
   try {
-    await bot.sendMessage(msg.chat.id, REDIRECT_TEXT, { parse_mode: 'MarkdownV2' });
+    await bot.sendMessage(msg.chat.id, REDIRECT_TEXT, { parse_mode: 'HTML' });
   } catch (err) {
     console.error('sendMessage error:', err.message);
   }
@@ -134,7 +125,7 @@ bot.on('message', async (msg) => {
 bot.on('callback_query', async (query) => {
   try {
     await bot.answerCallbackQuery(query.id);
-    await bot.sendMessage(query.message.chat.id, REDIRECT_TEXT, { parse_mode: 'MarkdownV2' });
+    await bot.sendMessage(query.message.chat.id, REDIRECT_TEXT, { parse_mode: 'HTML' });
   } catch (err) {
     console.error('callback_query error:', err.message);
   }
