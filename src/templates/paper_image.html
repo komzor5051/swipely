@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F3EE;
+      --ink: #1A1A1A;
+      --orange: #E8725C;
+      --gray: #888888;
+      --white: #FFFFFF;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Crumpled paper texture */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Paper fold shadows */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(135deg, transparent 40%, rgba(0,0,0,0.03) 45%, transparent 50%),
+        linear-gradient(225deg, transparent 40%, rgba(255,255,255,0.5) 45%, transparent 50%),
+        radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.3) 0%, transparent 40%),
+        radial-gradient(ellipse at 70% 80%, rgba(0,0,0,0.04) 0%, transparent 40%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header with logo */
+    .header {
+      position: absolute;
+      top: 50px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 10;
+    }
+
+    .logo {
+      font-family: 'Inter', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+    }
+
+    .logo-dot {
+      color: var(--orange);
+    }
+
+    /* Main content */
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 160px 70px 200px;
+      position: relative;
+      z-index: 5;
+    }
+
+    /* Headline with orange accents */
+    .headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 86px;
+      font-weight: 900;
+      line-height: 1.05;
+      color: var(--ink);
+      letter-spacing: -3px;
+      max-width: 900px;
+      text-align: center;
+      margin: 0 auto;
+    }
+
+    /* Orange highlight */
+    .accent {
+      color: var(--orange);
+    }
+
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl {
+      display: inline;
+      background: var(--orange);
+      color: var(--white);
+      padding: 6px 16px;
+      margin: 0 -6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* Dashed arrow decoration */
+    .dashed-arrow {
+      position: absolute;
+      right: 200px;
+      top: 45%;
+      width: 150px;
+      height: 180px;
+    }
+
+    .dashed-arrow svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .dashed-arrow path {
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 3;
+      stroke-dasharray: 10, 8;
+      stroke-linecap: round;
+    }
+
+    /* Subtitle with italic */
+    .subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 28px;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--ink);
+      text-align: right;
+      margin-top: 30px;
+      margin-right: 100px;
+      opacity: 0.8;
+    }
+
+    /* Content text */
+    .content {
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--gray);
+      text-align: center;
+      margin-top: 60px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Bottom decorative illustration placeholder */
+    .illustration {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 450px;
+      background: linear-gradient(180deg, transparent 0%, rgba(200,200,200,0.15) 100%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .illustration-lines {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    /* Stylized engraving lines effect */
+    .illustration-lines::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 350px;
+      height: 350px;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 4px,
+        rgba(100,100,100,0.08) 4px,
+        rgba(100,100,100,0.08) 6px
+      );
+      border-radius: 50% 50% 0 0;
+      mask-image: radial-gradient(ellipse at center bottom, black 60%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse at center bottom, black 60%, transparent 100%);
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      right: 70px;
+      z-index: 10;
+    }
+
+    .slide-counter {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+    }
+
+    /* Corner icons */
+    .corner-icons {
+      position: absolute;
+      bottom: 45px;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .corner-icon {
+      width: 45px;
+      height: 45px;
+      background: var(--white);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .corner-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header with logo -->
+  <div class="header">
+    <span class="logo">swipely<span class="logo-dot">.</span></span>
+  </div>
+
+  <!-- Main content -->
+  <div class="content-wrapper">
+    <h1 class="headline">{{TITLE}}</h1>
+    <p class="content">{{CONTENT}}</p>
+  </div>
+
+  <!-- Dashed arrow -->
+  <div class="dashed-arrow">
+    <svg viewBox="0 0 150 180">
+      <path d="M 20 10 Q 80 40, 60 90 Q 40 140, 90 160 L 110 145 M 90 160 L 75 140"/>
+    </svg>
+  </div>
+
+  <!-- Bottom illustration area -->
+  <div class="illustration">
+    <div class="illustration-lines"></div>
+  </div>
+
+  <!-- Slide counter -->
+  <div class="footer">
+    <span class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</span>
+  </div>
+
+  <!-- Corner icons -->
+  <div class="corner-icons">
+    <div class="corner-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M7 17L17 7M17 7H7M17 7V17"/>
+      </svg>
+    </div>
+    <div class="corner-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

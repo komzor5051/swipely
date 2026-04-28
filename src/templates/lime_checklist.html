@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #D4F542;
+      --ink: #0A0A0A;
+      --paper: #F5F0E6;
+      --paper-line: #E0DBD0;
+      --white: #FFFFFF;
+      --gray: #666666;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 60px;
+    }
+
+    /* Username in top right */
+    .username-tag {
+      position: absolute;
+      top: 50px;
+      right: 60px;
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      opacity: 0.7;
+    }
+
+    /* Main title badge */
+    .title-badge {
+      background: var(--ink);
+      color: var(--white);
+      padding: 20px 40px;
+      border-radius: 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      text-align: center;
+      display: inline-block;
+      margin: 80px auto 20px;
+      max-width: 90%;
+      line-height: 1.2;
+    }
+
+    /* Arrow from title to notepad */
+    .arrow-connector {
+      width: 3px;
+      height: 40px;
+      background: var(--ink);
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .arrow-connector::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 14px solid var(--ink);
+    }
+
+    /* Notepad container */
+    .notepad {
+      background: var(--paper);
+      border-radius: 20px;
+      padding: 50px 45px;
+      margin: 30px 40px;
+      flex: 1;
+      max-height: 850px;
+      position: relative;
+      box-shadow:
+        8px 8px 0 rgba(0,0,0,0.15),
+        0 10px 40px rgba(0,0,0,0.1);
+      border: 3px solid rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Lined paper effect */
+    .notepad::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        transparent,
+        transparent 54px,
+        var(--paper-line) 54px,
+        var(--paper-line) 56px
+      );
+      pointer-events: none;
+    }
+
+    /* Checklist items */
+    .checklist {
+      list-style: none;
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.35;
+      flex: 1;
+    }
+
+    .checklist-item span {
+      flex: 1;
+    }
+
+    .checkbox {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--ink);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+
+    .checkbox svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--ink);
+      stroke-width: 3;
+      fill: none;
+    }
+
+    /* Accent for emphasized words */
+    .accent {
+      text-decoration: underline;
+      text-decoration-thickness: 3px;
+      text-underline-offset: 4px;
+    }
+
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .title-badge hl {
+      display: inline;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 4px 12px;
+      margin: 0 -4px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 50px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--white);
+      color: var(--ink);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .cta-button::before {
+      content: '↗';
+      font-size: 14px;
+    }
+
+    /* Slide counter */
+    .slide-counter {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      opacity: 0.6;
+    }
+
+    /* Corner icons */
+    .corner-icons {
+      position: absolute;
+      bottom: 45px;
+      right: 60px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .corner-icon {
+      width: 45px;
+      height: 45px;
+      background: var(--white);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .corner-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <!-- Username tag -->
+  <div class="username-tag">@swipely</div>
+
+  <!-- Title badge -->
+  <div class="title-badge">{{TITLE}}</div>
+
+  <!-- Arrow connector -->
+  <div class="arrow-connector"></div>
+
+  <!-- Notepad with checklist -->
+  <div class="notepad">
+    <ul class="checklist">
+      <li class="checklist-item">
+        <div class="checkbox">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <span>{{CONTENT}}</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="cta-button">Swipe for more</div>
+    <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+  </div>
+
+  <!-- Corner icons -->
+  <div class="corner-icons">
+    <div class="corner-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M7 17L17 7M17 7H7M17 7V17"/>
+      </svg>
+    </div>
+    <div class="corner-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

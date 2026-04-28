@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8F8F8;
+      --ink: #1A1A1A;
+      --orange: #F26B3A;
+      --white: #FFFFFF;
+      --gray: #888888;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Subtle texture */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Logo header */
+    .header {
+      position: absolute;
+      top: 60px;
+      left: 70px;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .logo-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* Main content area with bubble */
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 150px 70px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .quote-container {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* Orange speech bubble */
+    .speech-bubble {
+      width: 280px;
+      height: 280px;
+      background: var(--orange);
+      border-radius: 20px 20px 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -30px;
+      width: 60px;
+      height: 60px;
+      background: var(--orange);
+      border-radius: 0 0 60px 0;
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    }
+
+    .bubble-quotes {
+      font-family: Georgia, serif;
+      font-size: 180px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 0.7;
+      opacity: 0.95;
+    }
+
+    /* White quote box */
+    .quote-box {
+      background: var(--white);
+      padding: 45px 50px;
+      border-radius: 30px;
+      max-width: 520px;
+      margin-left: -40px;
+      box-shadow: 0 10px 60px rgba(0,0,0,0.08);
+      position: relative;
+      z-index: 2;
+    }
+
+    .quote-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+
+    .quote-author {
+      font-family: 'Inter', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--orange);
+    }
+
+    /* Accent for emphasized words */
+    .accent {
+      color: var(--orange);
+    }
+
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl, .quote-text hl {
+      display: inline;
+      background: var(--orange);
+      color: var(--white);
+      padding: 4px 12px;
+      margin: 0 -4px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 60px;
+      left: 70px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .globe-icon {
+      width: 28px;
+      height: 28px;
+    }
+
+    .globe-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: var(--orange);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .footer-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .footer-url {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .footer-cta {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Slide counter */
+    .slide-counter {
+      position: absolute;
+      bottom: 65px;
+      right: 200px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+    }
+
+    /* Corner icons */
+    .corner-icons {
+      position: absolute;
+      bottom: 60px;
+      right: 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .corner-icon {
+      width: 45px;
+      height: 45px;
+      background: var(--white);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+
+    .corner-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <!-- Logo header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none">
+          <rect x="2" y="10" width="12" height="20" rx="2" fill="#F26B3A"/>
+          <rect x="18" y="10" width="12" height="20" rx="2" fill="#F26B3A"/>
+          <circle cx="8" cy="20" r="3" fill="white"/>
+          <circle cx="24" cy="20" r="3" fill="white"/>
+        </svg>
+      </div>
+      <span class="logo-text">Swipely</span>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="content-wrapper">
+    <div class="quote-container">
+      <div class="speech-bubble">
+        <span class="bubble-quotes">,,</span>
+      </div>
+      <div class="quote-box">
+        <p class="quote-text">{{TITLE}}</p>
+        <span class="quote-author">{{CONTENT}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="globe-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+    </div>
+    <div class="footer-text">
+      <span class="footer-url">swipely.ai</span>
+      <span class="footer-cta">Create your carousel</span>
+    </div>
+  </div>
+
+  <!-- Slide counter -->
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+
+  <!-- Corner icons -->
+  <div class="corner-icons">
+    <div class="corner-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M7 17L17 7M17 7H7M17 7V17"/>
+      </svg>
+    </div>
+    <div class="corner-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #E8E6F2;
+      --ink: #0A0A0A;
+      --blue: #6366F1;
+      --white: #FFFFFF;
+      --gray: #888888;
+      --border: rgba(0,0,0,0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 50px 60px;
+    }
+
+    /* Header with logo and menu */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 50px;
+    }
+
+    .logo {
+      font-family: 'Inter', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .menu-icon {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .menu-line {
+      width: 32px;
+      height: 3px;
+      background: var(--ink);
+      border-radius: 2px;
+    }
+
+    .menu-line:nth-child(2) { width: 24px; }
+
+    /* Main title */
+    .main-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 110px;
+      font-weight: 900;
+      line-height: 0.95;
+      color: var(--ink);
+      letter-spacing: -5px;
+      margin-bottom: 20px;
+    }
+
+    /* Arrow indicator */
+    .arrow-indicator {
+      font-size: 36px;
+      color: var(--ink);
+      margin-bottom: 30px;
+      opacity: 0.6;
+    }
+
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: var(--ink);
+      border-radius: 50px;
+      padding: 8px 10px 8px 30px;
+      margin-bottom: 50px;
+      max-width: 550px;
+    }
+
+    .search-text {
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--white);
+      opacity: 0.8;
+    }
+
+    .search-button {
+      width: 52px;
+      height: 52px;
+      background: var(--blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-button svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--white);
+      fill: none;
+      stroke-width: 2.5;
+    }
+
+    /* List container */
+    .list-container {
+      flex: 1;
+    }
+
+    /* List item */
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .item-dot {
+      width: 16px;
+      height: 16px;
+      background: var(--blue);
+      border-radius: 50%;
+    }
+
+    .item-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .item-arrow {
+      font-size: 28px;
+      color: var(--ink);
+      opacity: 0.4;
+    }
+
+    /* Accent for emphasized words */
+    .accent {
+      color: var(--blue);
+    }
+
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .main-title hl {
+      display: inline;
+      background: var(--blue);
+      color: var(--white);
+      padding: 6px 16px;
+      margin: 0 -6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 30px;
+    }
+
+    .slide-counter {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+    }
+
+    /* Corner icons */
+    .corner-icons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .corner-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--white);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+
+    .corner-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* Rounded corners overlay effect */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      bottom: 15px;
+      border-radius: 50px;
+      box-shadow: inset 0 0 0 15px var(--bg);
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">Swipely</div>
+    <div class="menu-icon">
+      <div class="menu-line"></div>
+      <div class="menu-line"></div>
+    </div>
+  </div>
+
+  <!-- Main title -->
+  <h1 class="main-title">{{TITLE}}</h1>
+
+  <!-- Arrow indicator -->
+  <div class="arrow-indicator">↙</div>
+
+  <!-- Search bar -->
+  <div class="search-bar">
+    <span class="search-text">What can we do for you?</span>
+    <div class="search-button">
+      <svg viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- List container -->
+  <div class="list-container">
+    <div class="list-item">
+      <div class="item-left">
+        <div class="item-dot"></div>
+        <span class="item-text">{{CONTENT}}</span>
+      </div>
+      <span class="item-arrow">›</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+    <div class="corner-icons">
+      <div class="corner-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M7 17L17 7M17 7H7M17 7V17"/>
+        </svg>
+      </div>
+      <div class="corner-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --ink: #0A0A0A;
+      --highlight: #FFF59D;
+      --gray: #666666;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1080px;
+      height: 1350px;
+      background: var(--bg);
+      font-family: 'Playfair Display', Georgia, serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px;
+    }
+
+    /* Category tag at top */
+    .category-tag {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Star decoration */
+    .star-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 40px;
+    }
+
+    .star-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: var(--ink);
+    }
+
+    /* Main content wrapper */
+    .content-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    /* HEADLINE — elegant serif */
+    .headline {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 78px;
+      font-weight: 500;
+      line-height: 1.15;
+      color: var(--ink);
+      letter-spacing: -1px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    /* Highlighted text with yellow background */
+    .highlight-box {
+      display: inline;
+      background: var(--highlight);
+      padding: 4px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+
+    .highlight-box::before {
+      content: '[ ';
+    }
+
+    .highlight-box::after {
+      content: ' ]';
+    }
+
+    /* Accent class for emphasized words in content */
+    .accent {
+      background: var(--highlight);
+      padding: 2px 8px;
+      display: inline;
+    }
+
+    /* Content text */
+    .content {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 36px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink);
+      text-align: center;
+      max-width: 800px;
+      margin-top: 20px;
+    }
+
+    /* Highlight для ключевых слов в заголовке */
+    .hl, .headline hl {
+      display: inline;
+      background: var(--highlight);
+      color: var(--ink);
+      padding: 4px 16px;
+      margin: 0 -6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* Arrow at bottom */
+    .arrow-container {
+      position: absolute;
+      bottom: 180px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .arrow-line {
+      width: 120px;
+      height: 2px;
+      background: var(--ink);
+      position: relative;
+    }
+
+    .arrow-line::after {
+      content: '';
+      position: absolute;
+      right: -2px;
+      top: -6px;
+      width: 14px;
+      height: 14px;
+      border-right: 2px solid var(--ink);
+      border-top: 2px solid var(--ink);
+      transform: rotate(45deg);
+    }
+
+    /* Slide counter - subtle */
+    .slide-counter {
+      position: absolute;
+      top: 60px;
+      right: 80px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gray);
+      letter-spacing: 1px;
+    }
+
+    /* Decorative icons in corner */
+    .corner-icons {
+      position: absolute;
+      bottom: 80px;
+      right: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .corner-icon {
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .corner-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <!-- Category tag -->
+  <div class="category-tag">[ {{TYPE}} ]</div>
+
+  <!-- Slide counter -->
+  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+
+  <!-- Main content -->
+  <div class="content-wrapper">
+    <!-- Star icon -->
+    <div class="star-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,0 54,42 100,50 54,58 50,100 46,58 0,50 46,42" />
+      </svg>
+    </div>
+
+    <!-- Headline -->
+    <h1 class="headline">{{TITLE}}</h1>
+
+    <!-- Highlighted subtitle -->
+    <span class="highlight-box">{{CONTENT}}</span>
+  </div>
+
+  <!-- Arrow -->
+  <div class="arrow-container">
+    <div class="arrow-line"></div>
+  </div>
+
+  <!-- Corner decorative icons -->
+  <div class="corner-icons">
+    <div class="corner-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M7 17L17 7M17 7H7M17 7V17"/>
+      </svg>
+    </div>
+    <div class="corner-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
