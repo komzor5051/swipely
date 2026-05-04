@@ -16,6 +16,78 @@ const FORMAT_SIZES = {
   portrait: { width: 1080, height: 1350 }
 };
 
+// Runs inside Puppeteer browser context after HTML is rendered.
+// Shrinks fonts that overflow their allowed zones, then optionally
+// centers content between headline and footer for opt-in templates.
+const LAYOUT_ENGINE = function () {
+  const slideH = document.body.offsetHeight || 1350;
+
+  function shrinkToFit(selector, maxH, minPx, stepPx) {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    let size = parseFloat(window.getComputedStyle(el).fontSize);
+    if (!size || size <= 0) return;
+
+    function overflowing() {
+      const rect = el.getBoundingClientRect();
+      if (rect.height > maxH) return true;
+      if (el.scrollHeight > el.clientHeight + 2) return true;
+      return false;
+    }
+
+    void el.offsetHeight;
+    let guard = 0;
+    while (overflowing() && size > minPx && guard++ < 60) {
+      size -= stepPx;
+      el.style.fontSize = size + 'px';
+      void el.offsetHeight;
+    }
+  }
+
+  // Headline: max 40% of slide height
+  shrinkToFit(
+    '[data-layout="headline"], .headline, h1.headline',
+    slideH * 0.40, 32, 4
+  );
+
+  // Content body: max 38% of slide height
+  shrinkToFit(
+    '[data-layout="content"], .content, p.content, .body-text',
+    slideH * 0.38, 22, 2
+  );
+
+  // Dynamic centering — only for elements that opt in with data-layout="zone"
+  const zone = document.querySelector('[data-layout="zone"]');
+  if (!zone) return;
+
+  const headlineEl = document.querySelector('[data-layout="headline"], .headline');
+  const footerEl = document.querySelector('[data-layout="footer"], .footer, .slide-indicator, .signature');
+
+  const zoneRect = zone.getBoundingClientRect();
+  const topBound = headlineEl
+    ? headlineEl.getBoundingClientRect().bottom + slideH * 0.03
+    : slideH * 0.15;
+  const bottomBound = footerEl
+    ? footerEl.getBoundingClientRect().top - slideH * 0.02
+    : slideH * 0.88;
+
+  const available = bottomBound - topBound;
+  if (available <= zoneRect.height) return;
+
+  const targetTop = topBound + (available - zoneRect.height) / 2;
+  const pos = window.getComputedStyle(zone).position;
+
+  if (pos === 'absolute' || pos === 'fixed') {
+    zone.style.top = targetTop + 'px';
+  } else {
+    const delta = targetTop - zoneRect.top;
+    if (delta > 0) {
+      const current = parseFloat(window.getComputedStyle(zone).marginTop) || 0;
+      zone.style.marginTop = (current + delta) + 'px';
+    }
+  }
+};
+
 /**
  * Рендеринг слайдов в изображения
  * @param {Object} carouselData - данные карусели
@@ -72,6 +144,9 @@ async function renderSlides(carouselData, stylePreset, options = {}) {
       });
 
       await page.setContent(html, { waitUntil: 'networkidle0' });
+
+      // Dynamic layout: shrink overflowing text, optionally center content zone
+      await page.evaluate(LAYOUT_ENGINE);
 
       // Путь для сохранения
       const imagePath = path.join(OUTPUT_DIR, `slide_${Date.now()}_${slideNumber}.png`);
@@ -226,6 +301,14 @@ function generateSlideHTML(slide, slideNumber, totalSlides, stylePreset, options
       `<div class="slide-counter no-photo">${slideNumber}/${totalSlides}</div>`)
     .replace(/\{\{USERNAME\}\}/g, options.username ?
       `<div class="username">@${options.username}</div>` : '');
+
+  // Inject slide type as CSS class on body so templates can adapt via CSS
+  const slideType = slide.type || 'statement';
+  html = html.replace(/<body(\s[^>]*)?>/, (match, attrs) => {
+    if (!attrs) return `<body class="layout-${slideType}">`;
+    if (/class="/.test(attrs)) return match.replace(/class="/, `class="layout-${slideType} `);
+    return `<body${attrs} class="layout-${slideType}">`;
+  });
 
   // Обработка выделенных слов (emphasize)
   if (slide.emphasize && slide.emphasize.length > 0) {
@@ -486,6 +569,8 @@ async function renderSlidesWithImages(carouselData, imageBase64Array, options = 
       });
 
       await page.setContent(html, { waitUntil: 'networkidle0' });
+
+      await page.evaluate(LAYOUT_ENGINE);
 
       const imagePath = path.join(OUTPUT_DIR, `slide_photo_${Date.now()}_${slideNumber}.png`);
 

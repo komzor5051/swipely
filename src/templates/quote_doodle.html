@@ -252,13 +252,13 @@
   </div>
 
   <!-- Slide counter (hidden but available) -->
-  <div class="slide-counter">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
+  <div class="slide-counter" data-layout="footer">{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</div>
 
   <!-- Main content -->
   <div class="content-wrapper">
     <div class="quote-mark">"</div>
-    <h1 class="headline">{{TITLE}}</h1>
-    <p class="content">{{CONTENT}}</p>
+    <h1 class="headline" data-layout="headline">{{TITLE}}</h1>
+    <p class="content" data-layout="content">{{CONTENT}}</p>
   </div>
 
   <!-- Closing quote -->
@@ -279,7 +279,7 @@
   </div>
 
   <!-- Footer -->
-  <div class="footer">
+  <div class="footer" data-layout="footer">
     <div class="footer-col">
       <span>{{SLIDE_NUMBER}}/{{TOTAL_SLIDES}}</span>
     </div>
