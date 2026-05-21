@@ -32,15 +32,22 @@
 |---|---|---|
 | Поверхность | Только чат, новый tool | Минимальный охват; сценарий из скриншота — чат. |
 | Извлечение статей | EXA `/contents` | Ключ EXA уже есть, один провайдер для любого URL статьи. |
-| Извлечение YouTube | Apify-актор транскриптов | Надёжные субтитры; инфра Apify (`runActor`) уже есть. |
-| Доступ | Только платные тарифы | EXA и Apify платны за вызов; согласовано с `web_search`. |
+| Извлечение YouTube | Gemini native video (`fileData`) | Транскрипция без скачивания; переиспользует подход `/api/transcribe`; нужен только `GOOGLE_GEMINI_API_KEY` (уже настроен). См. примечание ниже. |
+| Доступ | Только платные тарифы | EXA платно за вызов; согласовано с `web_search`. |
 | Длинный контент | Сжатие через LLM | Не теряем концовку материала; обрезка first-N теряет смысл. |
+
+> Примечание. Изначально для YouTube был выбран Apify-актор транскриптов
+> (зафиксировано при брейншторме). На этапе реализации обнаружено, что
+> `/api/transcribe` уже транскрибирует YouTube через Gemini native video
+> понимание (`fileData`, без скачивания, без доп. расходов). YouTube-путь
+> переключён на этот подход — `lib/content/youtube-transcript.ts`. Apify
+> остаётся для скрапинга профилей (`analyze_profile`), но не для этой фичи.
 
 ## Архитектура
 
 Один новый чат-tool `carousel_from_url`. Не двухшаговый extract→generate:
 меньше round-trip'ов, агент не таскает длинный текст между вызовами.
-Извлечение и сжатие — отдельные модули, переиспользуют инфру EXA и Apify.
+Извлечение и сжатие — отдельные модули: статьи через EXA, YouTube через Gemini.
 
 ```
 ссылка в чате
@@ -52,7 +59,7 @@ carousel_from_url (lib/chat/tools.ts)
 extractFromUrl (lib/content/url-source.ts)
    │  classifyUrl → youtube | article | unsupported
    ├── article → fetchUrlContent      (lib/search/exa.ts)
-   └── youtube → fetchYouTubeTranscript (lib/services/apify.ts)
+   └── youtube → fetchYouTubeTranscript (lib/content/youtube-transcript.ts)
    │
    ▼
 condenseSourceText (lib/content/url-source.ts)   ← только если текст > 12k
@@ -91,13 +98,18 @@ carousel_card в чате
   livecrawl: "preferred" }`. Зеркалит стиль `webSearch`: общий timeout,
   retry на 429/5xx, never-throw (на сбое → `null`).
 
-### 3. `lib/services/apify.ts` (новый экспорт)
+### 3. `lib/content/youtube-transcript.ts` (новый модуль)
 
+- `transcribeYoutubeUrl(url): Promise<string>` — транскрипция через Gemini
+  native video (`fileData`), без скачивания видео. Логика вынесена из
+  `/api/transcribe` (раньше приватная `transcribeYoutubeWithGemini`);
+  теперь route и эта фича используют общий модуль. Бросает исключение
+  при сбое.
 - `fetchYouTubeTranscript(url): Promise<{ title: string; text: string } | null>` —
-  через существующий `runActor`. ID актора из env `APIFY_YT_TRANSCRIPT_ACTOR`.
-  Рекомендованный дефолт-актор фиксируется в плане реализации. Склеивает
-  сегменты субтитров в сплошной текст. Пустой результат → `null`
-  (видео без субтитров).
+  never-throw обёртка над `transcribeYoutubeUrl`. `{ title: "", text }`
+  при успехе (Gemini не даёт заголовок видео — есть фолбэк-тема у вызова),
+  `null` при пустом транскрипте или любой ошибке.
+- Нужен только `GOOGLE_GEMINI_API_KEY` (уже настроен) — никаких новых env.
 
 ### 4. `app/api/generate/route.ts` (новое поле)
 
@@ -140,7 +152,7 @@ carousel_card в чате
 | URL не статья и не YouTube | Поддерживаю статьи и YouTube-видео. Скинь текст тезисами. |
 | Видео без субтитров (`no_transcript`) | У этого видео нет субтитров — пришли тезисы текстом. |
 | Статья пустая / paywall (`empty_content`, текст < 200 симв.) | Не вышло вытащить текст со страницы — возможно, paywall. Скинь текст напрямую. |
-| EXA / Apify недоступны (`provider_error`) | Не получилось открыть ссылку. Попробуй ещё раз или пришли текст. |
+| Провайдер недоступен — EXA / Gemini (`provider_error`) | Не получилось открыть ссылку. Попробуй ещё раз или пришли текст. |
 | Free-тариф | Генерация из ссылки — на платных тарифах. Оформи подписку. |
 
 ## Тесты
@@ -149,7 +161,8 @@ Unit-тесты по паттерну существующих `__tests__`:
 
 - `classifyUrl` — варианты `youtube.com/watch`, `youtu.be/`, статья, мусор.
 - `fetchUrlContent` — mock fetch: успех, пустой ответ, сетевая ошибка.
-- `fetchYouTubeTranscript` — mock `runActor`: успех, пустой dataset.
+- `fetchYouTubeTranscript` — mock `fetch`: успех, пустой транскрипт, ошибка
+  Gemini, сетевой сбой, отсутствует ключ.
 - `condenseSourceText` — mock `callGemini`: сжатие применяется при > 12k,
   фолбэк-обрезка при сбое модели.
 - `carousel_from_url.execute` — mock извлечения и `internalFetch`:
@@ -158,12 +171,12 @@ Unit-тесты по паттерну существующих `__tests__`:
 ## Вне скоупа (YAGNI)
 
 - Поверхность `/generate` (форма) — только чат.
-- Прямой fetch субтитров YouTube без Apify.
 - Дневная квота сверх tier-gate — отсечения по платному тарифу достаточно.
 - Поддержка плейлистов, постов соцсетей, PDF — только статья и YouTube-видео.
 
-## Переменные окружения (новые)
+## Переменные окружения
 
-- `APIFY_YT_TRANSCRIPT_ACTOR` — ID Apify-актора транскрипции YouTube.
-- `APIFY_API_KEY` — уже используется `lib/services/apify.ts`.
-- `EXA_API_KEY` — уже используется `lib/search/exa.ts`.
+Новых переменных фича не требует — оба провайдера уже настроены:
+
+- `EXA_API_KEY` — извлечение статей (`lib/search/exa.ts`).
+- `GOOGLE_GEMINI_API_KEY` — транскрипция YouTube и сжатие контента.

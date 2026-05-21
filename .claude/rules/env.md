@@ -26,9 +26,10 @@ AURAPAY_SHOP_ID=              # Required by /api/payments/create
 NEXT_PUBLIC_APP_URL=          # Base URL for payment callbacks (default: http://localhost:3000)
 ADMIN_EMAIL=                  # Required by /admin layout — gate for admin panel access
 TELEGRAM_BOT_TOKEN=           # Required by /api/auth/telegram — HMAC hash verification
-EXA_API_KEY=                  # Required by /api/cron/generate and /api/cron/mine-topics (Exa search)
+EXA_API_KEY=                  # Exa search + URL content extraction (cron, chat web_search, carousel_from_url articles)
 CRON_SECRET=                  # Bearer token for cron route auth (set same in cron-job.org)
 WORDSTAT_TOKEN=               # Optional — Yandex Wordstat OAuth token (topic scoring)
+APIFY_API_KEY=                # Apify actors — Instagram profile/post scraping (analyze_profile)
 ```
 
 ## swipely-editor/.env.local
