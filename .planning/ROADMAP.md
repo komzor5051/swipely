@@ -92,11 +92,11 @@ Phase 1 first (schema foundation). Phase 2 and Phase 3 can follow in parallel. P
 **Goal:** Unify monetization into credits model, ship /analyze public lead-magnet landing, fix analyze_profile drift, add wow-onboarding after first analysis, instrument PostHog upsell funnel — together driving activation (currently 56%) and paywall reach
 **Requirements**: DRIFT-01, DRIFT-02, CRED-01, CRED-02, CRED-03, CRED-04, ANLZ-01, ANLZ-02, WOW-01, WOW-02, PH-01
 **Depends on:** Nothing (independent of Phase 4 — operates on swipely-nextjs primary product, not rich-elements milestone)
-**Plans:** 5 plans
+**Plans:** 3/5 plans complete
 
 Plans:
 - [ ] 05-01-PLAN.md — Fix analyze_profile drift (APIFY env var + audit route shape divergence)
 - [x] 05-02-PLAN.md — Credits schema migration + extend claim_generation_slot RPC + dual-write generation routes (2026-05-24)
-- [ ] 05-03-PLAN.md — PostHog Phase 5 event taxonomy + typed server helpers
+- [x] 05-03-PLAN.md — PostHog Phase 5 event taxonomy + typed server helpers (completed 2026-05-24)
 - [ ] 05-04-PLAN.md — Public /analyze landing + IP rate-limit + anonymous audit API
 - [ ] 05-05-PLAN.md — Wow-onboarding (5-slide preview + signup alias + chat seed handoff)
