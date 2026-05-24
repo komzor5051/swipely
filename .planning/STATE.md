@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: checkpoint
-stopped_at: Completed 02-rich-elements/02-02-PLAN.md — awaiting human-verify checkpoint
-last_updated: "2026-03-19T14:18:41Z"
-last_activity: "2026-03-19 — Plan 02-02 complete: renderElement wired into all 24 slide templates"
+status: in_progress
+stopped_at: Completed 05-credits-based-.../05-02-PLAN.md
+last_updated: "2026-05-24T05:42:00Z"
+last_activity: "2026-05-24 — Plan 05-02 complete: credits unification (schema + RPC + dual-write generation routes + webhook dual-write)"
 progress:
   total_phases: 4
   completed_phases: 1
@@ -79,6 +79,14 @@ Recent decisions affecting current work:
 - [Phase 02-rich-elements 02-02]: TerminalSlide ACCENT_COLOR const added at module level to service all 4 layout branches
 - [Phase 02-rich-elements 02-02]: OneTwoPrime CTA branches — element rendered before CTA button, not replacing it
 
+- [Phase 5-02]: Credits unification — single `credits_balance` count-down ledger replaces fragmented `standard_used` + `photo_slides_balance`. Drop legacy counters after 2026-06-23.
+- [Phase 5-02]: Refund safety net via `addCredits` in both /api/generate and /api/generate/photo on pipeline failure
+- [Phase 5-02]: Webhook dual-write is best-effort (try/catch) — never blocks legacy `add_photo_slides` fulfillment path
+
+### Roadmap Evolution
+
+- Phase 5 added: Credits-based free tier — единый счётчик кредитов поверх chat-продукта, lead-magnet landing /analyze, починка analyze_profile drift, wow-onboarding после первого анализа, PostHog трекинг апселл-воронки
+
 ### Pending Todos
 
 None yet.
@@ -90,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T14:18:41Z
-Stopped at: Completed 02-rich-elements/02-02-PLAN.md — checkpoint:human-verify Task 3
+Last session: 2026-05-24T05:42:00Z
+Stopped at: Completed 05-credits-based-.../05-02-PLAN.md — 3 tasks, dual-write generation routes + webhook
 Resume file: None
